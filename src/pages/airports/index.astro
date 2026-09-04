@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const providers = await getCollection('providers');
+
+const statusLabel: Record<string, string> = {
+  active: '正常运营',
+  inactive: '暂停服务',
+  discontinued: '已停止服务',
+  watch: '观察中',
+};
+
+const title = '机场导航｜机场代理服务商目录｜机场TJ';
+const description = '浏览机场TJ收录的机场代理服务商，了解基础信息、第三方资料与场景适配说明。';
+---
+
+<BaseLayout title={title} description={description}>
+  <h1>机场导航｜机场代理服务商目录</h1>
+  <p>
+    这里是完整的服务商列表，逐个查看官方信息、第三方资料和场景适配说明。如果你已经知道自己的使用场景，直接去<a href="/scenarios/">按场景选</a>更快。
+  </p>
+
+  <div class="provider-grid">
+    {
+      providers.map((provider) => (
+        <a href={`/airports/${provider.data.slug}/`} class="provider-card">
+          <div>
+            <strong>{provider.data.name}</strong>
+          </div>
+          <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/scenarios/">按场景选</a></li>
+    <li><a href="/">返回首页</a></li>
+  </ul>
+</BaseLayout>

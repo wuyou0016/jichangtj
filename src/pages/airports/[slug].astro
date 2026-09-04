@@ -1,0 +1,124 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+export async function getStaticPaths() {
+  const providers = await getCollection('providers');
+  return providers.map((provider) => ({
+    params: { slug: provider.data.slug },
+    props: { provider },
+  }));
+}
+
+interface Props {
+  provider: Awaited<ReturnType<typeof getCollection<'providers'>>>[number];
+}
+
+const { provider } = Astro.props;
+
+const scenarios = await getCollection('scenarios');
+const relatedScenarios = scenarios.filter((s) =>
+  s.data.picks.some((pick) => pick.providerId.id === provider.id),
+);
+
+const statusLabel: Record<string, string> = {
+  active: '正常运营',
+  inactive: '暂停服务',
+  discontinued: '已停止服务',
+  watch: '观察中',
+};
+
+function formatDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
+const title = `${provider.data.name}适合哪些场景？｜机场TJ`;
+const description = `${provider.data.name}的官方公开信息、第三方资料，以及按不同使用场景整理的适配说明。`;
+const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb">
+    <a href="/">首页</a> › <a href="/airports/">机场导航</a> › {provider.data.name}
+  </nav>
+
+  <h1>{provider.data.name}｜适合哪些场景</h1>
+  <p class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</p>
+
+  <h2>官方公开信息</h2>
+  <div class="info-panel">
+    <p>{provider.data.vendor.description}</p>
+    <p><a href={provider.data.vendor.officialWebsite} rel="nofollow noopener" target="_blank">访问 {provider.data.name} 官网 ↗</a></p>
+  </div>
+
+  {
+    provider.data.thirdPartyNotes && provider.data.thirdPartyNotes.length > 0 && (
+      <>
+        <h2>第三方资料 / 站长跟踪数据</h2>
+        <div class="info-panel info-panel--third-party">
+          <ul class="note-list">
+            {provider.data.thirdPartyNotes.map((note) => (
+              <li>
+                <p class="note-list__source">
+                  {note.source} · {formatDate(note.date)}
+                </p>
+                <p class="note-list__claim">{note.claim}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    )
+  }
+
+  <h2>场景适配说明</h2>
+  <div class="suitability">
+    <div class="suitability__group suitability__group--for">
+      <h3>适合什么场景</h3>
+      <ul>
+        {provider.data.scenarioFit.goodFor.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+    <div class="suitability__group suitability__group--against">
+      <h3>不太适合什么场景</h3>
+      <ul>
+        {provider.data.scenarioFit.notIdealFor.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </div>
+
+  {
+    relatedScenarios.length > 0 && (
+      <>
+        <h2>出现在这些场景推荐里</h2>
+        <ul class="quick-links">
+          {relatedScenarios.map((s) => (
+            <li>
+              <a href={`/scenarios/${s.data.slug}/`}>{s.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/airports/">查看更多机场导航</a></li>
+    <li><a href="/scenarios/">按场景选</a></li>
+  </ul>
+
+  <p>本页最后更新于 {formatDate(provider.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注，不会混在一起呈现。</p>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

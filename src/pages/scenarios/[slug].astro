@@ -1,0 +1,100 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+export async function getStaticPaths() {
+  const scenarios = await getCollection('scenarios');
+  return scenarios.map((scenario) => ({
+    params: { slug: scenario.data.slug },
+    props: { scenario },
+  }));
+}
+
+interface Props {
+  scenario: Awaited<ReturnType<typeof getCollection<'scenarios'>>>[number];
+}
+
+const { scenario } = Astro.props;
+const allScenarios = await getCollection('scenarios');
+const otherScenarios = allScenarios.filter((s) => s.data.slug !== scenario.data.slug);
+
+const picks = await Promise.all(
+  scenario.data.picks.map(async (pick) => ({
+    ...pick,
+    provider: await getEntry(pick.providerId),
+  })),
+);
+
+const title = `${scenario.data.title}｜机场TJ`;
+const description = scenario.data.description;
+const canonicalUrl = resolveCanonicalUrl(`/scenarios/${scenario.data.slug}/`);
+
+function formatDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb">
+    <a href="/">首页</a> › <a href="/scenarios/">按场景选</a> › {scenario.data.title}
+  </nav>
+
+  <h1>{scenario.data.emoji} {scenario.data.title}</h1>
+  <p>{scenario.data.description}</p>
+
+  <h2>这个场景该关注什么</h2>
+  <div class="what-matters">
+    {
+      scenario.data.whatMatters.map((item) => (
+        <div class="what-matters__item">
+          <p class="what-matters__point">{item.point}</p>
+          <p class="what-matters__explanation">{item.explanation}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <h2>参考选择</h2>
+  {
+    picks.map((pick, index) =>
+      pick.provider ? (
+        <div class="pick-card">
+          <p>
+            <span class="pick-card__rank">{index + 1}</span>
+            <a href={`/airports/${pick.provider.data.slug}/`} class="pick-card__name">
+              {pick.provider.data.name}
+            </a>
+          </p>
+          <p class="pick-card__reason">{pick.reason}</p>
+        </div>
+      ) : null,
+    )
+  }
+
+  <h2>其他场景</h2>
+  <div class="scenario-grid">
+    {
+      otherScenarios.map((s) => (
+        <a href={`/scenarios/${s.data.slug}/`} class="scenario-card">
+          <span class="scenario-card__emoji">{s.data.emoji}</span>
+          <span class="scenario-card__title">{s.data.title}</span>
+          <p class="scenario-card__desc">{s.data.description}</p>
+        </a>
+      ))
+    }
+  </div>
+
+  <p>本页最后更新于 {formatDate(scenario.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注。</p>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

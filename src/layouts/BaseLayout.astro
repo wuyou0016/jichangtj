@@ -1,0 +1,73 @@
+---
+import { siteConfig } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+}
+
+const { title, description, canonical } = Astro.props;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteConfig.url).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="/" class="site-header__brand">
+          <span class="site-header__logo">✈️</span>
+          <span>
+            <strong>{siteConfig.brandName}</strong>
+            <small>按场景选机场代理</small>
+          </span>
+        </a>
+        <nav class="site-header__nav">
+          <a href="/scenarios/">按场景选</a>
+          <a href="/airports/">机场导航</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <div>
+          <h2>{siteConfig.brandName}</h2>
+          <p>{siteConfig.description}</p>
+        </div>
+        <div>
+          <h2>主要导航</h2>
+          <ul>
+            <li><a href="/">首页</a></li>
+            <li><a href="/scenarios/">按场景选</a></li>
+            <li><a href="/airports/">机场导航</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>友情链接</h2>
+          <ul>
+            <li><a href="https://rocketjichang.com" target="_blank" rel="noopener">火箭机场</a></li>
+            <li><a href="https://jichangbao.com" target="_blank" rel="noopener">机场宝</a></li>
+            <li><a href="https://ejichang.com" target="_blank" rel="noopener">机场E家</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container site-footer__bottom">
+        <p>&copy; {new Date().getFullYear()} {siteConfig.brandName}（{siteConfig.brandNameEn}）</p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+
+const scenarios = (await getCollection('scenarios')).sort(
+  (a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime(),
+);
+const providers = await getCollection('providers');
+
+const title = '机场推荐｜按场景选，不是一份笼统的排行榜｜机场TJ';
+const description =
+  '机场TJ按使用场景整理机场代理选择建议——游戏加速、流媒体解锁、远程办公、预算有限，不同场景关注的维度不一样，一份笼统的排行榜回答不了"到底该选哪个"。';
+---
+
+<BaseLayout title={title} description={description}>
+  <h1>机场推荐，先看你的场景是哪种</h1>
+  <p>
+    大多数机场推荐榜单给你一份笼统的排序，但"哪家最好"这个问题本身就不成立——游戏在意的是丢包率，看视频在意的是解锁能力，办公在意的是能不能连续几周不掉线，预算有限的人在意的是单位流量成本。这几件事的答案可能完全不一样。{siteConfig.brandName}
+    不做一份大而全的排行榜，而是按场景分别整理选择建议。
+  </p>
+
+  <h2>先选你的场景</h2>
+  <div class="scenario-grid">
+    {
+      scenarios.map((scenario) => (
+        <a href={`/scenarios/${scenario.data.slug}/`} class="scenario-card">
+          <span class="scenario-card__emoji">{scenario.data.emoji}</span>
+          <span class="scenario-card__title">{scenario.data.title}</span>
+          <p class="scenario-card__desc">{scenario.data.description}</p>
+        </a>
+      ))
+    }
+  </div>
+
+  <h2>不确定自己算哪种场景？</h2>
+  <ul class="quick-links">
+    <li>只是想先看看有哪些服务商，还没想清楚场景？去<a href="/airports/">机场导航</a>逐个了解</li>
+    <li>已经决定预算是唯一考虑因素？直接看<a href="/scenarios/budget/">预算有限，学生党怎么选</a></li>
+    <li>需要长期稳定使用（比如工作）？直接看<a href="/scenarios/remote-work/">远程办公，不能掉线怎么选</a></li>
+  </ul>
+
+  <h2>本站的数据从哪里来</h2>
+  <p>
+    当前收录 {providers.length} 家服务商。每家的信息按来源分组标注：官方公开信息、第三方资料、以及站长本人持续跟踪的真实丢包率测试数据——不同来源不会混在一起呈现，第三方资料之间如果互相矛盾，会如实并列展示，不会替你选一个"更准的"数字。
+  </p>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: '机场TJ场景分类',
+      itemListElement: scenarios.map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: s.data.title,
+        url: new URL(`/scenarios/${s.data.slug}/`, siteConfig.url).toString(),
+      })),
+    })}
+  />
+</BaseLayout>
