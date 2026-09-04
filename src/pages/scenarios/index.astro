@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
 
 const scenarios = (await getCollection('scenarios')).sort(
   (a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime(),
@@ -8,9 +9,12 @@ const scenarios = (await getCollection('scenarios')).sort(
 
 const title = '按场景选机场｜游戏、流媒体、办公、预算怎么选｜机场TJ';
 const description = '按使用场景分类的机场代理选择建议入口——游戏加速、流媒体解锁、远程办公、预算有限，每个场景关注的维度不一样。';
+const canonicalUrl = resolveCanonicalUrl('/scenarios/');
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 按场景选</nav>
+
   <h1>按场景选机场</h1>
   <p>不同用途关注的维度完全不一样，先找到最接近你情况的场景。</p>
 
@@ -29,6 +33,19 @@ const description = '按使用场景分类的机场代理选择建议入口—�
   <p>你可能还想看：</p>
   <ul class="quick-links">
     <li><a href="/airports/">查看机场导航</a></li>
-    <li><a href="/">返回首页</a></li>
+    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/tutorials/">使用教程</a></li>
   </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '按场景选', item: canonicalUrl },
+      ],
+    })}
+  />
 </BaseLayout>

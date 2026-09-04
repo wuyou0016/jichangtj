@@ -1,5 +1,5 @@
 import { defineCollection, reference, z } from 'astro:content';
-import { file } from 'astro/loaders';
+import { file, glob } from 'astro/loaders';
 
 // ---------------------------------------------------------------------------
 // providers（服务商真实资料 —— 官方信息 + 第三方资料，来源分组标注，不混淆）
@@ -70,6 +70,8 @@ const scenarioSchema = z.object({
     }),
   ),
   picks: z.array(scenarioPickSchema),
+  // 这个场景里最容易踩的坑，不是泛泛的"要小心"，要具体到会导致什么误判。
+  commonMistakes: z.array(z.string()).optional(),
   publishedAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -107,4 +109,24 @@ const rankings = defineCollection({
   schema: rankingSchema,
 });
 
-export const collections = { providers, scenarios, rankings };
+// ---------------------------------------------------------------------------
+// tutorials（使用教程：新手先读 / 客户端入门 / 常见问题 / 进阶理解）
+// ---------------------------------------------------------------------------
+
+const tutorialSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  // 分组决定在 /tutorials/ 聚合页里出现在哪个区块，不是难度评分。
+  group: z.enum(['basics', 'clients', 'troubleshooting', 'advanced']),
+  publishedAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  // 关联场景 slug，用于场景页反向链接到相关教程。
+  relatedScenarios: z.array(z.string()).optional(),
+});
+
+const tutorials = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/tutorials' }),
+  schema: tutorialSchema,
+});
+
+export const collections = { providers, scenarios, rankings, tutorials };

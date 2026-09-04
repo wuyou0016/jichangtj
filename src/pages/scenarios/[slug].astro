@@ -26,6 +26,9 @@ const picks = await Promise.all(
   })),
 );
 
+const allTutorials = await getCollection('tutorials');
+const relatedTutorials = allTutorials.filter((t) => t.data.relatedScenarios?.includes(scenario.data.slug));
+
 const title = `${scenario.data.title}｜机场TJ`;
 const description = scenario.data.description;
 const canonicalUrl = resolveCanonicalUrl(`/scenarios/${scenario.data.slug}/`);
@@ -72,6 +75,36 @@ function formatDate(value: Date): string {
     )
   }
 
+  {
+    scenario.data.commonMistakes && scenario.data.commonMistakes.length > 0 && (
+      <>
+        <h2>常见误区</h2>
+        <ul>
+          {scenario.data.commonMistakes.map((mistake) => (
+            <li>{mistake}</li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    relatedTutorials.length > 0 && (
+      <>
+        <h2>相关教程</h2>
+        <ul class="quick-links">
+          {relatedTutorials.map((t) => (
+            <li>
+              <a href={`/tutorials/${t.id}/`}>{t.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p class="scenario-caveat">实际体验受地区、网络环境、访问时间和具体套餐影响，以上建议仅供参考，购买前建议自行验证。</p>
+
   <h2>其他场景</h2>
   <div class="scenario-grid">
     {
@@ -85,6 +118,13 @@ function formatDate(value: Date): string {
     }
   </div>
 
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/airports/">机场导航</a></li>
+    <li><a href="/methodology/">评测方法与数据说明</a></li>
+  </ul>
+
   <p>本页最后更新于 {formatDate(scenario.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注。</p>
 
   <script
@@ -95,6 +135,18 @@ function formatDate(value: Date): string {
       name: title,
       description,
       url: canonicalUrl,
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '按场景选', item: resolveCanonicalUrl('/scenarios/') },
+        { '@type': 'ListItem', position: 3, name: scenario.data.title, item: canonicalUrl },
+      ],
     })}
   />
 </BaseLayout>

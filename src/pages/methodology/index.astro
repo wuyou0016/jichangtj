@@ -32,6 +32,27 @@ const canonicalUrl = resolveCanonicalUrl('/methodology/');
     <p><strong>本站测试</strong>：本站站长实际测试得到的数据，目前主要是丢包率的持续跟踪，个别服务商额外测过流媒体解锁情况，方法见下文。</p>
   </div>
 
+  <h2>本站能验证什么，不能验证什么</h2>
+  <div class="suitability">
+    <div class="suitability__group suitability__group--for">
+      <h3>能验证</h3>
+      <ul>
+        <li>丢包率（在站长测试所用的网络环境下持续跟踪）</li>
+        <li>部分服务商的流媒体解锁情况（实际访问检测，不是看宣传语）</li>
+        <li>多个第三方来源的信息是否互相印证（比如价格、套餐结构）</li>
+      </ul>
+    </div>
+    <div class="suitability__group suitability__group--against">
+      <h3>暂不能验证</h3>
+      <ul>
+        <li>下载/上传速率、延迟等其他测速维度</li>
+        <li>不同地区、不同运营商网络下的实际表现</li>
+        <li>服务商的长期运营稳定性、客服响应质量</li>
+        <li>官方宣传的线路架构（如"IPLC 专线"）是否与实际一致</li>
+      </ul>
+    </div>
+  </div>
+
   <h2>数据可信度标签是什么意思</h2>
   <p>每个服务商卡片上都有一个标签，说明这份资料"是怎么来的"，不是打分，也不代表服务好不好：</p>
   <div class="table-wrap">
@@ -78,6 +99,7 @@ const canonicalUrl = resolveCanonicalUrl('/methodology/');
     <li><a href="/rankings/">综合推荐榜</a></li>
     <li><a href="/airports/">机场导航</a></li>
     <li><a href="/scenarios/">按场景选</a></li>
+    <li><a href="/tutorials/glossary-nodes-routes-protocols/">节点、线路、协议等术语解释</a></li>
   </ul>
 
   <script
@@ -88,6 +110,17 @@ const canonicalUrl = resolveCanonicalUrl('/methodology/');
       name: title,
       description,
       url: canonicalUrl,
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '评测方法与数据说明', item: canonicalUrl },
+      ],
     })}
   />
 </BaseLayout>

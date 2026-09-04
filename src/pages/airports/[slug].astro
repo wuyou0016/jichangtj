@@ -23,6 +23,11 @@ const relatedScenarios = scenarios.filter((s) =>
   s.data.picks.some((pick) => pick.providerId.id === provider.id),
 );
 
+const ownTestNotes = provider.data.thirdPartyNotes?.filter((n) => n.source === '站长本人测试') ?? [];
+const thirdPartyOnlyNotes = provider.data.thirdPartyNotes?.filter((n) => n.source !== '站长本人测试') ?? [];
+
+const relatedTutorials = (await getCollection('tutorials')).filter((t) => t.data.group === 'advanced').slice(0, 1);
+
 const statusLabel: Record<string, string> = {
   active: '正常运营',
   inactive: '暂停服务',
@@ -54,33 +59,13 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
     </span>
   </p>
 
-  <h2>官方公开信息</h2>
+  <h2>基础资料</h2>
   <div class="info-panel">
     <p>{provider.data.vendor.description}</p>
     <p><a href={provider.data.vendor.officialWebsite} rel="nofollow noopener" target="_blank">访问 {provider.data.name} 官网 ↗</a></p>
   </div>
 
-  {
-    provider.data.thirdPartyNotes && provider.data.thirdPartyNotes.length > 0 && (
-      <>
-        <h2>第三方资料 / 站长跟踪数据</h2>
-        <div class="info-panel info-panel--third-party">
-          <ul class="note-list">
-            {provider.data.thirdPartyNotes.map((note) => (
-              <li>
-                <p class="note-list__source">
-                  {note.source} · {formatDate(note.date)}
-                </p>
-                <p class="note-list__claim">{note.claim}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    )
-  }
-
-  <h2>场景适配说明</h2>
+  <h2>适合的使用场景</h2>
   <div class="suitability">
     <div class="suitability__group suitability__group--for">
       <h3>适合什么场景</h3>
@@ -94,6 +79,59 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
         {provider.data.scenarioFit.notIdealFor.map((item) => <li>{item}</li>)}
       </ul>
     </div>
+  </div>
+
+  {
+    ownTestNotes.length > 0 && (
+      <>
+        <h2>本站测试</h2>
+        <div class="info-panel">
+          <ul class="note-list">
+            {ownTestNotes.map((note) => (
+              <li>
+                <p class="note-list__source">{note.source} · {formatDate(note.date)}</p>
+                <p class="note-list__claim">{note.claim}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    )
+  }
+
+  {
+    thirdPartyOnlyNotes.length > 0 && (
+      <>
+        <h2>套餐、线路与第三方资料</h2>
+        <div class="info-panel info-panel--third-party">
+          <ul class="note-list">
+            {thirdPartyOnlyNotes.map((note) => (
+              <li>
+                <p class="note-list__source">
+                  {note.source} · {formatDate(note.date)}
+                  {note.sourceUrl && (
+                    <>
+                      {' '}
+                      · <a href={note.sourceUrl} rel="nofollow noopener" target="_blank">来源链接 ↗</a>
+                    </>
+                  )}
+                </p>
+                <p class="note-list__claim">{note.claim}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    )
+  }
+
+  <h2>需要用户自行确认的项目</h2>
+  <div class="info-panel info-panel--third-party">
+    <ul>
+      <li>最新套餐价格、流量档位与限时优惠，以官网当前页面为准，本站标注的是资料整理时的信息。</li>
+      <li>协议、线路等技术细节可能随服务商调整而变化，长期使用前建议先用短周期套餐验证。</li>
+      {provider.data.dataConfidence !== 'own-test' && <li>本站尚未对该服务商做过实测，购买前建议先用小额套餐或免费试用验证实际体验。</li>}
+    </ul>
   </div>
 
   {
@@ -115,6 +153,10 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
   <ul class="quick-links">
     <li><a href="/airports/">查看更多机场导航</a></li>
     <li><a href="/scenarios/">按场景选</a></li>
+    <li><a href="/rankings/">综合推荐榜</a></li>
+    {relatedTutorials.map((t) => (
+      <li><a href={`/tutorials/${t.id}/`}>{t.data.title}</a></li>
+    ))}
   </ul>
 
   <p>本页最后更新于 {formatDate(provider.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注，不会混在一起呈现。</p>
@@ -127,6 +169,18 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
       name: title,
       description,
       url: canonicalUrl,
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '机场导航', item: resolveCanonicalUrl('/airports/') },
+        { '@type': 'ListItem', position: 3, name: provider.data.name, item: canonicalUrl },
+      ],
     })}
   />
 </BaseLayout>

@@ -71,13 +71,27 @@ const organizationJsonLd = {
             <small>按场景选机场代理</small>
           </span>
         </a>
-        <nav class="site-header__nav">
+        <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-nav">
+          <span>菜单</span>
+        </button>
+        <nav class="site-header__nav" id="site-nav">
+          <a href="/">首页</a>
           <a href="/scenarios/">按场景选</a>
           <a href="/rankings/">综合推荐</a>
           <a href="/airports/">机场导航</a>
+          <a href="/tutorials/">使用教程</a>
+          <a href="/methodology/">评测方法</a>
         </nav>
       </div>
     </header>
+    <script>
+      const toggle = document.querySelector('.site-header__toggle');
+      const nav = document.getElementById('site-nav');
+      toggle?.addEventListener('click', () => {
+        const isOpen = nav?.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    </script>
     <main class="container">
       <slot />
     </main>
@@ -94,6 +108,7 @@ const organizationJsonLd = {
             <li><a href="/scenarios/">按场景选</a></li>
             <li><a href="/rankings/">综合推荐</a></li>
             <li><a href="/airports/">机场导航</a></li>
+            <li><a href="/tutorials/">使用教程</a></li>
           </ul>
         </div>
         <div>

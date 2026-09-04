@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
 import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
 
 // 目录展示顺序（与场景推荐无关，纯前台陈列顺序）：
@@ -20,9 +21,12 @@ const statusLabel: Record<string, string> = {
 
 const title = '机场导航｜机场代理服务商目录｜机场TJ';
 const description = '浏览机场TJ收录的机场代理服务商，了解基础信息、第三方资料与场景适配说明。';
+const canonicalUrl = resolveCanonicalUrl('/airports/');
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 机场导航</nav>
+
   <h1>机场导航｜机场代理服务商目录</h1>
   <p>
     这里是完整的服务商列表，逐个查看官方信息、第三方资料和场景适配说明。如果你已经知道自己的使用场景，直接去<a href="/scenarios/">按场景选</a>更快。
@@ -49,6 +53,19 @@ const description = '浏览机场TJ收录的机场代理服务商，了解基础
   <p>你可能还想看：</p>
   <ul class="quick-links">
     <li><a href="/scenarios/">按场景选</a></li>
-    <li><a href="/">返回首页</a></li>
+    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/tutorials/">使用教程</a></li>
   </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '机场导航', item: canonicalUrl },
+      ],
+    })}
+  />
 </BaseLayout>
