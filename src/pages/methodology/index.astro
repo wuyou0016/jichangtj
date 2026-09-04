@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
+
+const confidenceOrder: DataConfidence[] = ['own-test', 'cross-verified', 'third-party-only', 'incomplete'];
+
+const confidenceExplain: Record<DataConfidence, string> = {
+  'own-test': '本站对该服务商做过真实测试（比如持续跟踪的丢包率测试，或流媒体解锁检测），测试方法见下文。',
+  'cross-verified': '本站没有对该服务商做测试，但找到 2 个以上互相独立的第三方来源，关键信息（比如价格、套餐结构）能互相印证。',
+  'third-party-only': '只找到单一第三方来源，或多个来源之间还没有互相印证的关键信息，需要用户自行多方核实。',
+  incomplete: '该服务商刚收录，或目前只有很有限的资料，信息完整度还在积累中。',
+};
+
+const title = '评测方法与数据说明｜机场TJ';
+const description = '机场TJ 如何区分官方信息、第三方资料和本站测试数据，数据可信度标签具体代表什么，以及本站测试方法的局限性说明。';
+const canonicalUrl = resolveCanonicalUrl('/methodology/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 评测方法与数据说明</nav>
+
+  <h1>评测方法与数据说明</h1>
+  <p>
+    机场TJ 上每个服务商的信息，都明确标注了来源——是官方自己说的、是第三方资料整理的、还是本站测试出来的。这三类信息可信度不一样，混在一起写会误导人，所以本站在每个服务商详情页里分开列出，这里说明具体怎么分类、怎么测的。
+  </p>
+
+  <h2>三类信息来源</h2>
+  <div class="info-panel">
+    <p><strong>官方公开信息</strong>：来自服务商自己的官网、公告或客服回复，本站尽量核实，但官方信息本身可能随时调整，购买前建议直接看官网最新内容。</p>
+    <p><strong>第三方资料</strong>：来自其他机场导航站、评测站或社区讨论，本站会标注具体来源名称、链接和日期，不会把别人的资料包装成本站测试结果。</p>
+    <p><strong>本站测试</strong>：本站站长实际测试得到的数据，目前主要是丢包率的持续跟踪，个别服务商额外测过流媒体解锁情况，方法见下文。</p>
+  </div>
+
+  <h2>数据可信度标签是什么意思</h2>
+  <p>每个服务商卡片上都有一个标签，说明这份资料"是怎么来的"，不是打分，也不代表服务好不好：</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>标签</th>
+          <th>代表什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          confidenceOrder.map((key) => (
+            <tr>
+              <td>{DATA_CONFIDENCE_LABEL[key]}</td>
+              <td>{confidenceExplain[key]}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2>本站测试具体怎么做的</h2>
+  <div class="info-panel">
+    <p>
+      丢包率测试使用 MiaoKo 自定义测速工具，在珠海联通网络环境下持续跟踪测试，不是只测一次——同一个服务商会在不同日期反复测，把结果记录下来，服务商详情页里"本站测试"部分标注的百分比区间，就是多次测试结果的范围，不是单次数据。
+    </p>
+    <p>
+      流媒体解锁检测目前只对少数服务商做过，方法是用该服务商的节点实际访问 YouTube、Netflix、Disney+ 等平台，记录能否正常观看，不是看宣传语。
+    </p>
+  </div>
+
+  <h2>这套方法的局限性</h2>
+  <ul>
+    <li>测试由站长一人在固定网络环境下进行，不代表所有地区、所有运营商线路的实际体验，你自己的网络环境可能测出不同结果。</li>
+    <li>目前只对丢包率做持续跟踪，速率、延迟、稳定性等其他维度暂无本站测试数据，卡片和详情页里没写的部分就是本站还没测。</li>
+    <li>第三方资料本身也可能过时或有误，本站会标注日期，但不代表资料截取当下依然准确。</li>
+  </ul>
+  <p>不管标签是什么，正式购买前都建议先用小额套餐或免费试用自己验证一遍，尤其是标注"仅第三方资料"或"信息待补充"的服务商。</p>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/airports/">机场导航</a></li>
+    <li><a href="/scenarios/">按场景选</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+
+const title = '关于机场TJ';
+const description = '机场TJ 是什么、由谁维护、内容原则是什么，以及信息如何分类和更新。';
+const canonicalUrl = resolveCanonicalUrl('/about/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 关于机场TJ</nav>
+
+  <h1>关于机场TJ</h1>
+  <p>{siteConfig.description}</p>
+
+  <h2>为什么按场景整理，而不是一份榜单</h2>
+  <p>
+    游戏加速在意延迟和丢包，远程办公在意能不能连续几周不掉线，预算有限的用户在意单位流量成本——这些诉求关注的维度完全不一样，一份笼统的"哪个机场最好"排行榜很难同时回答好每一种需求。机场TJ 按场景把选择建议拆开写，再提供一份综合推荐作为不想细分场景时的参考。
+  </p>
+
+  <h2>内容原则</h2>
+  <ul>
+    <li>不虚构用户评价、测试结果、官方合作或认证。</li>
+    <li>官方信息、第三方资料、本站测试三类来源分开标注，不混在一起呈现，具体分类方法见<a href="/methodology/">评测方法与数据说明</a>。</li>
+    <li>综合推荐的排序是编辑判断，不是客观算分，每条排名都附具体理由。</li>
+    <li>发现资料有误或过时，会在核实后更新，页面上标注了最后更新时间。</li>
+  </ul>
+
+  <h2>由谁维护</h2>
+  <p>{siteConfig.author.name}维护本站内容。本站不是任何机场服务商的官方渠道，也不代表任何服务商的官方立场。</p>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/methodology/">评测方法与数据说明</a></li>
+    <li><a href="/contact/">联系方式</a></li>
+    <li><a href="/">返回首页</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

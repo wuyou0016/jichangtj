@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const title = '隐私政策｜机场TJ';
+const description = '机场TJ 目前收集哪些数据、如何处理外部链接与推广链接，以及隐私政策未来如有变化会如何更新说明。';
+const canonicalUrl = resolveCanonicalUrl('/privacy/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 隐私政策</nav>
+
+  <h1>隐私政策</h1>
+  <p>更新时间：2026-09-04</p>
+
+  <h2>账号与个人信息</h2>
+  <p>本站目前没有注册、登录或评论等账号功能，不主动收集姓名、邮箱、手机号等个人身份信息。</p>
+
+  <h2>访问数据</h2>
+  <p>本站目前未接入第三方访问统计或广告追踪脚本。如果未来接入分析工具，会在这里更新具体收集的数据类型、用途和保留方式。</p>
+
+  <h2>外部链接与推广链接</h2>
+  <p>
+    服务商详情页里的"访问官网"链接指向各服务商自己的网站，部分链接包含推广/返佣参数——这类链接不会改变你访问到的页面内容，也不影响本站对该服务商信息的客观描述，本站在<a href="/methodology/">评测方法与数据说明</a>里同样公开信息来源分类，不会用推广关系影响综合推荐排序的编辑判断。点击进入第三方网站后，你的信息处理将适用该网站自己的隐私政策，与本站无关。
+  </p>
+
+  <h2>Cookie</h2>
+  <p>本站目前不使用 Cookie 做用户追踪或个性化广告。</p>
+
+  <h2>政策更新</h2>
+  <p>如果本站未来接入统计工具、评论功能或其他会处理访问者数据的功能，会在此页面同步更新说明，并更新上方的更新时间。</p>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/terms/">服务条款与免责声明</a></li>
+    <li><a href="/about/">关于机场TJ</a></li>
+    <li><a href="/">返回首页</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

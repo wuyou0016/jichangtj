@@ -6,10 +6,32 @@ interface Props {
   title: string;
   description: string;
   canonical?: string;
+  // 页面类型，绝大多数页面是 website；未来如果做成文章型页面可以传 article。
+  ogType?: 'website' | 'article';
+  // 分享图的站内路径（比如 /images/og/default.png），不传就用全站默认图。
+  ogImage?: string;
 }
 
-const { title, description, canonical } = Astro.props;
+const { title, description, canonical, ogType = 'website', ogImage } = Astro.props;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteConfig.url).toString();
+const ogImageUrl = new URL(ogImage ?? siteConfig.defaultOgImage, siteConfig.url).toString();
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: siteConfig.brandName,
+  url: siteConfig.url,
+  description: siteConfig.description,
+  inLanguage: siteConfig.language,
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: siteConfig.brandName,
+  url: siteConfig.url,
+  logo: new URL('/favicon.svg', siteConfig.url).toString(),
+};
 ---
 
 <!doctype html>
@@ -22,6 +44,22 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteConfig.url).to
     <link rel="canonical" href={canonicalUrl} />
     <meta name="robots" content="index, follow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={siteConfig.brandName} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content="zh_CN" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd)} />
   </head>
   <body>
     <header class="site-header">
@@ -56,6 +94,16 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteConfig.url).to
             <li><a href="/scenarios/">按场景选</a></li>
             <li><a href="/rankings/">综合推荐</a></li>
             <li><a href="/airports/">机场导航</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>网站说明</h2>
+          <ul>
+            <li><a href="/methodology/">评测方法与数据说明</a></li>
+            <li><a href="/about/">关于机场TJ</a></li>
+            <li><a href="/contact/">联系方式</a></li>
+            <li><a href="/privacy/">隐私政策</a></li>
+            <li><a href="/terms/">服务条款与免责声明</a></li>
           </ul>
         </div>
         <div class="site-footer__friendlinks">

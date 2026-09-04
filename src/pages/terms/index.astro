@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const title = '服务条款与免责声明｜机场TJ';
+const description = '机场TJ 内容性质说明、服务商信息的适用范围，以及使用机场代理服务需要自行确认的合规责任。';
+const canonicalUrl = resolveCanonicalUrl('/terms/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 服务条款与免责声明</nav>
+
+  <h1>服务条款与免责声明</h1>
+  <p>更新时间：2026-09-04</p>
+
+  <h2>内容性质</h2>
+  <p>
+    本站是信息整理与个人编辑判断的集合，不是任何机场服务商的官方渠道，页面上的"综合推荐""按场景选"等排序都是编辑判断，不构成官方认证、专业投资建议或购买保证。各服务商的套餐、价格、线路信息以其官网最新公布为准，本站会标注信息来源和最后核实时间，但不保证与官方实时数据完全一致。
+  </p>
+
+  <h2>购买前请自行核实</h2>
+  <p>
+    标注"仅第三方资料"或"信息待补充"的服务商，本站尚未做过实测，建议先用小额套餐或免费试用验证实际体验后再决定是否长期订阅。具体分类方法见<a href="/methodology/">评测方法与数据说明</a>。
+  </p>
+
+  <h2>推广/返佣链接</h2>
+  <p>部分服务商官网链接包含推广参数，本站可能因此获得推广收益，这一情况已在<a href="/privacy/">隐私政策</a>中说明，不影响本站对信息来源和综合推荐排序的客观描述。</p>
+
+  <h2>合规使用责任</h2>
+  <p>使用机场代理类服务涉及网络访问方式，是否符合你所在地区的相关法律法规，需要你自行确认并承担相应责任。本站不对任何服务商的运营资质、服务质量或可能产生的法律后果负责。</p>
+
+  <h2>信息纠错</h2>
+  <p>如果你发现页面信息有误或已过时，欢迎通过<a href="/contact/">联系方式</a>告诉我们，核实后会尽快更新。</p>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/privacy/">隐私政策</a></li>
+    <li><a href="/methodology/">评测方法与数据说明</a></li>
+    <li><a href="/">返回首页</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

@@ -12,13 +12,12 @@ const thirdPartyNoteSchema = z.object({
   date: z.coerce.date(),
 });
 
-// 数据可信度标签：只描述"这份资料是怎么来的"，不是评分。
+// 数据可信度标签：只描述"这份资料是怎么来的"，是中性分类，不是评分。
 // - own-test：本站有真实测试数据（不管测的是丢包率还是完整测速）
-// - cross-verified：没有本站实测，但 2 个以上独立第三方来源互相印证
+// - cross-verified：没有本站实测，但 2 个以上独立第三方来源可以互相参照
 // - third-party-only：只有单一或未互相印证的第三方资料
 // - incomplete：资料明显不足（比如只有一个来源、刚收录）
-// - conflicting：不同来源之间的关键信息互相矛盾
-const dataConfidenceEnum = z.enum(['own-test', 'cross-verified', 'third-party-only', 'incomplete', 'conflicting']);
+const dataConfidenceEnum = z.enum(['own-test', 'cross-verified', 'third-party-only', 'incomplete']);
 
 const providerSchema = z.object({
   id: z.string(),

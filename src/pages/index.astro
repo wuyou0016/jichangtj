@@ -19,6 +19,8 @@ const heroScenarios = HERO_SCENARIO_ORDER.map((slug) => scenarios.find((s) => s.
   (s): s is NonNullable<typeof s> => Boolean(s),
 );
 
+const confidenceLabelList = Object.values(DATA_CONFIDENCE_LABEL).join('、');
+
 const overallRanking = await getEntry('rankings', 'overall');
 const rankingEntries = overallRanking
   ? await Promise.all(
@@ -122,10 +124,24 @@ const description =
     </div>
   </section>
 
+  <section class="section-next">
+    <h2>选好方向后，下一步看什么</h2>
+    <div class="next-grid">
+      <a href="/airports/" class="next-card">
+        <strong>机场导航</strong>
+        <span>浏览已收录服务商，查看套餐、线路与基础资料。</span>
+      </a>
+      <a href="/methodology/" class="next-card">
+        <strong>评测方法与数据说明</strong>
+        <span>了解本站如何区分官方信息、第三方资料和本站测试。</span>
+      </a>
+    </div>
+  </section>
+
   <section class="section-data-note">
     <h2>数据从哪里来</h2>
     <p>
-      当前收录 {providers.length} 家服务商。每家标注了对应的资料可信度——已有本站实测、多来源交叉核验、仅第三方资料、信息待补充、信息存在冲突，逐条不同，不会用同一句话概括所有服务商。
+      当前收录 {providers.length} 家服务商。每家标注了对应的资料可信度——{confidenceLabelList}，逐条不同，不会用同一句话概括所有服务商，具体分类方法见<a href="/methodology/">评测方法与数据说明</a>。
     </p>
   </section>
 

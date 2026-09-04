@@ -136,7 +136,6 @@ h3 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
 }
 .confidence-tag--positive { background: color-mix(in srgb, var(--color-accent-2) 18%, transparent); color: var(--color-accent-2); }
 .confidence-tag--neutral { background: color-mix(in srgb, var(--color-muted) 18%, transparent); color: var(--color-muted); }
-.confidence-tag--caution { background: color-mix(in srgb, var(--color-accent) 18%, transparent); color: var(--color-accent); }
 
 .pick-card--champion {
   border: 2px solid var(--color-accent);
@@ -210,13 +209,20 @@ th { background: var(--color-surface); }
 }
 .site-footer__inner {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
   gap: 24px;
   padding: 32px 20px;
+}
+@media (max-width: 720px) {
+  .site-footer__inner { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .site-footer__inner { grid-template-columns: 1fr; }
 }
 .site-footer h2 { font-size: 0.95rem; margin: 0 0 10px; }
 .site-footer ul { list-style: none; padding: 0; margin: 0; }
 .site-footer li { margin-bottom: 6px; }
+.site-footer a { display: inline-block; padding: 2px 0; }
 .site-footer__friendlinks h2 {
   font-size: 0.8rem;
   font-weight: 500;
@@ -340,6 +346,38 @@ th { background: var(--color-surface); }
 }
 .decision-button strong { font-size: 1rem; }
 .decision-button span { color: var(--color-muted); font-size: 0.85rem; }
+
+.section-next {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+.section-next h2 { margin-top: 0; }
+.next-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 1.25rem 0;
+}
+@media (min-width: 640px) {
+  .next-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.next-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.next-card:hover {
+  border-color: var(--color-accent-2);
+  text-decoration: none;
+}
+.next-card strong { font-size: 1rem; }
+.next-card span { color: var(--color-muted); font-size: 0.85rem; }
 
 .section-data-note {
   margin-top: 2.5rem;
