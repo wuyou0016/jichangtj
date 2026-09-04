@@ -1,5 +1,31 @@
 [
   {
+    "id": "edgenova",
+    "slug": "edgenova",
+    "name": "边缘节点",
+    "aliases": ["EdgeNova"],
+    "status": "active",
+    "vendor": {
+      "officialWebsite": "https://vip.edgenovaaff.com/#/?code=79iTqOAr",
+      "description": "本站访问官方入口时遭遇技术问题，未能确认落地页具体内容（跳转经过一个线路检测中转页面）。第三方资料显示套餐起步价约 108 元/年、45GB，另有月付档位。"
+    },
+    "thirdPartyNotes": [
+      {
+        "source": "二毛（ermao.net）",
+        "sourceUrl": "https://www.ermao.net/article/bianyuanjiedian/",
+        "claim": "套餐为 108 元/年 45G、25 元/月 120G、50 元/月 250G、100 元/月 500G、200 元/月 1000G，流量重置 10 元；线路定位为 IPLC 专线骨干网；提供 Android/iOS/Windows/macOS 使用教程，但暂不支持通用订阅。文章明确说明数据来自公开资料，缺乏连续多时段的量化测试，建议用户自行 7-14 天实测验证。",
+        "date": "2026-06-01"
+      }
+    ],
+    "scenarioFit": {
+      "goodFor": ["预算有限、愿意先用低门槛年付套餐试线路的场景"],
+      "notIdealFor": ["需要用第三方客户端（Clash 等）连接的场景——第三方资料显示暂不支持通用订阅"]
+    },
+    "lastVerified": "2026-09-03",
+    "createdAt": "2026-09-03",
+    "updatedAt": "2026-09-03"
+  },
+  {
     "id": "wuyou-lianjie",
     "slug": "wuyou-lianjie",
     "name": "无忧链接",
