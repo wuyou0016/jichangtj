@@ -71,4 +71,27 @@ const scenarios = defineCollection({
   schema: scenarioSchema,
 });
 
-export const collections = { providers, scenarios };
+// ---------------------------------------------------------------------------
+// rankings（综合推荐顺序 —— 站长人工指定，不是客观计算，reason 逐条公开）
+// ---------------------------------------------------------------------------
+
+const rankingEntrySchema = z.object({
+  providerId: reference('providers'),
+  reason: z.string(),
+});
+
+const rankingSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  scoringVersion: z.string(),
+  updatedAt: z.coerce.date(),
+  entries: z.array(rankingEntrySchema),
+});
+
+const rankings = defineCollection({
+  loader: file('src/data/rankings/rankings.json'),
+  schema: rankingSchema,
+});
+
+export const collections = { providers, scenarios, rankings };

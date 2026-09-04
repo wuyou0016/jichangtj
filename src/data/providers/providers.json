@@ -1,5 +1,37 @@
 [
   {
+    "id": "feimao-cloud",
+    "slug": "feimao-cloud",
+    "name": "飞猫云",
+    "aliases": ["FlyCat"],
+    "status": "active",
+    "vendor": {
+      "officialWebsite": "https://flycat1.flycatvipaff.cc/#/?code=6vW40Ivy",
+      "description": "本站自动化访问工具未能成功打开官方入口页面（请求被拒绝/加载失败），暂未能核实官方套餐、流量或节点信息，以下内容整理自第三方公开资料，建议你直接在浏览器中访问官网确认最新情况。"
+    },
+    "thirdPartyNotes": [
+      {
+        "source": "机场推荐（clashnodes.net）与机场查（jichangcha.com）",
+        "sourceUrl": "https://www.jichangcha.com/brands/feimao/",
+        "claim": "两个独立第三方来源对入门套餐的描述基本一致（约 7 元/月起、50GB、年付 84 元），是少见能互相印证的价格点；协议记录为 Shadowsocks/Trojan/VLESS，宣称全线 IPLC 专线、单节点峰值 2.5Gbps。",
+        "date": "2026-09-03"
+      },
+      {
+        "source": "机场榜GateRank（gate-rank.com）",
+        "sourceUrl": "https://gate-rank.com/airports/flycat-flycatvipaff",
+        "claim": "基于持续监测（非单次测速）给出的 2026-08-10 报告显示：下载速率约 0.69 Mbps、代理请求失败率 100%，与宣传的「专线稳定、2.5Gbps峰值」明显不符，本站未能判断这反映的是长期问题还是临时故障，购买前建议自行测试确认。",
+        "date": "2026-09-03"
+      }
+    ],
+    "scenarioFit": {
+      "goodFor": ["愿意自己先用小额套餐测试验证实际速度、不完全依赖宣传语的场景"],
+      "notIdealFor": ["需要开箱即用、无法自己排查网络问题的场景——第三方监测数据显示下载速率与请求成功率明显异常，与宣传不符且原因未明"]
+    },
+    "lastVerified": "2026-09-03",
+    "createdAt": "2026-09-03",
+    "updatedAt": "2026-09-03"
+  },
+  {
     "id": "edgenova",
     "slug": "edgenova",
     "name": "边缘节点",

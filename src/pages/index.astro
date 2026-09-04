@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/site';
 
@@ -7,6 +7,18 @@ const scenarios = (await getCollection('scenarios')).sort(
   (a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime(),
 );
 const providers = await getCollection('providers');
+
+const overallRanking = await getEntry('rankings', 'overall');
+const rankingEntries = overallRanking
+  ? await Promise.all(
+      overallRanking.data.entries.map(async (entry, index) => ({
+        ...entry,
+        rank: index + 1,
+        provider: await getEntry(entry.providerId),
+      })),
+    )
+  : [];
+const [champion, ...restRanking] = rankingEntries;
 
 const title = '机场推荐｜按场景选，不是一份笼统的排行榜｜机场TJ';
 const description =
@@ -19,6 +31,41 @@ const description =
     大多数机场推荐榜单给你一份笼统的排序，但"哪家最好"这个问题本身就不成立——游戏在意的是丢包率，看视频在意的是解锁能力，办公在意的是能不能连续几周不掉线，预算有限的人在意的是单位流量成本。这几件事的答案可能完全不一样。{siteConfig.brandName}
     不做一份大而全的排行榜，而是按场景分别整理选择建议。
   </p>
+
+  <h2>不想分场景挑？看综合推荐</h2>
+  <p>
+    以下顺序是站长人工指定的综合参考，不是客观算出来的分数——具体理由逐条公开，如果某一条的理由是"需要留意"，说明这不是无条件的推荐，请认真看完再决定。
+  </p>
+  {
+    champion?.provider && (
+      <div class="pick-card pick-card--champion">
+        <p class="pick-card__champion-badge">综合推荐 TOP 1</p>
+        <a href={`/airports/${champion.provider.data.slug}/`} class="pick-card__name pick-card__name--champion">
+          {champion.provider.data.name}
+        </a>
+        <p class="pick-card__reason">{champion.reason}</p>
+      </div>
+    )
+  }
+  <div class="ranking-rest">
+    {
+      restRanking.map(
+        (entry) =>
+          entry.provider && (
+            <div class="pick-card">
+              <p>
+                <span class="pick-card__rank">{entry.rank}</span>
+                <a href={`/airports/${entry.provider.data.slug}/`} class="pick-card__name">
+                  {entry.provider.data.name}
+                </a>
+              </p>
+              <p class="pick-card__reason">{entry.reason}</p>
+            </div>
+          ),
+      )
+    }
+  </div>
+  {overallRanking && <p class="hub-stats">数据更新于 {overallRanking.data.updatedAt.toISOString().slice(0, 10)}。</p>}
 
   <h2>先选你的场景</h2>
   <div class="scenario-grid">

@@ -112,6 +112,27 @@ h3 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
 .pick-card__name { font-weight: 600; font-size: 1.05rem; }
 .pick-card__reason { color: var(--color-text); margin: 8px 0 0; }
 
+.pick-card--champion {
+  border: 2px solid var(--color-accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)), var(--color-surface));
+  padding: 24px;
+  margin: 16px 0 20px;
+}
+.pick-card__champion-badge {
+  display: inline-block;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin: 0 0 10px;
+}
+.pick-card__name--champion { font-size: 1.5rem; display: block; }
+.ranking-rest { margin-bottom: 1.5rem; }
+.hub-stats { font-size: 0.85rem; color: var(--color-muted); }
+
 .quick-links { list-style: none; padding: 0; margin: 1rem 0; }
 .quick-links li { margin-bottom: 8px; }
 
