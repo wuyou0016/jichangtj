@@ -1,0 +1,72 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+
+const overallRanking = await getEntry('rankings', 'overall');
+const rankingEntries = overallRanking
+  ? await Promise.all(
+      overallRanking.data.entries.map(async (entry, index) => ({
+        ...entry,
+        rank: index + 1,
+        provider: await getEntry(entry.providerId),
+      })),
+    )
+  : [];
+
+const title = '综合推荐完整榜单｜机场TJ';
+const description = '机场TJ 全部 9 家服务商的综合推荐顺序，每条附具体理由与数据可信度标签。';
+const canonicalUrl = resolveCanonicalUrl('/rankings/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 综合推荐完整榜单</nav>
+
+  <h1>综合推荐完整榜单</h1>
+  <p>
+    这是全部 {rankingEntries.length} 家服务商的综合推荐顺序，供不想按场景挑的用户参考——不是客观算出来的分数，具体理由逐条列出。如果你已经知道自己的使用场景，去<a href="/scenarios/">按场景选</a>可能更快。
+  </p>
+
+  <div class="ranking-full-list">
+    {
+      rankingEntries.map(
+        (entry) =>
+          entry.provider && (
+            <div class="pick-card">
+              <p>
+                <span class="pick-card__rank">{entry.rank}</span>
+                <a href={`/airports/${entry.provider.data.slug}/`} class="pick-card__name">
+                  {entry.provider.data.name}
+                </a>
+                <span
+                  class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[entry.provider.data.dataConfidence as DataConfidence]}`}
+                >
+                  {DATA_CONFIDENCE_LABEL[entry.provider.data.dataConfidence as DataConfidence]}
+                </span>
+              </p>
+              <p class="pick-card__reason">{entry.reason}</p>
+              {entry.caution && <p class="pick-card__caution">⚠️ {entry.caution}</p>}
+            </div>
+          ),
+      )
+    }
+  </div>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/scenarios/">按场景选</a></li>
+    <li><a href="/airports/">机场导航</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: canonicalUrl,
+    })}
+  />
+</BaseLayout>

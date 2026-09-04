@@ -2,11 +2,22 @@
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../config/site';
+import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../config/data-confidence';
 
-const scenarios = (await getCollection('scenarios')).sort(
-  (a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime(),
-);
+const scenarios = await getCollection('scenarios');
 const providers = await getCollection('providers');
+
+// 首屏 4 个固定场景入口，顺序与文案由本次改版指定，独立于 /scenarios/ 列表页的排序。
+const HERO_SCENARIO_ORDER = ['budget', 'gaming', 'remote-work', 'streaming'];
+const HERO_TAGLINE: Record<string, string> = {
+  budget: '看单位流量成本',
+  gaming: '看延迟与丢包',
+  'remote-work': '看长期稳定性',
+  streaming: '看真实解锁记录',
+};
+const heroScenarios = HERO_SCENARIO_ORDER.map((slug) => scenarios.find((s) => s.data.slug === slug)).filter(
+  (s): s is NonNullable<typeof s> => Boolean(s),
+);
 
 const overallRanking = await getEntry('rankings', 'overall');
 const rankingEntries = overallRanking
@@ -18,87 +29,113 @@ const rankingEntries = overallRanking
       })),
     )
   : [];
-const [champion, ...restRanking] = rankingEntries;
+const top3 = rankingEntries.slice(0, 3);
 
-const title = '机场推荐｜按场景选，不是一份笼统的排行榜｜机场TJ';
+const title = '机场推荐，按你的使用场景选｜机场TJ';
 const description =
-  '机场TJ按使用场景整理机场代理选择建议——游戏加速、流媒体解锁、远程办公、预算有限，不同场景关注的维度不一样，一份笼统的排行榜回答不了"到底该选哪个"。';
+  '机场TJ按使用场景整理机场代理选择建议——预算有限、游戏加速、远程办公、流媒体解锁，先找到你的场景再看推荐，比一份笼统的排行榜更快找到答案。';
 ---
 
 <BaseLayout title={title} description={description}>
-  <h1>机场推荐，先看你的场景是哪种</h1>
-  <p>
-    大多数机场推荐榜单给你一份笼统的排序，但"哪家最好"这个问题本身就不成立——游戏在意的是丢包率，看视频在意的是解锁能力，办公在意的是能不能连续几周不掉线，预算有限的人在意的是单位流量成本。这几件事的答案可能完全不一样。{siteConfig.brandName}
-    不做一份大而全的排行榜，而是按场景分别整理选择建议。
-  </p>
+  <section class="hero">
+    <h1>机场推荐，按你的使用场景选</h1>
+    <p class="hero__lead">
+      不同用途关注的维度不一样——游戏在意丢包率，办公在意能不能连续几周不掉线。先选场景，比看一份笼统的排行榜更快找到答案。
+    </p>
 
-  <h2>不想分场景挑？看综合推荐</h2>
-  <p>
-    这是综合推荐顺序，具体理由逐条列在下面，如果某一条提到"需要留意"，请认真看完再决定。
-  </p>
-  {
-    champion?.provider && (
-      <div class="pick-card pick-card--champion">
-        <p class="pick-card__champion-badge">综合推荐 TOP 1</p>
-        <a href={`/airports/${champion.provider.data.slug}/`} class="pick-card__name pick-card__name--champion">
-          {champion.provider.data.name}
-        </a>
-        <p class="pick-card__reason">{champion.reason}</p>
-      </div>
-    )
-  }
-  <div class="ranking-rest">
-    {
-      restRanking.map(
-        (entry) =>
-          entry.provider && (
-            <div class="pick-card">
-              <p>
-                <span class="pick-card__rank">{entry.rank}</span>
-                <a href={`/airports/${entry.provider.data.slug}/`} class="pick-card__name">
-                  {entry.provider.data.name}
-                </a>
-              </p>
-              <p class="pick-card__reason">{entry.reason}</p>
-            </div>
-          ),
-      )
-    }
-  </div>
-  {overallRanking && <p class="hub-stats">数据更新于 {overallRanking.data.updatedAt.toISOString().slice(0, 10)}。</p>}
+    <div class="scenario-grid scenario-grid--hero">
+      {
+        heroScenarios.map((scenario) => (
+          <a href={`/scenarios/${scenario.data.slug}/`} class="scenario-card">
+            <span class="scenario-card__emoji">{scenario.data.emoji}</span>
+            <span class="scenario-card__title">{scenario.data.title.split('，')[0]}</span>
+            <p class="scenario-card__desc">{HERO_TAGLINE[scenario.data.slug]}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 
-  <h2>先选你的场景</h2>
-  <div class="scenario-grid">
-    {
-      scenarios.map((scenario) => (
-        <a href={`/scenarios/${scenario.data.slug}/`} class="scenario-card">
-          <span class="scenario-card__emoji">{scenario.data.emoji}</span>
-          <span class="scenario-card__title">{scenario.data.title}</span>
-          <p class="scenario-card__desc">{scenario.data.description}</p>
-        </a>
-      ))
-    }
-  </div>
+  <section class="section-top3">
+    <h2>不想分场景挑？看综合推荐 Top 3</h2>
+    <p class="hub-stats">综合推荐不等于所有人的最佳选择，具体理由和数据可信度已经标在每张卡片上。</p>
 
-  <h2>不确定自己算哪种场景？</h2>
-  <ul class="quick-links">
-    <li>只是想先看看有哪些服务商，还没想清楚场景？去<a href="/airports/">机场导航</a>逐个了解</li>
-    <li>已经决定预算是唯一考虑因素？直接看<a href="/scenarios/budget/">预算有限，学生党怎么选</a></li>
-    <li>需要长期稳定使用（比如工作）？直接看<a href="/scenarios/remote-work/">远程办公，不能掉线怎么选</a></li>
-  </ul>
+    <div class="top3-grid">
+      {
+        top3.map(
+          (entry, index) =>
+            entry.provider && (
+              <div class={`pick-card${index === 0 ? ' pick-card--champion' : ''}`}>
+                {index === 0 && <p class="pick-card__champion-badge">综合推荐 TOP 1</p>}
+                <p class="top3-card__head">
+                  {index > 0 && <span class="pick-card__rank">{entry.rank}</span>}
+                  <a
+                    href={`/airports/${entry.provider.data.slug}/`}
+                    class={`pick-card__name${index === 0 ? ' pick-card__name--champion' : ''}`}
+                  >
+                    {entry.provider.data.name}
+                  </a>
+                  <span
+                    class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[entry.provider.data.dataConfidence as DataConfidence]}`}
+                  >
+                    {DATA_CONFIDENCE_LABEL[entry.provider.data.dataConfidence as DataConfidence]}
+                  </span>
+                </p>
+                {entry.provider.data.scenarioFit.goodFor[0] && (
+                  <p class="top3-card__field">
+                    <strong>适合谁：</strong>
+                    {entry.provider.data.scenarioFit.goodFor[0]}
+                  </p>
+                )}
+                {entry.keyFact && (
+                  <p class="top3-card__field">
+                    <strong>关键依据：</strong>
+                    {entry.keyFact}
+                  </p>
+                )}
+                {entry.caution && <p class="pick-card__caution">⚠️ {entry.caution}</p>}
+              </div>
+            ),
+        )
+      }
+    </div>
 
-  <h2>本站的数据从哪里来</h2>
-  <p>
-    当前收录 {providers.length} 家服务商。每家的信息按来源分组标注：官方公开信息、第三方资料、以及站长本人持续跟踪的真实丢包率测试数据——不同来源不会混在一起呈现，第三方资料之间如果互相矛盾，会如实并列展示，不会替你选一个"更准的"数字。
-  </p>
+    <a href="/rankings/" class="section-link">查看完整综合榜（全部 {rankingEntries.length} 家）→</a>
+  </section>
+
+  <section class="section-decision">
+    <h2>先看推荐，再看证据</h2>
+    <p>推荐用来缩小范围，服务商详情用来核实套餐、线路和真实测试依据——这是两件不同的事。</p>
+    <div class="decision-buttons">
+      <a href="/scenarios/" class="decision-button">
+        <strong>按场景选</strong>
+        <span>先缩小范围</span>
+      </a>
+      <a href="/rankings/" class="decision-button">
+        <strong>综合推荐榜</strong>
+        <span>不想分场景就看这个</span>
+      </a>
+      <a href="/airports/" class="decision-button">
+        <strong>机场导航</strong>
+        <span>查看套餐、线路与测试依据</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section-data-note">
+    <h2>数据从哪里来</h2>
+    <p>
+      当前收录 {providers.length} 家服务商。每家标注了对应的资料可信度——已有本站实测、多来源交叉核验、仅第三方资料、信息待补充、信息存在冲突，逐条不同，不会用同一句话概括所有服务商。
+    </p>
+  </section>
 
   <script
     type="application/ld+json"
     set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: '机场TJ场景分类',
-      itemListElement: scenarios.map((s, i) => ({
+      name: `${siteConfig.brandName}场景分类`,
+      itemListElement: heroScenarios.map((s, i) => ({
         '@type': 'ListItem',
         position: i + 1,
         name: s.data.title,

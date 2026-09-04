@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
+import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
 
 export async function getStaticPaths() {
   const providers = await getCollection('providers');
@@ -44,7 +45,14 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
   </nav>
 
   <h1>{provider.data.name}｜适合哪些场景</h1>
-  <p class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</p>
+  <p>
+    <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
+    <span
+      class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[provider.data.dataConfidence as DataConfidence]}`}
+    >
+      {DATA_CONFIDENCE_LABEL[provider.data.dataConfidence as DataConfidence]}
+    </span>
+  </p>
 
   <h2>官方公开信息</h2>
   <div class="info-panel">

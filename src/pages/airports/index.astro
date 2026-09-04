@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
 
 // 目录展示顺序（与场景推荐无关，纯前台陈列顺序）：
 // 无忧链接是本站资料最完整、唯一有本站真实流媒体解锁测试的服务商，固定排最前面。
@@ -35,6 +36,11 @@ const description = '浏览机场TJ收录的机场代理服务商，了解基础
             <strong>{provider.data.name}</strong>
           </div>
           <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
+          <span
+            class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[provider.data.dataConfidence as DataConfidence]}`}
+          >
+            {DATA_CONFIDENCE_LABEL[provider.data.dataConfidence as DataConfidence]}
+          </span>
         </a>
       ))
     }

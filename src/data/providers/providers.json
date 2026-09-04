@@ -3,7 +3,9 @@
     "id": "feimao-cloud",
     "slug": "feimao-cloud",
     "name": "飞猫云",
-    "aliases": ["FlyCat"],
+    "aliases": [
+      "FlyCat"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://flycat1.flycatvipaff.cc/#/?code=6vW40Ivy",
@@ -24,18 +26,25 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["愿意自己先用小额套餐测试验证实际速度、不完全依赖宣传语的场景"],
-      "notIdealFor": ["需要开箱即用、无法自己排查网络问题的场景——第三方监测数据显示下载速率与请求成功率明显异常，与宣传不符且原因未明"]
+      "goodFor": [
+        "愿意自己先用小额套餐测试验证实际速度、不完全依赖宣传语的场景"
+      ],
+      "notIdealFor": [
+        "需要开箱即用、无法自己排查网络问题的场景——第三方监测数据显示下载速率与请求成功率明显异常，与宣传不符且原因未明"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "conflicting"
   },
   {
     "id": "edgenova",
     "slug": "edgenova",
     "name": "边缘节点",
-    "aliases": ["EdgeNova"],
+    "aliases": [
+      "EdgeNova"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip.edgenovaaff.com/#/?code=79iTqOAr",
@@ -50,18 +59,26 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["预算有限、愿意先用低门槛年付套餐试线路的场景"],
-      "notIdealFor": ["需要用第三方客户端（Clash 等）连接的场景——第三方资料显示暂不支持通用订阅"]
+      "goodFor": [
+        "预算有限、愿意先用低门槛年付套餐试线路的场景"
+      ],
+      "notIdealFor": [
+        "需要用第三方客户端（Clash 等）连接的场景——第三方资料显示暂不支持通用订阅"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "incomplete"
   },
   {
     "id": "wuyou-lianjie",
     "slug": "wuyou-lianjie",
     "name": "无忧链接",
-    "aliases": ["无忧", "Wuyou"],
+    "aliases": [
+      "无忧",
+      "Wuyou"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip02.worryfreeaff.com/#/?code=XT1WDPvr",
@@ -85,7 +102,8 @@
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "firefly",
@@ -105,18 +123,26 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["看重价格资料可信度的场景——多来源互相印证"],
-      "notIdealFor": ["需要提前确认第三方客户端兼容性的场景——不同第三方来源说法互相矛盾"]
+      "goodFor": [
+        "看重价格资料可信度的场景——多来源互相印证"
+      ],
+      "notIdealFor": [
+        "需要提前确认第三方客户端兼容性的场景——不同第三方来源说法互相矛盾"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "shanyue",
     "slug": "shanyue",
     "name": "闪跃",
-    "aliases": ["闪跃机场", "FlashLeap"],
+    "aliases": [
+      "闪跃机场",
+      "FlashLeap"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://wep01.flashleapaff.com/#/?code=D3N30Gco",
@@ -130,18 +156,26 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["预算适中、愿意先用月付短期观察的场景"],
-      "notIdealFor": ["不想承担新站不确定性、倾向直接年付大额套餐的场景"]
+      "goodFor": [
+        "预算适中、愿意先用月付短期观察的场景"
+      ],
+      "notIdealFor": [
+        "不想承担新站不确定性、倾向直接年付大额套餐的场景"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "weifeng-network",
     "slug": "weifeng-network",
     "name": "微风网络",
-    "aliases": ["微风", "Breeze"],
+    "aliases": [
+      "微风",
+      "Breeze"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://wep01.breezenetaff.com/#/?code=XzOO248D",
@@ -155,18 +189,26 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["更看重专线宣传、预算不是首要考虑因素的场景"],
-      "notIdealFor": ["追求极致性价比的场景——第三方资料提示定价偏高"]
+      "goodFor": [
+        "更看重专线宣传、预算不是首要考虑因素的场景"
+      ],
+      "notIdealFor": [
+        "追求极致性价比的场景——第三方资料提示定价偏高"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "lingmao-network",
     "slug": "lingmao-network",
     "name": "灵猫网络",
-    "aliases": ["灵猫", "Lingmao"],
+    "aliases": [
+      "灵猫",
+      "Lingmao"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://kshare.civetnettttt.homes/#/?code=0BJsagiX",
@@ -180,7 +222,9 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["预算敏感、看重价格资料可信度的场景"],
+      "goodFor": [
+        "预算敏感、看重价格资料可信度的场景"
+      ],
       "notIdealFor": [
         "对协议类型有明确要求的场景——宣传与实测截图不一致，实际协议存疑",
         "有游戏加速等专门线路需求的场景——第三方资料提示主要面向网页浏览与流媒体"
@@ -188,7 +232,8 @@
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "kuajie-cloud",
@@ -208,7 +253,9 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["需要较大流量档位选项、且能接受价格需自行向客服确认的场景"],
+      "goodFor": [
+        "需要较大流量档位选项、且能接受价格需自行向客服确认的场景"
+      ],
       "notIdealFor": [
         "需要提前预估月度成本的场景——三个来源价格差异过大，无法可靠估算",
         "不熟悉订阅链接操作的新手场景——链接一次性发放且有效期短"
@@ -216,13 +263,16 @@
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   },
   {
     "id": "kuaili",
     "slug": "kuaili",
     "name": "快狸",
-    "aliases": ["KuaiLi"],
+    "aliases": [
+      "KuaiLi"
+    ],
     "status": "active",
     "vendor": {
       "officialWebsite": "https://yiyige.kuailiaff.com/#/?code=1hO0yrs7",
@@ -236,11 +286,16 @@
       }
     ],
     "scenarioFit": {
-      "goodFor": ["愿意自己先用小额套餐测试验证、不依赖第三方资料佐证的场景"],
-      "notIdealFor": ["需要提前查到独立第三方资料佐证再决定的场景——目前公开资料最少"]
+      "goodFor": [
+        "愿意自己先用小额套餐测试验证、不依赖第三方资料佐证的场景"
+      ],
+      "notIdealFor": [
+        "需要提前查到独立第三方资料佐证再决定的场景——目前公开资料最少"
+      ]
     },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03"
+    "updatedAt": "2026-09-03",
+    "dataConfidence": "own-test"
   }
 ]
