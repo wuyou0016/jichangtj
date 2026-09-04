@@ -2,7 +2,13 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-const providers = await getCollection('providers');
+// 目录展示顺序（与场景推荐无关，纯前台陈列顺序）：
+// 无忧链接是本站资料最完整、唯一有本站真实流媒体解锁测试的服务商，固定排最前面。
+const providers = [...(await getCollection('providers'))].sort((a, b) => {
+  if (a.id === 'wuyou-lianjie') return -1;
+  if (b.id === 'wuyou-lianjie') return 1;
+  return 0;
+});
 
 const statusLabel: Record<string, string> = {
   active: '正常运营',
