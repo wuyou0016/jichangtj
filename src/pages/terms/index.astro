@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 
 const title = '服务条款与免责声明｜机场TJ';
@@ -8,7 +9,7 @@ const canonicalUrl = resolveCanonicalUrl('/terms/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 服务条款与免责声明</nav>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '服务条款与免责声明', href: '/terms/' }]} />
 
   <h1>服务条款与免责声明</h1>
   <p>更新时间：2026-09-04</p>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 import { siteConfig } from '../../config/site';
 
@@ -9,7 +10,7 @@ const canonicalUrl = resolveCanonicalUrl('/about/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 关于机场TJ</nav>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '关于机场TJ', href: '/about/' }]} />
 
   <h1>关于机场TJ</h1>
   <p>{siteConfig.description}</p>

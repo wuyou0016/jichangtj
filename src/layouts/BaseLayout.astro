@@ -46,6 +46,7 @@ const organizationJsonLd = {
     <link rel="canonical" href={canonicalUrl} />
     <meta name="robots" content="index, follow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${siteConfig.brandName} RSS`} href="/rss.xml" />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -81,8 +82,9 @@ const organizationJsonLd = {
           <a href="/scenarios/">按场景选</a>
           <a href="/rankings/">综合推荐</a>
           <a href="/airports/">机场导航</a>
+          <a href="/glossary/">术语库</a>
           <a href="/tutorials/">使用教程</a>
-          <a href="/methodology/">评测方法</a>
+          <a href="/faq/">常见问题</a>
         </nav>
       </div>
     </header>
@@ -110,13 +112,16 @@ const organizationJsonLd = {
             <li><a href="/scenarios/">按场景选</a></li>
             <li><a href="/rankings/">综合推荐</a></li>
             <li><a href="/airports/">机场导航</a></li>
+            <li><a href="/glossary/">机场术语库</a></li>
             <li><a href="/tutorials/">使用教程</a></li>
+            <li><a href="/faq/">常见问题</a></li>
           </ul>
         </div>
         <div>
           <h2>网站说明</h2>
           <ul>
             <li><a href="/methodology/">评测方法与数据说明</a></li>
+            <li><a href="/tutorials/how-to-avoid-risky-airports/">避坑指南</a></li>
             <li><a href="/about/">关于机场TJ</a></li>
             <li><a href="/contact/">联系方式</a></li>
             <li><a href="/privacy/">隐私政策</a></li>

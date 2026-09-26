@@ -8,6 +8,26 @@ import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from
 const scenarios = await getCollection('scenarios');
 const providers = await getCollection('providers');
 const tutorials = await getCollection('tutorials');
+const glossary = await getCollection('glossary');
+
+// 最新更新：把术语库、使用教程、场景页三类内容按更新时间合并排序，
+// 给首页一个"这个站在持续更新"的真实信号，不是摆设。
+const LATEST_TYPE_LABEL: Record<string, string> = {
+  glossary: '术语库',
+  tutorial: '使用教程',
+  scenario: '场景推荐',
+};
+const latestUpdates = [
+  ...glossary.map((g) => ({ type: 'glossary', title: g.data.term, href: `/glossary/${g.id}/`, updatedAt: g.data.updatedAt })),
+  ...tutorials.map((t) => ({ type: 'tutorial', title: t.data.title, href: `/tutorials/${t.id}/`, updatedAt: t.data.updatedAt })),
+  ...scenarios.map((s) => ({ type: 'scenario', title: s.data.title, href: `/scenarios/${s.data.slug}/`, updatedAt: s.data.updatedAt })),
+]
+  .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+  .slice(0, 6);
+
+function formatDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
 
 // 首屏"30 秒先选方向"固定 4 个场景入口，顺序与文案独立于 /scenarios/ 列表页的排序。
 const HERO_SCENARIO_ORDER = ['budget', 'gaming', 'remote-work', 'streaming'];
@@ -38,9 +58,11 @@ const top3 = rankingEntries.slice(0, 3);
 const CORE_ENTRIES = [
   { href: '/scenarios/', title: '按场景选', desc: '按预算、游戏、办公、流媒体分别给建议' },
   { href: '/rankings/', title: '综合推荐', desc: '不想分场景就看这个，全部 9 家排序理由' },
-  { href: '/airports/', title: '机场导航', desc: '浏览已收录服务商，查看套餐与线路资料' },
+  { href: '/airports/', title: '机场导航', desc: '浏览已收录服务商，对比套餐与线路资料' },
+  { href: '/glossary/', title: '术语库', desc: '机场、梯子、VPN、协议、线路名词一次查全' },
+  { href: '/tutorials/', title: '使用教程', desc: '新手入门、客户端设置、避坑指南' },
+  { href: '/faq/', title: '常见问题', desc: '选购、安全、使用相关的高频问题解答' },
   { href: '/methodology/', title: '评测方法', desc: '本站怎么测的、数据可信度标签什么意思' },
-  { href: '/tutorials/', title: '使用教程', desc: '新手入门、客户端设置、常见问题排查' },
 ];
 
 const PRINCIPLES = [
@@ -60,9 +82,9 @@ const tutorialHighlights = ['basics', 'clients', 'troubleshooting', 'advanced']
   .map((group) => tutorials.find((t) => t.data.group === group))
   .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
-const title = '机场推荐，按你的使用场景选｜机场TJ';
+const title = '机场推荐、梯子推荐、VPN推荐｜按使用场景选，附术语库与避坑指南｜机场TJ';
 const description =
-  '机场TJ按使用场景整理机场代理选择建议——预算有限、游戏加速、远程办公、流媒体解锁，先找到你的场景再看推荐，比一份笼统的排行榜更快找到答案。';
+  '机场TJ是一个综合性的机场/梯子/VPN推荐站——按使用场景整理选择建议（预算有限、游戏加速、远程办公、流媒体解锁），并提供协议与线路术语库、常见问题解答、避坑指南，帮你搞懂再选，而不是只看一份笼统的排行榜。';
 const canonicalUrl = resolveCanonicalUrl('/');
 ---
 
@@ -71,13 +93,14 @@ const canonicalUrl = resolveCanonicalUrl('/');
     <div class="hero__grid">
       <div class="hero__text">
         <p class="hero__eyebrow">{siteConfig.brandName}</p>
-        <h1>机场推荐，按你的使用场景选</h1>
+        <h1>机场推荐、梯子推荐、VPN推荐，按你的使用场景选</h1>
         <p class="hero__lead">
-          帮你按预算、游戏、远程办公、流媒体等真实需求理解选择依据，而不是机械看一份总榜。
+          "机场""梯子""VPN"说的大多是同一件事——帮你按预算、游戏、远程办公、流媒体等真实需求理解选择依据，而不是机械看一份总榜；分不清这几个词的关系，也可以先从<a href="/glossary/airport-ladder-vpn-difference/">术语辨析</a>看起。
         </p>
         <div class="hero__ctas">
           <a href="/scenarios/" class="hero__cta hero__cta--primary">按场景选</a>
           <a href="/rankings/" class="hero__cta">看综合推荐</a>
+          <a href="/glossary/" class="hero__cta">查术语库</a>
           <a href="/tutorials/" class="hero__cta">从新手教程开始</a>
         </div>
       </div>
@@ -136,6 +159,22 @@ const canonicalUrl = resolveCanonicalUrl('/');
         ))
       }
     </div>
+  </section>
+
+  <section class="section-latest">
+    <h2>最新更新</h2>
+    <p class="hub-stats">内容持续维护，这里是最近更新的术语、教程和场景页。</p>
+    <ul class="latest-list">
+      {
+        latestUpdates.map((item) => (
+          <li>
+            <span class="latest-list__type">{LATEST_TYPE_LABEL[item.type]}</span>
+            <a href={item.href}>{item.title}</a>
+            <span class="latest-list__date">{formatDate(item.updatedAt)}</span>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
   <section class="section-top3">

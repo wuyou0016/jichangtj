@@ -13,6 +13,9 @@ function isSitemapExcluded(pageUrl) {
   if (url.search) {
     return true;
   }
+  if (url.pathname === '/rss.xml') {
+    return true;
+  }
   if (/\/(demo|mock)(-|\/|$)/i.test(url.pathname)) {
     return true;
   }
