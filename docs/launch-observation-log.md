@@ -41,4 +41,23 @@
 
 ---
 
+## 2026-09-26 站点深度改版：术语库/FAQ/避坑指南 + Bing 技术SEO基础设施
+
+**背景**：距首次上线（2026-09-04）22 天，早期"2–4 周内不做大改动，只做观察"的计划被站长主动叫停——站长明确要求把站点做成综合性的机场/梯子/VPN 推荐站，核心优先做 Bing 关键词排名，其次 Google，因此这次是主动的大改版，不是对之前观察期异常的响应。
+
+**改了什么**（详见对应 commit）：
+
+- **内容架构**：新增 `glossary`（术语库）内容集合，11 篇词条（Shadowsocks/VMess/VLESS/Trojan/Hysteria2/Reality/IPLC/IEPL/流量倍率/中转与落地 + "机场、梯子、VPN 是什么关系"旗舰长尾页）；新增 `/faq/` 聚合页（14 条高频问答，FAQPage 结构化数据）；`tutorials` 新增 `safety` 分组（避坑信号清单）+ 2 篇客户端实操教程（Clash Verge / Shadowrocket）。全站可索引 URL 从约 20 个增加到 43 个。
+- **Bing 专属技术SEO**：接入 IndexNow（key 文件 `public/a458a17a167fb6d5d912b457cbcdf676.txt` + `scripts/submit-indexnow.mjs` 提交脚本），之前的观察记录里明确写过"未配置 IndexNow"，这次补上了。
+- **结构化数据**：新增 DefinedTerm（术语）、FAQPage、Article（术语库详情页）；Organization 补充 sameAs；全站面包屑统一到 `Breadcrumbs` 组件，避免手写遗漏。
+- **UI**：首页新增"最新更新"区块（内容新鲜度信号）、核心入口扩展、hero 文案融入关键词变体；长文章页新增目录（TOC）；`/airports/` 新增对比一览表。
+- **关键词/Meta**：站点 title/description/tagline 自然融入"机场/梯子/VPN"三个关键词变体，不是堆砌。
+- **RSS**：新增 `/rss.xml`（覆盖术语库 + 教程）。
+
+**部署后必须做的事（这次会话里没有做，因为没有域名访问权限）**：
+
+1. 部署上线后，确认 `https://jichangtj.net/a458a17a167fb6d5d912b457cbcdf676.txt` 能正常访问，再运行 `npm run submit:indexnow` 把全部 43 个 URL 一次性提交给 Bing IndexNow。
+2. 去 Bing Webmaster Tools 和 Google Search Console 重新提交 sitemap（URL 数量变化大，值得手动触发一次重新抓取），新增的 `/glossary/`、`/faq/` 等入口页可以用"URL 检查"工具单独提交索引请求。
+3. 这次改版内容量大，建议进入新一轮 2–4 周观察期，下次复核重点看：新增的 43 个 URL 里 Bing/Google 各自收录了多少、`/glossary/airport-ladder-vpn-difference/` 这类长尾页有没有开始有曝光。
+
 <!-- 后续每次上线或复核，在下面新增一个 `## 日期 标题` 条目，保留历史记录，不要覆盖旧内容。 -->
