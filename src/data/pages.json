@@ -1,0 +1,9 @@
+{
+  "/tests/": { "publishedAt": "2026-09-26", "updatedAt": "2026-09-26" },
+  "/clash/": { "publishedAt": "2026-09-26", "updatedAt": "2026-09-26" },
+  "/methodology/": { "publishedAt": "2026-09-04", "updatedAt": "2026-09-26" },
+  "/about/": { "publishedAt": "2026-09-04", "updatedAt": "2026-09-04" },
+  "/contact/": { "publishedAt": "2026-09-04", "updatedAt": "2026-09-04" },
+  "/privacy/": { "publishedAt": "2026-09-04", "updatedAt": "2026-09-04" },
+  "/terms/": { "publishedAt": "2026-09-04", "updatedAt": "2026-09-04" }
+}

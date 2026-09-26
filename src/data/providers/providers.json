@@ -9,7 +9,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://flycat1.flycatvipaff.cc/#/?code=6vW40Ivy",
-      "description": "本站自动化访问工具未能成功打开官方入口页面（请求被拒绝/加载失败），暂未能核实官方套餐、流量或节点信息，以下内容整理自第三方公开资料，建议你直接在浏览器中访问官网确认最新情况。"
+      "description": "飞猫云（FlyCat）主打 IPLC 专线线路，协议覆盖 Shadowsocks、Trojan、VLESS，宣称单节点峰值 2.5Gbps。两个独立第三方来源对入门套餐的描述一致：约 7 元/月起、50GB，年付 84 元。本页套餐信息整理自第三方公开资料，购买前以官网当前页面为准。"
     },
     "thirdPartyNotes": [
       {
@@ -27,9 +27,23 @@
         "需要提前看到独立测速数据再决定的场景——本站目前没有该服务商的独立测速数据，现有资料以套餐价格信息为主"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 7 元/月起（年付 84 元）",
+      "monthlyPrice": 7,
+      "monthlyTrafficGB": 50,
+      "priceNote": "年付折合月价",
+      "priceSource": "cross-verified",
+      "protocols": [
+        "Shadowsocks",
+        "Trojan",
+        "VLESS"
+      ],
+      "routeType": "IPLC 专线（官方宣称）",
+      "thirdPartyClient": "unverified"
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-04",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "cross-verified"
   },
   {
@@ -42,7 +56,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip.edgenovaaff.com/#/?code=79iTqOAr",
-      "description": "本站访问官方入口时遭遇技术问题，未能确认落地页具体内容（跳转经过一个线路检测中转页面）。第三方资料显示套餐起步价约 108 元/年、45GB，另有月付档位。"
+      "description": "边缘节点（EdgeNova）定位 IPLC 专线骨干网，套餐档位较多：年付 108 元 45GB 起，另有 25 元/月 120GB 到 200 元/月 1000GB 的月付档位（第三方资料）。官方提供 Android、iOS、Windows、macOS 客户端使用教程；第三方资料显示暂不支持通用订阅。官网入口会先经过一个线路检测页，购买前以官网当前页面为准。"
     },
     "thirdPartyNotes": [
       {
@@ -60,9 +74,19 @@
         "需要用第三方客户端（Clash 等）连接的场景——第三方资料显示暂不支持通用订阅"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "108 元/年起（45GB）",
+      "monthlyPrice": 9,
+      "monthlyTrafficGB": 45,
+      "priceNote": "年付 108 元折合约 9 元/月；另有 25 元/月 120GB 等月付档位",
+      "priceSource": "single-source",
+      "routeType": "IPLC 专线（第三方资料）",
+      "thirdPartyClient": "not-supported",
+      "thirdPartyClientNote": "第三方资料显示暂不支持通用订阅，需要使用官方教程里的客户端"
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "incomplete"
   },
   {
@@ -76,7 +100,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip02.worryfreeaff.com/#/?code=XT1WDPvr",
-      "description": "官方入口为验证码校验页面，需要手动输入图形验证码才能继续，本站未能在完成验证码的情况下查看具体套餐信息。第三方资料给出的起步价存在多个不同版本，其中一个版本经站长本人核实为约 6.5 元/月起、40GB。"
+      "description": "无忧链接是本站资料最完整的服务商之一：起步价经站长本人核实为约 6.5 元/月、40GB，站长用 MiaoKo 工具对 50 个节点做过测速与流媒体解锁检测，并持续跟踪丢包率。目前通用订阅链接入口暂时关闭，需要使用官方自研客户端连接。官网入口需要先输入图形验证码。"
     },
     "thirdPartyNotes": [
       {
@@ -94,9 +118,23 @@
         "需要用 Clash、Shadowrocket 等第三方客户端连接的场景——通用订阅链接入口目前暂时关闭，只能用官方自研客户端"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 6.5 元/月起",
+      "monthlyPrice": 6.5,
+      "monthlyTrafficGB": 40,
+      "priceSource": "own-verified",
+      "thirdPartyClient": "not-supported",
+      "thirdPartyClientNote": "通用订阅链接入口目前暂时关闭，需要使用官方自研客户端",
+      "packetLoss": {
+        "min": 0.7,
+        "max": 0.8,
+        "date": "2026-09-03"
+      },
+      "streamingTest": "50 个节点中 49 个 YouTube / Netflix / Disney+ 解锁正常，1 个香港节点被识别为“送中”"
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -107,7 +145,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip02.fireflyaff.com/#/?code=Rmc0fhp4",
-      "description": "官方入口需要先注册账户（邮箱+密码）才能查看后续内容，本站未创建账户核实具体套餐。两个独立第三方来源对其年付套餐价格（约 8 元/月起、60GB）的描述基本一致。"
+      "description": "Firefly 的年付套餐约 8 元/月起、60GB，两个独立第三方来源的描述一致，价格资料可信度较高。官网需要先注册账户（邮箱 + 密码）才能查看套餐详情，购买前以官网当前页面为准。"
     },
     "thirdPartyNotes": [
       {
@@ -124,9 +162,23 @@
         "需要提前确认第三方客户端兼容性的场景——不同第三方来源说法互相矛盾"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 8 元/月起（年付）",
+      "monthlyPrice": 8,
+      "monthlyTrafficGB": 60,
+      "priceNote": "年付折合月价",
+      "priceSource": "cross-verified",
+      "thirdPartyClient": "conflicting",
+      "thirdPartyClientNote": "不同第三方来源对是否支持第三方客户端说法不一，购买前建议向客服确认",
+      "packetLoss": {
+        "min": 1.3,
+        "max": 1.6,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -140,7 +192,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://wep01.flashleapaff.com/#/?code=D3N30Gco",
-      "description": "官方入口为验证码校验页面，本站未能核实具体套餐。第三方资料显示年付起步价约 8 元/月、60GB，两个来源基本一致；另有资料提示其关联域名注册时间较短。"
+      "description": "闪跃（FlashLeap）年付起步价约 8 元/月、60GB，两个第三方来源的描述基本一致。第三方资料提示其关联域名注册时间较短，属于较新的服务商，建议先用月付观察。官网入口需要先通过验证码校验，购买前以官网当前页面为准。"
     },
     "thirdPartyNotes": [
       {
@@ -157,9 +209,22 @@
         "不想承担新站不确定性、倾向直接年付大额套餐的场景"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 8 元/月起（年付）",
+      "monthlyPrice": 8,
+      "monthlyTrafficGB": 60,
+      "priceNote": "年付折合月价",
+      "priceSource": "cross-verified",
+      "thirdPartyClient": "unverified",
+      "packetLoss": {
+        "min": 1.5,
+        "max": 2.1,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -173,7 +238,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://wep01.breezenetaff.com/#/?code=XzOO248D",
-      "description": "官方入口需要先注册账户才能查看后续内容，本站未创建账户核实具体套餐。第三方资料显示起步价约 11 元/月、100GB，单价高于同批多数服务商；有第三方来源提示其在同类服务中定价偏高。"
+      "description": "微风网络（Breeze）定位入门级专线，第三方资料显示起步价约 11 元/月、100GB。有第三方来源认为其定价偏高——按月租看确实高于同批多数服务商，但起步套餐流量也更多，折算单位流量成本约 0.11 元/GB，在同批里反而较低。官网需要先注册账户才能查看套餐详情，购买前以官网为准。"
     },
     "thirdPartyNotes": [
       {
@@ -190,9 +255,22 @@
         "追求极致性价比的场景——第三方资料提示定价偏高"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 11 元/月起",
+      "monthlyPrice": 11,
+      "monthlyTrafficGB": 100,
+      "priceSource": "cross-verified",
+      "routeType": "入门级专线（第三方资料）",
+      "thirdPartyClient": "unverified",
+      "packetLoss": {
+        "min": 2.2,
+        "max": 2.8,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -206,7 +284,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://kshare.civetnettttt.homes/#/?code=0BJsagiX",
-      "description": "官方入口需要先注册账户才能查看后续内容，本站未创建账户核实具体套餐。两个独立第三方来源对年付起步价（约 7.1 元/月、45GB）的描述基本吻合，是同批服务商里价格较低且有多来源印证的一个；但协议描述存在冲突（宣传称新 SS 协议，第三方测速截图显示为 Vless）。"
+      "description": "灵猫网络年付起步价约 7.1 元/月、45GB，两个独立第三方来源的描述吻合，是同批服务商里价格较低且有多来源印证的一个。协议方面，官方宣传为新版 SS 协议，第三方测速截图显示为 VLESS，对协议有要求的用户建议购买前向客服确认。官网需要先注册账户才能查看套餐详情。"
     },
     "thirdPartyNotes": [
       {
@@ -224,9 +302,23 @@
         "有游戏加速等专门线路需求的场景——第三方资料提示主要面向网页浏览与流媒体"
       ]
     },
+    "quickFacts": {
+      "startingPrice": "约 7.1 元/月起（年付）",
+      "monthlyPrice": 7.1,
+      "monthlyTrafficGB": 45,
+      "priceNote": "年付折合月价",
+      "priceSource": "cross-verified",
+      "protocolNote": "官方宣传为新版 SS 协议，第三方测速截图显示为 VLESS",
+      "thirdPartyClient": "unverified",
+      "packetLoss": {
+        "min": 2.9,
+        "max": 3.4,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -237,7 +329,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://vip02.kuajieaff.com/#/?code=vpWqNn1o",
-      "description": "官方入口需要先注册账户才能查看后续内容，本站未创建账户核实具体套餐。三个独立第三方来源给出的套餐价格与流量档位差异明显（甚至同一来源内部表述都不一致），本站未能判断哪个更接近官方实际价格。"
+      "description": "跨界云提供多个流量档位，但三个第三方来源给出的套餐价格与流量档位差异明显，本站无法判断哪个最接近官方现价，购买前请以官网或客服报价为准。订阅链接为人工一次性发放，领取后请尽快导入客户端。官网需要先注册账户才能查看套餐详情。"
     },
     "thirdPartyNotes": [
       {
@@ -255,9 +347,20 @@
         "不熟悉订阅链接操作的新手场景——链接一次性发放且有效期短"
       ]
     },
+    "quickFacts": {
+      "priceNote": "三个第三方来源的价格差异明显，以官网或客服报价为准",
+      "priceSource": "conflicting",
+      "thirdPartyClient": "unverified",
+      "thirdPartyClientNote": "订阅链接为人工一次性发放，约 5 小时后可能失效，领取后尽快导入",
+      "packetLoss": {
+        "min": 3.1,
+        "max": 3.8,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   },
   {
@@ -270,7 +373,7 @@
     "status": "active",
     "vendor": {
       "officialWebsite": "https://yiyige.kuailiaff.com/#/?code=1hO0yrs7",
-      "description": "官方入口为邮箱/密码登录注册整合页面，本站未创建账户核实具体套餐。目前没有找到任何独立于官方之外的可信第三方资料来源（尝试访问的一个第三方评测页面无法核实内容），是本站收录服务商中公开资料最薄弱的一个。"
+      "description": "快狸（KuaiLi）目前公开资料较少，暂未找到可以互相印证的第三方套餐资料；本站对它有持续的丢包率跟踪数据，见下方“本站测试”。官网为邮箱注册 / 登录页面，套餐价格以官网为准。"
     },
     "thirdPartyNotes": [
       {
@@ -287,9 +390,19 @@
         "需要提前查到独立第三方资料佐证再决定的场景——目前公开资料最少"
       ]
     },
+    "quickFacts": {
+      "priceNote": "暂无可互相印证的第三方价格资料，以官网为准",
+      "priceSource": "unknown",
+      "thirdPartyClient": "unverified",
+      "packetLoss": {
+        "min": 2.0,
+        "max": 2.6,
+        "date": "2026-09-03"
+      }
+    },
     "lastVerified": "2026-09-03",
     "createdAt": "2026-09-03",
-    "updatedAt": "2026-09-03",
+    "updatedAt": "2026-09-26",
     "dataConfidence": "own-test"
   }
 ]

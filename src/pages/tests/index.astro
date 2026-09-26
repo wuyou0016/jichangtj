@@ -1,0 +1,192 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqSection from '../../components/FaqSection.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+import pageDates from '../../data/pages.json';
+import {
+  airportName,
+  formatDate,
+  formatPacketLoss,
+  formatStartingPrice,
+  formatYearMonth,
+} from '../../config/provider-facts';
+
+const providers = await getCollection('providers');
+const tested = providers
+  .filter((p) => p.data.quickFacts.packetLoss)
+  .sort((a, b) => a.data.quickFacts.packetLoss!.min - b.data.quickFacts.packetLoss!.min);
+const untested = providers.filter((p) => !p.data.quickFacts.packetLoss);
+const streamingTested = providers.filter((p) => p.data.quickFacts.streamingTest);
+
+const latestTestDate = new Date(Math.max(...tested.map((p) => p.data.quickFacts.packetLoss!.date.getTime())));
+const testYearMonth = formatYearMonth(latestTestDate);
+const lowest = tested[0];
+const highest = tested[tested.length - 1];
+
+const { publishedAt, updatedAt } = pageDates['/tests/'];
+
+const faqItems = [
+  {
+    q: '机场测速主要看哪些指标？',
+    a: '常见的是延迟、丢包率和下载速度。刷网页、看视频主要看下载速度和晚高峰稳定性；视频会议、远程桌面和游戏对丢包率最敏感，丢包率哪怕只有百分之几也会表现为卡顿、断音、掉线。本站目前持续跟踪的是丢包率。',
+  },
+  {
+    q: '为什么不只测一次？',
+    a: '单次测试可能刚好碰上网络通畅或拥堵的时段，结果偶然性很大。本站对同一批服务商在不同日期反复测试，页面上的数字是多次结果的区间，区间越宽说明不同批次之间波动越大。',
+  },
+  {
+    q: '我自己怎么测机场好不好用？',
+    a: '先在客户端里对节点做延迟测试，挑几个延迟较低的；再在晚高峰实际打开视频、进行一次视频通话，观察是否卡顿。第一次买的服务商用月付或短周期套餐测一个月，比只看任何评测数据都可靠。',
+  },
+  {
+    q: `为什么${untested.map((p) => p.data.name).join('、')}没有实测数据？`,
+    a: '这些服务商目前还没有加入本站的持续测试，资料以套餐价格等第三方信息为主。加入测试后会在本页和对应详情页同步更新。',
+  },
+];
+
+const title = `机场测速：${tested.length} 家机场实测丢包率对比（${testYearMonth}）｜机场TJ`;
+const description = `${tested.length} 家机场（梯子）的实测丢包率对比：本站在珠海联通网络下对同一批服务商反复测试，最低约 ${lowest ? formatPacketLoss(lowest.data.quickFacts) : ''}，附测试方法、流媒体解锁实测和数据局限性说明。`;
+const canonicalUrl = resolveCanonicalUrl('/tests/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 机场实测数据</nav>
+
+  <h1>机场实测数据：丢包率测试结果</h1>
+  <p class="page-updated">最后更新：{updatedAt} · 最近一次测试：{formatDate(latestTestDate)}</p>
+  <p>
+    机场宣传里的"稳定""专线""不掉线"很难核实，本站能拿出来的是自己测的数据：在固定网络环境下，对同一批服务商反复测试丢包率。下表是 {tested.length} 家机场的测试结果，从低到高排列；
+    {lowest && highest && (
+      <>
+        这一批里最低一档约 {formatPacketLoss(lowest.data.quickFacts)}（{lowest.data.name}），最高一档约 {formatPacketLoss(highest.data.quickFacts)}（{highest.data.name}）。
+      </>
+    )}
+  </p>
+
+  <h2>丢包率实测排行</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">排名</th>
+          <th scope="col">机场</th>
+          <th scope="col">实测丢包率</th>
+          <th scope="col">批次波动</th>
+          <th scope="col">起步价</th>
+          <th scope="col">测试日期</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          tested.map((p, i) => {
+            const loss = p.data.quickFacts.packetLoss!;
+            return (
+              <tr>
+                <td>{i + 1}</td>
+                <th scope="row">
+                  <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+                </th>
+                <td>{formatPacketLoss(p.data.quickFacts)}</td>
+                <td>{(loss.max - loss.min).toFixed(1)} 个百分点</td>
+                <td>{formatStartingPrice(p.data.quickFacts)}</td>
+                <td>{formatDate(loss.date)}</td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">"批次波动"= 多次测试中最高值与最低值的差，数字越大说明不同批次之间表现越不稳定。</p>
+
+  {
+    streamingTested.length > 0 && (
+      <>
+        <h2>流媒体解锁实测</h2>
+        <p>流媒体解锁目前只对少数服务商做过实测，方法是用节点实际访问 YouTube、Netflix、Disney+，记录能否正常观看：</p>
+        <ul>
+          {streamingTested.map((p) => (
+            <li>
+              <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>：{p.data.quickFacts.streamingTest}（{formatDate(p.data.quickFacts.packetLoss?.date ?? p.data.lastVerified)}）
+            </li>
+          ))}
+        </ul>
+        <p>其他服务商的解锁描述目前都来自服务商自己的宣传或第三方转述，本站没有做独立验证，所以不在这里列出。判断方法见<a href="/scenarios/streaming/">流媒体解锁机场推荐</a>。</p>
+      </>
+    )
+  }
+
+  <h2>测试方法</h2>
+  <div class="info-panel">
+    <ul>
+      <li><strong>工具</strong>：MiaoKo 自定义测速工具。</li>
+      <li><strong>网络环境</strong>：珠海联通网络环境，由站长本人在固定环境下测试。</li>
+      <li><strong>测试方式</strong>：同一批服务商在不同日期反复测试，表中数字是多次结果的区间，不是单次数据。</li>
+      <li><strong>记录原则</strong>：异常结果如实记录——比如流媒体测试里被识别为"送中"的节点照样列出，不删除。</li>
+    </ul>
+  </div>
+
+  <h2>这些数据的局限性</h2>
+  <ul>
+    <li>测试只在一个地区、一个运营商下进行，你所在地区和运营商不同，结果可能明显不同。</li>
+    <li>目前只持续跟踪丢包率，下载速度、延迟、晚高峰表现等其他维度还没有系统测试。</li>
+    <li>观察时间还不够长，现在的数字属于早期观察结果，不是长期稳定性的最终结论。</li>
+  </ul>
+  <p>完整的资料分类方法见<a href="/methodology/">评测方法与数据说明</a>。</p>
+
+  {
+    untested.length > 0 && (
+      <>
+        <h2>暂未测试的服务商</h2>
+        <ul class="quick-links">
+          {untested.map((p) => (
+            <li>
+              <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+              <span class="hub-stats"> · {formatStartingPrice(p.data.quickFacts)} · 资料以第三方信息为主</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <FaqSection items={faqItems} />
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/scenarios/remote-work/">稳定机场推荐：远程办公不掉线怎么选</a></li>
+    <li><a href="/scenarios/gaming/">游戏加速机场推荐</a></li>
+    <li><a href="/tutorials/glossary-nodes-routes-protocols/">丢包率、延迟等术语解释</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Dataset',
+      name: '机场丢包率实测数据',
+      description,
+      url: canonicalUrl,
+      creator: { '@type': 'Organization', name: siteConfig.brandName, url: siteConfig.url },
+      datePublished: publishedAt,
+      dateModified: updatedAt,
+      measurementTechnique: 'MiaoKo 自定义测速工具，珠海联通网络环境下多次测试',
+      variableMeasured: '丢包率（%）',
+      isAccessibleForFree: true,
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: '机场实测数据', item: canonicalUrl },
+      ],
+    })}
+  />
+</BaseLayout>

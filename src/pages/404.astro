@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = '页面不存在｜机场TJ';
+const description = '你访问的页面不存在或已经移动，可以从机场推荐排行榜、按场景选或 Clash 教程重新开始。';
+---
+
+<BaseLayout title={title} description={description} noindex>
+  <h1>页面不存在</h1>
+  <p>你访问的页面不存在，可能链接输错了，或者页面已经移动。可以从这些入口重新开始：</p>
+  <ul class="quick-links">
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/scenarios/">按场景选机场</a></li>
+    <li><a href="/airports/">机场导航</a></li>
+    <li><a href="/clash/">Clash 教程</a></li>
+    <li><a href="/tutorials/">全部使用教程</a></li>
+    <li><a href="/">返回首页</a></li>
+  </ul>
+</BaseLayout>

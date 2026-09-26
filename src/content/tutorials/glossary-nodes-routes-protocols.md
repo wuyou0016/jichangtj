@@ -1,9 +1,9 @@
 ---
-title: 节点、线路、协议、丢包率、延迟——机场代理关键术语解释
-description: 机场代理里经常出现的术语——节点、线路、IPLC/IEPL 专线、协议、丢包率、延迟——分别是什么意思，为什么会影响使用体验。
+title: 机场术语解释：节点、线路、IPLC 专线、协议、丢包率、延迟、倍率
+description: 机场（梯子）里经常出现的术语——节点、线路、IPLC/IEPL 专线、协议、丢包率、延迟、流量倍率——分别是什么意思，为什么会影响使用体验。
 group: advanced
 publishedAt: 2026-09-04
-updatedAt: 2026-09-04
+updatedAt: 2026-09-26
 relatedScenarios:
   - gaming
   - remote-work
@@ -25,7 +25,7 @@ relatedScenarios:
 
 ## 协议
 
-协议指的是客户端和节点之间加密、传输数据用的具体技术方案，常见的有 Shadowsocks、Trojan、VLESS、VMess 等。不同协议在速度、抗干扰能力、兼容性上各有取舍，普通用户不需要深入研究原理，但可以知道：同一个服务商如果同时提供多种协议节点，遇到某个协议连接不稳定时，换协议试试是一个常见的排查思路。
+协议指的是客户端和节点之间加密、传输数据用的具体技术方案，常见的有 Shadowsocks、Trojan、VLESS、VMess、Hysteria2 等。其中 VLESS、Hysteria2 等较新的协议需要客户端内核支持，已停更的 Clash for Windows 用不了，详见[Clash for Windows 停更后用什么](/tutorials/clash-for-windows-alternatives/)。不同协议在速度、抗干扰能力、兼容性上各有取舍，普通用户不需要深入研究原理，但可以知道：同一个服务商如果同时提供多种协议节点，遇到某个协议连接不稳定时，换协议试试是一个常见的排查思路。
 
 ## 丢包率
 
@@ -35,7 +35,7 @@ relatedScenarios:
 - 视频会议、远程桌面：丢包率哪怕只有百分之几，也可能表现为卡顿、断音。
 - 打游戏：对丢包率最敏感，容易表现为瞬移、技能延迟、掉线。
 
-机场TJ 对部分服务商做了持续跟踪的丢包率测试，方法和局限性说明见[评测方法与数据说明](/methodology/)。
+机场TJ 对部分服务商做了持续跟踪的丢包率测试，结果见[机场实测数据](/tests/)，方法和局限性说明见[评测方法与数据说明](/methodology/)。
 
 ## 延迟
 

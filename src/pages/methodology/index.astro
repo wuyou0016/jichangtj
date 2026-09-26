@@ -12,8 +12,8 @@ const confidenceExplain: Record<DataConfidence, string> = {
   incomplete: '该服务商刚收录，或目前只有很有限的资料，信息完整度还在积累中。',
 };
 
-const title = '评测方法与数据说明｜机场TJ';
-const description = '机场TJ 如何区分官方信息、第三方资料和本站测试数据，数据可信度标签具体代表什么，以及本站测试方法的局限性说明。';
+const title = '机场评测方法与数据说明：丢包率怎么测、资料来源怎么分｜机场TJ';
+const description = '机场TJ 如何测试机场丢包率、如何区分官方信息、第三方资料和本站测试数据，数据可信度标签具体代表什么，以及测试方法的局限性说明。';
 const canonicalUrl = resolveCanonicalUrl('/methodology/');
 ---
 
@@ -79,7 +79,7 @@ const canonicalUrl = resolveCanonicalUrl('/methodology/');
   <h2>本站测试具体怎么做的</h2>
   <div class="info-panel">
     <p>
-      丢包率测试使用 MiaoKo 自定义测速工具，在珠海联通网络环境下持续跟踪测试，不是只测一次——同一个服务商会在不同日期反复测，把结果记录下来，服务商详情页里"本站测试"部分标注的百分比区间，就是多次测试结果的范围，不是单次数据。
+      丢包率测试使用 MiaoKo 自定义测速工具，在珠海联通网络环境下持续跟踪测试，不是只测一次——同一个服务商会在不同日期反复测，把结果记录下来，服务商详情页里"本站测试"部分标注的百分比区间，就是多次测试结果的范围，不是单次数据。所有服务商的测试结果汇总在<a href="/tests/">机场实测数据</a>页面。
     </p>
     <p>
       流媒体解锁检测目前只对少数服务商做过，方法是用该服务商的节点实际访问 YouTube、Netflix、Disney+ 等平台，记录能否正常观看，不是看宣传语。
@@ -96,7 +96,8 @@ const canonicalUrl = resolveCanonicalUrl('/methodology/');
 
   <p>你可能还想看：</p>
   <ul class="quick-links">
-    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/tests/">机场实测数据</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
     <li><a href="/airports/">机场导航</a></li>
     <li><a href="/scenarios/">按场景选</a></li>
     <li><a href="/tutorials/glossary-nodes-routes-protocols/">节点、线路、协议等术语解释</a></li>

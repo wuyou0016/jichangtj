@@ -14,9 +14,9 @@ const GROUP_LABEL: Record<(typeof GROUP_ORDER)[number], string> = {
 };
 const GROUP_DESC: Record<(typeof GROUP_ORDER)[number], string> = {
   basics: '第一次接触机场代理，先从这里了解基本概念和怎么选。',
-  clients: 'Windows、macOS、iOS、Android 常见客户端和订阅导入方法。',
+  clients: 'Clash Verge Rev、小火箭、Clash Meta for Android、v2rayN 等客户端的下载与订阅导入方法。',
   troubleshooting: '连接失败、速度慢、订阅导不进去，遇到问题先来这里查。',
-  advanced: '节点、线路、协议、丢包率这些术语具体是什么意思。',
+  advanced: '节点、线路、协议、丢包率这些术语，以及 Clash 规则模式、TUN 模式具体是什么意思。',
 };
 
 const groups = GROUP_ORDER.map((key) => ({
@@ -28,16 +28,16 @@ const groups = GROUP_ORDER.map((key) => ({
     .sort((a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime()),
 }));
 
-const title = '使用教程｜新手入门、客户端设置与常见问题排查｜机场TJ';
-const description = '机场TJ 使用教程聚合页——新手先读、客户端入门、常见问题排查、进阶术语理解，按难度分组整理。';
+const title = '机场使用教程：Clash、小火箭、v2rayN 订阅导入与翻墙问题排查｜机场TJ';
+const description = '机场（梯子）新手教程合集：机场是什么、怎么选，Clash Verge Rev、小火箭 Shadowrocket、Clash Meta for Android、v2rayN 订阅导入教程，以及连不上、速度慢等常见问题排查。';
 const canonicalUrl = resolveCanonicalUrl('/tutorials/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
   <nav aria-label="Breadcrumb"><a href="/">首页</a> › 使用教程</nav>
 
-  <h1>使用教程</h1>
-  <p>从"机场代理是什么"到客户端设置、常见问题排查，按由浅入深整理。内容会持续补充，暂时没有覆盖到的问题，欢迎通过<a href="/contact/">联系方式</a>告诉我们。</p>
+  <h1>机场使用教程：Clash / 小火箭 / v2rayN</h1>
+  <p>从"机场和梯子是什么"到各平台客户端的订阅导入、常见问题排查，按由浅入深整理。只想快速上手 Clash 的话，先看<a href="/clash/">Clash 教程与客户端推荐</a>。内容会持续补充，暂时没有覆盖到的问题，欢迎通过<a href="/contact/">联系方式</a>告诉我们。</p>
 
   {
     groups.map((group) => (
@@ -62,9 +62,10 @@ const canonicalUrl = resolveCanonicalUrl('/tutorials/');
 
   <p>你可能还想看：</p>
   <ul class="quick-links">
+    <li><a href="/clash/">Clash 教程与客户端推荐</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/scenarios/">按场景选机场</a></li>
     <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/airports/">机场导航</a></li>
-    <li><a href="/scenarios/">按场景选</a></li>
   </ul>
 
   <script

@@ -1,0 +1,242 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqSection from '../../components/FaqSection.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import pageDates from '../../data/pages.json';
+import { THIRD_PARTY_CLIENT_LABEL, airportName, formatPacketLoss } from '../../config/provider-facts';
+
+const tutorials = await getCollection('tutorials');
+const tutorialById = (id: string) => tutorials.find((t) => t.id === id);
+
+// 各平台客户端推荐。教程 id 对应 src/content/tutorials 下的文章，没有教程的不放链接。
+const PLATFORM_CLIENTS = [
+  {
+    platform: 'Windows',
+    clients: 'Clash Verge Rev（首选）、FlClash',
+    note: 'Clash for Windows 已停更，建议换成 Clash Verge Rev；习惯 v2ray 系的也可以用 v2rayN。',
+    tutorialIds: ['clash-verge-rev-tutorial', 'v2rayn-tutorial'],
+  },
+  {
+    platform: 'macOS',
+    clients: 'Clash Verge Rev（首选）、FlClash、ClashX Meta',
+    note: '原版 ClashX 已停更；Apple 芯片下载 aarch64 版本，Intel 芯片下载 x64 版本。',
+    tutorialIds: ['clash-verge-rev-tutorial'],
+  },
+  {
+    platform: 'Android',
+    clients: 'Clash Meta for Android（首选）、FlClash',
+    note: '从 GitHub Releases 下载 APK，大多数手机选 arm64-v8a 版本。',
+    tutorialIds: ['clash-meta-for-android-tutorial'],
+  },
+  {
+    platform: 'iOS / iPadOS',
+    clients: 'Shadowrocket（小火箭）、Stash',
+    note: '需要非中国大陆地区的 Apple ID 才能下载，均为付费应用；小火箭不是 Clash 客户端，但大多数机场都提供可直接导入的订阅。',
+    tutorialIds: ['shadowrocket-tutorial'],
+  },
+  {
+    platform: 'Linux',
+    clients: 'Clash Verge Rev、FlClash',
+    note: '提供 deb / rpm 等安装包，按发行版选择。',
+    tutorialIds: ['clash-verge-rev-tutorial'],
+  },
+];
+
+// 已收录机场的第三方客户端支持情况，按综合推荐顺序。
+const overallRanking = await getEntry('rankings', 'overall');
+const allProviders = await getCollection('providers');
+const rankedProviders = (overallRanking?.data.entries ?? [])
+  .map((e) => allProviders.find((p) => p.id === e.providerId.id))
+  .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+const relatedTutorialIds = [
+  'clash-for-windows-alternatives',
+  'clash-proxy-modes-tun',
+  'client-setup-and-subscription-import',
+  'common-connection-problems',
+];
+const relatedTutorials = relatedTutorialIds.map(tutorialById).filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+const { publishedAt, updatedAt } = pageDates['/clash/'];
+const year = updatedAt.slice(0, 4);
+
+const faqItems = [
+  {
+    q: 'Clash 是免费的吗？',
+    a: 'Clash Verge Rev、Clash Meta for Android、FlClash 等客户端都是开源免费的，但客户端本身不带节点，需要导入机场提供的订阅链接才能用。iOS 上的小火箭、Stash 是付费应用。',
+  },
+  {
+    q: 'Clash 订阅链接从哪里来？',
+    a: '买了机场套餐后，在机场官网的用户中心里通常有"一键订阅"或"复制订阅链接"按钮，选择 Clash 格式复制即可。订阅链接相当于账号凭证，不要发给别人。',
+  },
+  {
+    q: 'Clash for Windows 还能用吗？',
+    a: 'Clash for Windows 在 2023 年 11 月停止维护、仓库被删除，旧版本还能打开，但不会再有更新，也不支持新协议，网上流传的安装包来源难以确认。建议换成仍在维护的 Clash Verge Rev。',
+  },
+  {
+    q: 'Clash 能用 VLESS、Hysteria2 节点吗？',
+    a: '看内核。现在主流客户端用的 Mihomo 内核（原 Clash Meta）支持 VLESS（含 Reality）、Hysteria2、TUIC 等协议；已停更的原版 Clash 内核不支持。机场节点用了这些协议时，要选 Mihomo 内核的客户端。',
+  },
+  {
+    q: 'Clash 导入订阅失败怎么办？',
+    a: '先检查链接是否复制完整、是否过期；再确认复制的是 Clash 格式的订阅；如果客户端提示下载失败，可以换一个网络环境（比如手机流量）再试。详细步骤见常见问题排查教程。',
+  },
+  {
+    q: '所有机场都能用 Clash 吗？',
+    a: '不是。有的机场只能用官方自研客户端，不提供通用订阅链接，这种情况就没法导入 Clash。下面的表格列出了本站收录机场的情况，资料里没有写明的标为"待确认"，购买前可以先问客服。',
+  },
+];
+
+const title = `Clash 教程：${year} Clash 客户端下载推荐、机场订阅导入与使用方法｜机场TJ`;
+const description = `Clash 新手教程：Clash for Windows 停更后各平台用什么客户端（Clash Verge Rev、Clash Meta for Android、小火箭），机场订阅怎么导入、规则模式怎么选，以及哪些机场支持 Clash 订阅。`;
+const canonicalUrl = resolveCanonicalUrl('/clash/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl} ogType="article" publishedTime={publishedAt} modifiedTime={updatedAt}>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › Clash 教程</nav>
+
+  <h1>Clash 教程与客户端推荐（{year}）</h1>
+  <p class="page-updated">发布于 {publishedAt} · 更新于 {updatedAt}</p>
+  <p>
+    Clash 是目前最常用的机场代理客户端之一：把机场给的订阅链接导进去，就能按规则自动分流——国内网站直连，需要代理的网站走节点。这一页整理了现在各平台该用哪个 Clash 客户端、订阅怎么导入、模式怎么选，以及本站收录的机场里哪些能用 Clash。
+  </p>
+
+  <h2>Clash 是什么，为什么说 Clash for Windows 停更了</h2>
+  <p>
+    Clash 本来是一个开源的代理内核，负责按规则转发流量；平时说的"Clash"，多数指基于这个内核的图形客户端。2023 年 11 月，原版 Clash 内核、Clash for Windows、ClashX 等项目先后停止维护、删除仓库。现在还在持续更新的客户端，基本都换成了 <strong>Mihomo 内核</strong>（原名 Clash Meta），它兼容原来的 Clash 配置和订阅，还支持 VLESS、Hysteria2 等新协议。
+  </p>
+  <p>所以现在搜"Clash 下载"，应该找的是基于 Mihomo 内核、仍在维护的客户端，而不是停更的 Clash for Windows。详细对比见<a href="/tutorials/clash-for-windows-alternatives/">Clash for Windows 停更后用什么</a>。</p>
+
+  <h2>各平台 Clash 客户端推荐</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">平台</th>
+          <th scope="col">推荐客户端</th>
+          <th scope="col">说明</th>
+          <th scope="col">教程</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          PLATFORM_CLIENTS.map((row) => (
+            <tr>
+              <th scope="row">{row.platform}</th>
+              <td>{row.clients}</td>
+              <td>{row.note}</td>
+              <td>
+                {row.tutorialIds
+                  .map(tutorialById)
+                  .filter((t): t is NonNullable<typeof t> => Boolean(t))
+                  .map((t, i) => (
+                    <>
+                      {i > 0 && <br />}
+                      <a href={`/tutorials/${t.id}/`}>{t.data.title.split('：')[0]}</a>
+                    </>
+                  ))}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    下载安全提醒：以上客户端都请从项目的 GitHub Releases 页面或 App Store 下载。搜索结果里很多名为"XX 官网""XX 中文版"的网站并不是项目官方，安装包来源无法确认。
+  </p>
+
+  <h2>Clash 使用四步走</h2>
+  <ol>
+    <li><strong>下载客户端</strong>：按上面的表格选择你设备对应的客户端，从官方渠道下载安装。</li>
+    <li><strong>复制订阅链接</strong>：登录机场官网的用户中心，找到"一键订阅"或"复制订阅"，选择 Clash 格式复制。</li>
+    <li><strong>导入并启用订阅</strong>：在客户端的"订阅""配置"或"Profiles"页面粘贴链接、下载，然后选中这份订阅让它生效。</li>
+    <li><strong>选节点、开代理</strong>：在"代理"页面选一个延迟较低的节点，打开"系统代理"（电脑）或点击启动（手机），用浏览器打开一个网站测试。</li>
+  </ol>
+  <p>每个客户端的具体界面不一样，分步骤讲解见各平台教程；遇到导入失败、连不上，看<a href="/tutorials/common-connection-problems/">常见问题排查</a>。</p>
+
+  <h2>规则模式、全局模式、直连怎么选</h2>
+  <p>
+    大多数时候用<strong>规则模式</strong>就够了：订阅里自带分流规则，国内网站直连、国外网站走代理，速度和流量都最省。<strong>全局模式</strong>会让所有流量都走代理，适合临时排查"是不是规则没匹配上"；<strong>直连模式</strong>等于暂时关掉代理。另外电脑端还有"系统代理"和"TUN 模式"两种接管方式，区别和选择方法见<a href="/tutorials/clash-proxy-modes-tun/">Clash 规则模式、全局模式与 TUN 模式详解</a>。
+  </p>
+
+  <h2>哪些机场支持 Clash 订阅</h2>
+  <p>
+    Clash 只是客户端，节点来自机场。要用 Clash，机场必须提供通用订阅链接——有的机场只能用自家的官方客户端。下面是本站收录机场的情况（按<a href="/rankings/">机场推荐排行榜</a>顺序）：
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">机场</th>
+          <th scope="col">Clash 等第三方客户端</th>
+          <th scope="col">说明</th>
+          <th scope="col">实测丢包率</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rankedProviders.map((p) => (
+            <tr>
+              <th scope="row">
+                <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+              </th>
+              <td>{THIRD_PARTY_CLIENT_LABEL[p.data.quickFacts.thirdPartyClient]}</td>
+              <td>{p.data.quickFacts.thirdPartyClientNote ?? (p.data.quickFacts.thirdPartyClient === 'unverified' ? '资料里没有写明，购买前建议问客服' : '')}</td>
+              <td>{formatPacketLoss(p.data.quickFacts)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">"待确认"表示本站收集到的资料里没有明确说法，不代表不支持。发现资料有误欢迎通过<a href="/contact/">联系方式</a>告诉我们。</p>
+
+  <FaqSection items={faqItems} heading="Clash 常见问题" />
+
+  <h2>相关教程</h2>
+  <div class="tutorial-list">
+    {
+      relatedTutorials.map((t) => (
+        <a href={`/tutorials/${t.id}/`} class="tutorial-card">
+          <strong>{t.data.title}</strong>
+          <span>{t.data.description}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/tutorials/">全部使用教程</a></li>
+    <li><a href="/tests/">机场实测数据</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: title.replace('｜机场TJ', ''),
+      description,
+      url: canonicalUrl,
+      datePublished: publishedAt,
+      dateModified: updatedAt,
+      author: { '@type': 'Organization', name: '机场TJ' },
+      publisher: { '@type': 'Organization', name: '机场TJ' },
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: 'Clash 教程', item: canonicalUrl },
+      ],
+    })}
+  />
+</BaseLayout>

@@ -19,6 +19,37 @@ const thirdPartyNoteSchema = z.object({
 // - incomplete：资料明显不足（比如只有一个来源、刚收录）
 const dataConfidenceEnum = z.enum(['own-test', 'cross-verified', 'third-party-only', 'incomplete']);
 
+// 速览字段：从已有资料里提炼出的结构化事实，用于对比表、单位流量成本估算和详情页 FAQ。
+// 只能填资料里已经写明的内容——资料没提到的就留空，页面会显示"待确认"，不要猜。
+const quickFactsSchema = z.object({
+  // 展示文案，比如"约 6.5 元/月起"。
+  startingPrice: z.string().optional(),
+  // 起步套餐折合月价与月流量，只用于估算单位流量成本；年付/月付口径以 priceNote 说明。
+  monthlyPrice: z.number().optional(),
+  monthlyTrafficGB: z.number().optional(),
+  priceNote: z.string().optional(),
+  // 价格资料从哪来：站长核实 / 多个第三方来源一致 / 单一第三方来源 / 多个来源互相矛盾 / 暂无资料
+  priceSource: z.enum(['own-verified', 'cross-verified', 'single-source', 'conflicting', 'unknown']),
+  protocols: z.array(z.string()).optional(),
+  // 协议资料有出入时的说明（比如宣传和第三方截图不一致）。
+  protocolNote: z.string().optional(),
+  // 线路定位（来自第三方资料或官方宣传），比如"IPLC 专线"。
+  routeType: z.string().optional(),
+  // 能否把订阅导入 Clash、Shadowrocket 等第三方客户端。
+  thirdPartyClient: z.enum(['supported', 'not-supported', 'conflicting', 'unverified']),
+  thirdPartyClientNote: z.string().optional(),
+  // 本站丢包率跟踪结果（百分比区间），没有实测就不填。
+  packetLoss: z
+    .object({
+      min: z.number(),
+      max: z.number(),
+      date: z.coerce.date(),
+    })
+    .optional(),
+  // 流媒体解锁实测摘要，没有实测就不填。
+  streamingTest: z.string().optional(),
+});
+
 const providerSchema = z.object({
   id: z.string(),
   slug: z.string(),
@@ -37,6 +68,7 @@ const providerSchema = z.object({
     goodFor: z.array(z.string()),
     notIdealFor: z.array(z.string()),
   }),
+  quickFacts: quickFactsSchema,
   lastVerified: z.coerce.date(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -51,6 +83,14 @@ const providers = defineCollection({
 // scenarios（本站核心内容类型：按使用场景整理的选择建议）
 // ---------------------------------------------------------------------------
 
+// 常见问题：页面上可见的问答，同时输出 FAQPage 结构化数据。答案只写有依据的内容。
+const faqSchema = z.array(
+  z.object({
+    q: z.string(),
+    a: z.string(),
+  }),
+);
+
 const scenarioPickSchema = z.object({
   providerId: reference('providers'),
   reason: z.string(),
@@ -59,6 +99,10 @@ const scenarioPickSchema = z.object({
 const scenarioSchema = z.object({
   slug: z.string(),
   title: z.string(),
+  // 首页场景卡片用的短名，比如"预算有限"。
+  shortTitle: z.string(),
+  // <title> 用的搜索标题，覆盖用户实际搜索的说法（便宜机场、游戏机场……）。
+  seoTitle: z.string(),
   emoji: z.string(),
   description: z.string(),
   // 这个场景实际该关注哪些维度——不是泛泛的"稳定性好"，
@@ -72,6 +116,7 @@ const scenarioSchema = z.object({
   picks: z.array(scenarioPickSchema),
   // 这个场景里最容易踩的坑，不是泛泛的"要小心"，要具体到会导致什么误判。
   commonMistakes: z.array(z.string()).optional(),
+  faq: faqSchema.optional(),
   publishedAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -122,6 +167,7 @@ const tutorialSchema = z.object({
   updatedAt: z.coerce.date(),
   // 关联场景 slug，用于场景页反向链接到相关教程。
   relatedScenarios: z.array(z.string()).optional(),
+  faq: faqSchema.optional(),
 });
 
 const tutorials = defineCollection({

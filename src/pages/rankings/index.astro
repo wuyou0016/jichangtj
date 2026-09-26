@@ -1,8 +1,11 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ComparisonTable from '../../components/ComparisonTable.astro';
+import FaqSection from '../../components/FaqSection.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+import { formatDate, formatYearMonth, unitCost } from '../../config/provider-facts';
 
 const overallRanking = await getEntry('rankings', 'overall');
 const rankingEntries = overallRanking
@@ -14,27 +17,86 @@ const rankingEntries = overallRanking
       })),
     )
   : [];
+const rankedProviders = rankingEntries
+  .map((entry) => entry.provider)
+  .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
-const title = '综合推荐完整榜单｜机场TJ';
-const description = '机场TJ 全部 9 家服务商的综合推荐顺序，每条附具体理由与数据可信度标签。';
+const scenarios = (await getCollection('scenarios')).sort(
+  (a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime(),
+);
+
+const updatedAt = overallRanking?.data.updatedAt ?? new Date();
+const yearMonth = formatYearMonth(updatedAt);
+const count = rankingEntries.length;
+
+// FAQ 里引用的几个事实，从数据里算出来，避免手写后与数据不一致。
+const tested = rankedProviders.filter((p) => p.data.quickFacts.packetLoss);
+const lowestLoss = [...tested].sort(
+  (a, b) => a.data.quickFacts.packetLoss!.min - b.data.quickFacts.packetLoss!.min,
+)[0];
+const withCost = rankedProviders.filter((p) => unitCost(p.data.quickFacts) !== undefined);
+const cheapestPerGB = [...withCost].sort((a, b) => unitCost(a.data.quickFacts)! - unitCost(b.data.quickFacts)!)[0];
+const cheapestMonthly = [...withCost].sort(
+  (a, b) => a.data.quickFacts.monthlyPrice! - b.data.quickFacts.monthlyPrice!,
+)[0];
+const notSupported = rankedProviders.filter((p) => p.data.quickFacts.thirdPartyClient === 'not-supported');
+
+const faqItems = [
+  {
+    q: '这份机场推荐排行榜是怎么排的？',
+    a: '排序是编辑判断，不是客观算分：主要参考本站持续跟踪的丢包率、价格资料是否经过核实或多来源印证、资料完整度，以及有没有需要留意的情况。每一条都写明了具体理由，你可以按自己的场景重新取舍。',
+  },
+  ...(lowestLoss
+    ? [
+        {
+          q: '哪家机场的实测丢包率最低？',
+          a: `本站持续跟踪的数据里，${lowestLoss.data.name}的丢包率最低（约 ${lowestLoss.data.quickFacts.packetLoss!.min}%-${lowestLoss.data.quickFacts.packetLoss!.max}%）。测试在珠海联通网络环境下进行，你所在地区和运营商不同，结果可能不同。`,
+        },
+      ]
+    : []),
+  ...(cheapestPerGB && cheapestMonthly
+    ? [
+        {
+          q: '哪家机场最便宜？',
+          a: `只看月租的话，${cheapestMonthly.data.name}的起步价最低（${cheapestMonthly.data.quickFacts.startingPrice}）；但按单位流量成本（月费 ÷ 月流量）算，资料里${cheapestPerGB.data.name}的起步套餐最划算，约 ${unitCost(cheapestPerGB.data.quickFacts)!.toFixed(2)} 元/GB。便宜机场的详细算法见预算有限场景页。`,
+        },
+      ]
+    : []),
+  {
+    q: '排行榜里的机场都能用 Clash 吗？',
+    a: `不是所有都能。${notSupported.length > 0 ? `${notSupported.map((p) => p.data.name).join('、')}目前只能用官方客户端；` : ''}部分服务商资料里没有写明是否支持第三方客户端，对比表里标为"待确认"。如果你一定要用 Clash、小火箭，购买前先向客服确认是否提供通用订阅。`,
+  },
+  {
+    q: '排行榜多久更新一次？',
+    a: `本页最后更新于 ${formatDate(updatedAt)}。有新的测试数据、服务商调整套餐或资料出现变化时会更新排序和理由，每次更新都会同步修改页面上的日期。`,
+  },
+];
+
+const title = `${yearMonth}机场推荐排行榜：${count} 家梯子实测丢包率与价格对比｜机场TJ`;
+const description = `${yearMonth}更新的机场推荐排行榜：${count} 家机场逐条写明推荐理由，附实测丢包率、起步价、单位流量成本与 Clash 客户端支持情况对比，帮你挑到稳定又划算的梯子。`;
 const canonicalUrl = resolveCanonicalUrl('/rankings/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 综合推荐完整榜单</nav>
+  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 机场推荐排行榜</nav>
 
-  <h1>综合推荐完整榜单</h1>
+  <h1>{yearMonth}机场推荐排行榜</h1>
+  <p class="page-updated">最后更新：{formatDate(updatedAt)} · 共 {count} 家 · 排序为编辑判断，理由逐条公开</p>
   <p>
-    这是全部 {rankingEntries.length} 家服务商的综合推荐顺序，供不想按场景挑的用户参考——不是客观算出来的分数，具体理由逐条列出。如果你已经知道自己的使用场景，去<a href="/scenarios/">按场景选</a>可能更快。
+    这是全部 {count} 家机场的综合推荐顺序，给不想先分场景挑的用户参考——不是客观算出来的分数，每一条都写明了依据：本站实测的丢包率、价格资料是否经过核实、以及需要留意的地方。如果你已经知道自己的使用场景，去<a href="/scenarios/">按场景选</a>可能更快。
   </p>
 
+  <h2>一张表看懂：价格、流量与实测丢包率</h2>
+  <ComparisonTable providers={rankedProviders} ranked />
+
+  <h2>推荐理由（逐条）</h2>
   <div class="ranking-full-list">
     {
       rankingEntries.map(
         (entry) =>
           entry.provider && (
             <div class="pick-card">
-              <p>
+              <h3 class="pick-card__title">
                 <span class="pick-card__rank">{entry.rank}</span>
                 <a href={`/airports/${entry.provider.data.slug}/`} class="pick-card__name">
                   {entry.provider.data.name}
@@ -44,18 +106,36 @@ const canonicalUrl = resolveCanonicalUrl('/rankings/');
                 >
                   {DATA_CONFIDENCE_LABEL[entry.provider.data.dataConfidence as DataConfidence]}
                 </span>
-              </p>
+              </h3>
               <p class="pick-card__reason">{entry.reason}</p>
               {entry.caution && <p class="pick-card__caution">⚠️ {entry.caution}</p>}
+              <p class="pick-card__more">
+                <a href={`/airports/${entry.provider.data.slug}/`}>{entry.provider.data.name}详细资料与官网入口 →</a>
+              </p>
             </div>
           ),
       )
     }
   </div>
 
+  <h2>按场景看推荐</h2>
+  <p>综合排序照顾的是"大多数人"，如果你有明确的用途，场景推荐会更准：</p>
+  <ul class="quick-links">
+    {
+      scenarios.map((s) => (
+        <li>
+          <a href={`/scenarios/${s.data.slug}/`}>{s.data.emoji} {s.data.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <FaqSection items={faqItems} />
+
   <p>你可能还想看：</p>
   <ul class="quick-links">
-    <li><a href="/scenarios/">按场景选</a></li>
+    <li><a href="/tests/">机场实测数据：丢包率测试结果</a></li>
+    <li><a href="/clash/">Clash 教程：买好机场后怎么导入订阅</a></li>
     <li><a href="/airports/">机场导航</a></li>
     <li><a href="/methodology/">评测方法与数据说明</a></li>
   </ul>
@@ -64,10 +144,27 @@ const canonicalUrl = resolveCanonicalUrl('/rankings/');
     type="application/ld+json"
     set:html={JSON.stringify({
       '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `${yearMonth}机场推荐排行榜`,
+      itemListOrder: 'https://schema.org/ItemListOrderAscending',
+      numberOfItems: count,
+      itemListElement: rankedProviders.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: p.data.name,
+        url: resolveCanonicalUrl(`/airports/${p.data.slug}/`),
+      })),
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: title,
       description,
       url: canonicalUrl,
+      dateModified: formatDate(updatedAt),
     })}
   />
   <script
@@ -77,7 +174,7 @@ const canonicalUrl = resolveCanonicalUrl('/rankings/');
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '综合推荐完整榜单', item: canonicalUrl },
+        { '@type': 'ListItem', position: 2, name: '机场推荐排行榜', item: canonicalUrl },
       ],
     })}
   />

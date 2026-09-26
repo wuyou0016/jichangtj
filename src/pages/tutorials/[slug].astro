@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqSection from '../../components/FaqSection.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 import { siteConfig } from '../../config/site';
 
@@ -29,6 +30,13 @@ const GROUP_LABEL: Record<string, string> = {
 const allScenarios = await getCollection('scenarios');
 const relatedScenarios = allScenarios.filter((s) => tutorial.data.relatedScenarios?.includes(s.data.slug));
 
+// 同组教程优先，其次是其他组，最多 4 篇，给教程之间互相导流。
+const allTutorials = (await getCollection('tutorials')).filter((t) => t.id !== tutorial.id);
+const relatedTutorials = [
+  ...allTutorials.filter((t) => t.data.group === tutorial.data.group),
+  ...allTutorials.filter((t) => t.data.group !== tutorial.data.group),
+].slice(0, 4);
+
 function formatDate(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
@@ -38,7 +46,14 @@ const description = tutorial.data.description;
 const canonicalUrl = resolveCanonicalUrl(`/tutorials/${tutorial.id}/`);
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl} ogType="article">
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonicalUrl}
+  ogType="article"
+  publishedTime={formatDate(tutorial.data.publishedAt)}
+  modifiedTime={formatDate(tutorial.data.updatedAt)}
+>
   <nav aria-label="Breadcrumb">
     <a href="/">首页</a> › <a href="/tutorials/">使用教程</a> › {tutorial.data.title}
   </nav>
@@ -50,6 +65,25 @@ const canonicalUrl = resolveCanonicalUrl(`/tutorials/${tutorial.id}/`);
   <div class="article-body">
     <Content />
   </div>
+
+  {tutorial.data.faq && <FaqSection items={tutorial.data.faq} />}
+
+  {
+    relatedTutorials.length > 0 && (
+      <>
+        <h2>相关教程</h2>
+        <div class="tutorial-list">
+          {relatedTutorials.map((t) => (
+            <a href={`/tutorials/${t.id}/`} class="tutorial-card">
+              <span class="tutorial-card__group">{GROUP_LABEL[t.data.group] ?? t.data.group}</span>
+              <strong>{t.data.title}</strong>
+              <span>{t.data.description}</span>
+            </a>
+          ))}
+        </div>
+      </>
+    )
+  }
 
   {
     relatedScenarios.length > 0 && (
@@ -68,9 +102,9 @@ const canonicalUrl = resolveCanonicalUrl(`/tutorials/${tutorial.id}/`);
 
   <p>你可能还想看：</p>
   <ul class="quick-links">
+    <li><a href="/clash/">Clash 教程与客户端推荐</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
     <li><a href="/tutorials/">查看全部使用教程</a></li>
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/airports/">机场导航</a></li>
   </ul>
 
   <script

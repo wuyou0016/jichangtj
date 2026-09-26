@@ -1,7 +1,17 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqSection from '../../components/FaqSection.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
+import {
+  airportName,
+  formatDate,
+  formatPacketLoss,
+  formatStartingPrice,
+  formatTraffic,
+  formatUnitCost,
+  unitCost,
+} from '../../config/provider-facts';
 
 export async function getStaticPaths() {
   const scenarios = await getCollection('scenarios');
@@ -29,13 +39,24 @@ const picks = await Promise.all(
 const allTutorials = await getCollection('tutorials');
 const relatedTutorials = allTutorials.filter((t) => t.data.relatedScenarios?.includes(scenario.data.slug));
 
-const title = `${scenario.data.title}｜机场TJ`;
+// 场景数据表：预算场景按单位流量成本排序，游戏/办公场景按实测丢包率排序。
+// 只列资料里有对应数字的服务商，没有数字的不硬凑。
+const allProviders = await getCollection('providers');
+const costTable =
+  scenario.data.slug === 'budget'
+    ? allProviders
+        .filter((p) => unitCost(p.data.quickFacts) !== undefined)
+        .sort((a, b) => unitCost(a.data.quickFacts)! - unitCost(b.data.quickFacts)!)
+    : [];
+const lossTable = ['gaming', 'remote-work'].includes(scenario.data.slug)
+  ? allProviders
+      .filter((p) => p.data.quickFacts.packetLoss)
+      .sort((a, b) => a.data.quickFacts.packetLoss!.min - b.data.quickFacts.packetLoss!.min)
+  : [];
+
+const title = `${scenario.data.seoTitle}｜机场TJ`;
 const description = scenario.data.description;
 const canonicalUrl = resolveCanonicalUrl(`/scenarios/${scenario.data.slug}/`);
-
-function formatDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
-}
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
@@ -44,6 +65,7 @@ function formatDate(value: Date): string {
   </nav>
 
   <h1>{scenario.data.emoji} {scenario.data.title}</h1>
+  <p class="page-updated">最后更新：{formatDate(scenario.data.updatedAt)}</p>
   <p>{scenario.data.description}</p>
 
   <h2>这个场景该关注什么</h2>
@@ -76,6 +98,76 @@ function formatDate(value: Date): string {
   }
 
   {
+    costTable.length > 0 && (
+      <>
+        <h2>便宜机场单位流量成本对比</h2>
+        <p>按"起步套餐折合月价 ÷ 月流量"从低到高排列，只列出资料里价格和流量都明确的服务商：</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">机场</th>
+                <th scope="col">起步价</th>
+                <th scope="col">月流量</th>
+                <th scope="col">单位流量成本</th>
+                <th scope="col">实测丢包率</th>
+              </tr>
+            </thead>
+            <tbody>
+              {costTable.map((p) => (
+                <tr>
+                  <th scope="row">
+                    <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+                  </th>
+                  <td>{formatStartingPrice(p.data.quickFacts)}</td>
+                  <td>{formatTraffic(p.data.quickFacts)}</td>
+                  <td>{formatUnitCost(p.data.quickFacts)}</td>
+                  <td>{formatPacketLoss(p.data.quickFacts)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">价格来自站长核实或第三方资料，年付/月付口径可能不同，以官网为准；没有明确价格资料的服务商未列入。</p>
+      </>
+    )
+  }
+
+  {
+    lossTable.length > 0 && (
+      <>
+        <h2>实测丢包率排行</h2>
+        <p>本站在珠海联通网络下持续跟踪的丢包率，从低到高排列（多次测试的区间，不是单次数据）：</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">排名</th>
+                <th scope="col">机场</th>
+                <th scope="col">实测丢包率</th>
+                <th scope="col">起步价</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lossTable.map((p, i) => (
+                <tr>
+                  <td>{i + 1}</td>
+                  <th scope="row">
+                    <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+                  </th>
+                  <td>{formatPacketLoss(p.data.quickFacts)}</td>
+                  <td>{formatStartingPrice(p.data.quickFacts)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">测试方法与局限性见<a href="/tests/">机场实测数据</a>和<a href="/methodology/">评测方法</a>；你所在地区、运营商不同，结果可能不同。</p>
+      </>
+    )
+  }
+
+  {
     scenario.data.commonMistakes && scenario.data.commonMistakes.length > 0 && (
       <>
         <h2>常见误区</h2>
@@ -103,6 +195,8 @@ function formatDate(value: Date): string {
     )
   }
 
+  {scenario.data.faq && <FaqSection items={scenario.data.faq} />}
+
   <p class="scenario-caveat">实际体验受地区、网络环境、访问时间和具体套餐影响，以上建议仅供参考，购买前建议自行验证。</p>
 
   <h2>其他场景</h2>
@@ -120,9 +214,10 @@ function formatDate(value: Date): string {
 
   <p>你可能还想看：</p>
   <ul class="quick-links">
-    <li><a href="/rankings/">综合推荐榜</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/tests/">机场实测数据</a></li>
+    <li><a href="/clash/">Clash 教程</a></li>
     <li><a href="/airports/">机场导航</a></li>
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
   </ul>
 
   <p>本页最后更新于 {formatDate(scenario.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注。</p>
@@ -135,6 +230,8 @@ function formatDate(value: Date): string {
       name: title,
       description,
       url: canonicalUrl,
+      datePublished: formatDate(scenario.data.publishedAt),
+      dateModified: formatDate(scenario.data.updatedAt),
     })}
   />
   <script
