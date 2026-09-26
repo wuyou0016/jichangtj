@@ -1,8 +1,20 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqSection from '../../components/FaqSection.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+import {
+  PRICE_SOURCE_LABEL,
+  THIRD_PARTY_CLIENT_LABEL,
+  airportName,
+  formatDate,
+  formatPacketLoss,
+  formatStartingPrice,
+  formatTraffic,
+  formatUnitCost,
+  formatYearMonth,
+} from '../../config/provider-facts';
 
 export async function getStaticPaths() {
   const providers = await getCollection('providers');
@@ -17,6 +29,10 @@ interface Props {
 }
 
 const { provider } = Astro.props;
+const facts = provider.data.quickFacts;
+const name = provider.data.name;
+const seoName = airportName(name);
+const confidence = provider.data.dataConfidence as DataConfidence;
 
 const scenarios = await getCollection('scenarios');
 const relatedScenarios = scenarios.filter((s) =>
@@ -26,7 +42,17 @@ const relatedScenarios = scenarios.filter((s) =>
 const ownTestNotes = provider.data.thirdPartyNotes?.filter((n) => n.source === '站长本人测试') ?? [];
 const thirdPartyOnlyNotes = provider.data.thirdPartyNotes?.filter((n) => n.source !== '站长本人测试') ?? [];
 
-const relatedTutorials = (await getCollection('tutorials')).filter((t) => t.data.group === 'advanced').slice(0, 1);
+// 在综合推荐里的位置和理由，直接复用排行榜数据。
+const overallRanking = await getEntry('rankings', 'overall');
+const rankIndex = overallRanking?.data.entries.findIndex((e) => e.providerId.id === provider.id) ?? -1;
+const rankEntry = rankIndex >= 0 ? overallRanking?.data.entries[rankIndex] : undefined;
+const rankingYearMonth = overallRanking ? formatYearMonth(overallRanking.data.updatedAt) : '';
+
+// 其他机场：按综合推荐顺序列出，给详情页之间互相导流。
+const allProviders = await getCollection('providers');
+const otherProviders = (overallRanking?.data.entries ?? [])
+  .map((e) => allProviders.find((p) => p.id === e.providerId.id))
+  .filter((p): p is NonNullable<typeof p> => Boolean(p) && p!.id !== provider.id);
 
 const statusLabel: Record<string, string> = {
   active: '正常运营',
@@ -35,35 +61,138 @@ const statusLabel: Record<string, string> = {
   watch: '观察中',
 };
 
-function formatDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
-}
+const aliasText = provider.data.aliases && provider.data.aliases.length > 0 ? `（${provider.data.aliases.join(' / ')}）` : '';
+const lossText = formatPacketLoss(facts);
+const clientLabel = THIRD_PARTY_CLIENT_LABEL[facts.thirdPartyClient];
 
-const title = `${provider.data.name}适合哪些场景？｜机场TJ`;
-const description = `${provider.data.name}的官方公开信息、第三方资料，以及按不同使用场景整理的适配说明。`;
+const protocolText = facts.protocols?.length ? facts.protocols.join(' / ') : facts.protocolNote ? '资料有出入' : '待确认';
+
+const factItems = [
+  {
+    label: '起步价',
+    value: formatStartingPrice(facts),
+    note: [facts.priceNote, `价格资料：${PRICE_SOURCE_LABEL[facts.priceSource]}`].filter(Boolean).join('；'),
+  },
+  { label: '起步套餐流量', value: formatTraffic(facts) },
+  { label: '单位流量成本', value: formatUnitCost(facts), note: '起步套餐折合月价 ÷ 月流量' },
+  {
+    label: '本站实测丢包率',
+    value: lossText,
+    note: facts.packetLoss ? `珠海联通 · 多次测试区间 · ${formatDate(facts.packetLoss.date)}` : '本站尚未对该服务商做过丢包率测试',
+  },
+  ...(facts.streamingTest ? [{ label: '流媒体解锁实测', value: '已测试', note: facts.streamingTest }] : []),
+  { label: '协议', value: protocolText, note: facts.protocolNote },
+  ...(facts.routeType ? [{ label: '线路定位', value: facts.routeType }] : []),
+  { label: 'Clash 等第三方客户端', value: clientLabel, note: facts.thirdPartyClientNote },
+];
+
+const faqItems = [
+  {
+    q: `${seoName}怎么样？`,
+    a: [
+      rankEntry ? `${name}在本站${rankingYearMonth}机场推荐排行榜中排第 ${rankIndex + 1} 位。` : '',
+      facts.packetLoss ? `本站持续跟踪的丢包率约 ${lossText}。` : '本站暂时没有该服务商的实测数据。',
+      provider.data.scenarioFit.goodFor.length > 0 ? `比较适合：${provider.data.scenarioFit.goodFor.join('；')}。` : '',
+      provider.data.scenarioFit.notIdealFor.length > 0 ? `不太适合：${provider.data.scenarioFit.notIdealFor.join('；')}。` : '',
+    ].join(''),
+  },
+  {
+    q: `${seoName}多少钱？`,
+    a: facts.startingPrice
+      ? `资料显示起步价${facts.startingPrice}${facts.monthlyTrafficGB ? `，起步套餐 ${facts.monthlyTrafficGB}GB/月` : ''}（价格资料：${PRICE_SOURCE_LABEL[facts.priceSource]}${facts.priceNote ? `，${facts.priceNote}` : ''}）。机场经常调整套餐和优惠，购买前以官网当前页面为准。`
+      : `目前没有可靠的价格资料（${facts.priceNote ?? PRICE_SOURCE_LABEL[facts.priceSource]}），请以官网或客服报价为准。`,
+  },
+  {
+    q: `${seoName}支持 Clash 吗？`,
+    a:
+      facts.thirdPartyClient === 'not-supported'
+        ? `目前暂不支持：${facts.thirdPartyClientNote ?? '资料显示不提供通用订阅'}。如果你一定要用 Clash、小火箭等第三方客户端，可以先看看排行榜里的其他机场。`
+        : facts.thirdPartyClient === 'supported'
+          ? `支持，可以把订阅链接导入 Clash、小火箭等第三方客户端，导入方法见本站 Clash 教程。`
+          : `资料里还没有明确说法（${clientLabel}）${facts.thirdPartyClientNote ? `：${facts.thirdPartyClientNote}` : ''}。如果你一定要用 Clash、小火箭等第三方客户端，购买前建议先向客服确认是否提供通用订阅链接。`,
+  },
+  ...(facts.packetLoss
+    ? [
+        {
+          q: `${seoName}稳定吗？`,
+          a: `本站在珠海联通网络下持续跟踪的丢包率约 ${lossText}（测试日期 ${formatDate(facts.packetLoss.date)}）。这是早期观察结果，不同地区、运营商和时段的表现可能不同，建议先用短周期套餐自己验证晚高峰表现。`,
+        },
+      ]
+    : []),
+  {
+    q: `${seoName}官网是哪个？`,
+    a: `本页的"访问${name}官网"按钮直接跳转到官网入口（链接包含推广参数，见隐私政策说明）。机场官网域名可能因网络封锁而更换，如果打不开，可以换一个网络环境再试，或联系我们更新链接。`,
+  },
+];
+
+const title =
+  confidence === 'own-test'
+    ? `${seoName}怎么样？实测丢包率、套餐价格与官网入口｜机场TJ`
+    : `${seoName}怎么样？套餐价格、线路资料与官网入口｜机场TJ`;
+const description = [
+  `${name}${aliasText}机场测评：`,
+  facts.startingPrice ? `起步价${facts.startingPrice}，` : '',
+  facts.packetLoss ? `本站实测丢包率约 ${lossText}，` : '',
+  `Clash 等第三方客户端${clientLabel}。`,
+  '官方信息、第三方资料与适合场景分开整理，附官网入口。',
+].join('');
 const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
   <nav aria-label="Breadcrumb">
-    <a href="/">首页</a> › <a href="/airports/">机场导航</a> › {provider.data.name}
+    <a href="/">首页</a> › <a href="/airports/">机场导航</a> › {seoName}
   </nav>
 
-  <h1>{provider.data.name}｜适合哪些场景</h1>
+  <h1>{seoName}怎么样？测评与套餐资料</h1>
   <p>
     <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
-    <span
-      class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[provider.data.dataConfidence as DataConfidence]}`}
-    >
-      {DATA_CONFIDENCE_LABEL[provider.data.dataConfidence as DataConfidence]}
+    <span class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[confidence]}`}>
+      {DATA_CONFIDENCE_LABEL[confidence]}
     </span>
+  </p>
+  <p class="page-updated">
+    最后核实：{formatDate(provider.data.lastVerified)} · 页面更新：{formatDate(provider.data.updatedAt)}
+    {rankEntry && (
+      <>
+        {' '}· <a href="/rankings/">{rankingYearMonth}机场推荐排行榜</a>第 {rankIndex + 1} 位
+      </>
+    )}
+  </p>
+
+  <h2>{name}速览</h2>
+  <div class="facts-grid">
+    {
+      factItems.map((item) => (
+        <div class="facts-grid__item">
+          <span class="facts-grid__label">{item.label}</span>
+          <span class="facts-grid__value">{item.value}</span>
+          {item.note && <span class="facts-grid__note">{item.note}</span>}
+        </div>
+      ))
+    }
+  </div>
+  <p>
+    <a href={provider.data.vendor.officialWebsite} rel="sponsored nofollow noopener" target="_blank" class="cta-official">访问{name}官网 ↗</a>
   </p>
 
   <h2>基础资料</h2>
   <div class="info-panel">
     <p>{provider.data.vendor.description}</p>
-    <p><a href={provider.data.vendor.officialWebsite} rel="nofollow noopener" target="_blank">访问 {provider.data.name} 官网 ↗</a></p>
   </div>
+
+  {
+    rankEntry && (
+      <>
+        <h2>为什么排在第 {rankIndex + 1} 位</h2>
+        <div class="info-panel">
+          <p>{rankEntry.reason}</p>
+          {rankEntry.caution && <p class="pick-card__caution">⚠️ {rankEntry.caution}</p>}
+          <p><a href="/rankings/">查看完整机场推荐排行榜 →</a></p>
+        </div>
+      </>
+    )
+  }
 
   <h2>适合的使用场景</h2>
   <div class="suitability">
@@ -94,6 +223,7 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
               </li>
             ))}
           </ul>
+          <p><a href="/tests/">和其他机场的实测数据对比 →</a></p>
         </div>
       </>
     )
@@ -130,7 +260,8 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
     <ul>
       <li>最新套餐价格、流量档位与限时优惠，以官网当前页面为准，本站标注的是资料整理时的信息。</li>
       <li>协议、线路等技术细节可能随服务商调整而变化，长期使用前建议先用短周期套餐验证。</li>
-      {provider.data.dataConfidence !== 'own-test' && <li>本站尚未对该服务商做过实测，购买前建议先用小额套餐或免费试用验证实际体验。</li>}
+      {facts.thirdPartyClient !== 'supported' && <li>如果要用 Clash、小火箭等第三方客户端，购买前确认是否提供通用订阅链接。</li>}
+      {confidence !== 'own-test' && <li>本站尚未对该服务商做过实测，购买前建议先用小额套餐或免费试用验证实际体验。</li>}
     </ul>
   </div>
 
@@ -149,17 +280,31 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
     )
   }
 
-  <p>你可能还想看：</p>
+  <FaqSection items={faqItems} heading={`${seoName}常见问题`} />
+
+  <h2>买好之后怎么用</h2>
   <ul class="quick-links">
-    <li><a href="/airports/">查看更多机场导航</a></li>
-    <li><a href="/scenarios/">按场景选</a></li>
-    <li><a href="/rankings/">综合推荐榜</a></li>
-    {relatedTutorials.map((t) => (
-      <li><a href={`/tutorials/${t.id}/`}>{t.data.title}</a></li>
-    ))}
+    <li><a href="/clash/">Clash 教程：客户端下载与订阅导入</a></li>
+    <li><a href="/tutorials/client-setup-and-subscription-import/">Windows / Mac / iOS / 安卓客户端与订阅导入教程</a></li>
+    <li><a href="/tutorials/common-connection-problems/">连不上、速度慢？常见问题排查</a></li>
   </ul>
 
-  <p>本页最后更新于 {formatDate(provider.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注，不会混在一起呈现。</p>
+  <h2>其他机场</h2>
+  <ul class="quick-links">
+    {
+      otherProviders.map((p) => (
+        <li>
+          <a href={`/airports/${p.data.slug}/`}>{airportName(p.data.name)}</a>
+          <span class="hub-stats">
+            {' '}
+            · {formatStartingPrice(p.data.quickFacts)} · 实测丢包率 {formatPacketLoss(p.data.quickFacts)}
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="page-updated">本页最后更新于 {formatDate(provider.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注，不会混在一起呈现。</p>
 
   <script
     type="application/ld+json"
@@ -169,6 +314,12 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
       name: title,
       description,
       url: canonicalUrl,
+      dateModified: formatDate(provider.data.updatedAt),
+      about: {
+        '@type': 'Organization',
+        name,
+        alternateName: provider.data.aliases,
+      },
     })}
   />
   <script
@@ -179,7 +330,7 @@ const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
         { '@type': 'ListItem', position: 2, name: '机场导航', item: resolveCanonicalUrl('/airports/') },
-        { '@type': 'ListItem', position: 3, name: provider.data.name, item: canonicalUrl },
+        { '@type': 'ListItem', position: 3, name: seoName, item: canonicalUrl },
       ],
     })}
   />

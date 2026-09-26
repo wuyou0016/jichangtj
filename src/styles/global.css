@@ -271,7 +271,7 @@ th { background: var(--color-surface); }
 }
 .site-footer__inner {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
   gap: 24px;
   padding: 32px 20px;
 }
@@ -507,3 +507,75 @@ th { background: var(--color-surface); }
 }
 .section-data-note h2 { margin-top: 0; font-size: 1.1rem; }
 .section-data-note p { margin-bottom: 0; color: var(--color-muted); font-size: 0.9rem; }
+
+/* SEO 优化轮次新增：对比表 / FAQ / 速览 / 文章表格 */
+.compare-table caption { caption-side: top; text-align: left; font-weight: 600; padding-bottom: 8px; }
+.compare-table th[scope="row"] { font-weight: 600; white-space: nowrap; }
+.compare-table td, .compare-table th { white-space: nowrap; }
+.compare-table .confidence-tag { margin-left: 0; }
+.table-note { color: var(--color-muted); font-size: 0.8rem; margin: 0 0 1rem; }
+
+.faq { margin-top: 2.5rem; }
+.faq__item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 4px 0 12px;
+}
+.faq__item:last-of-type { border-bottom: none; }
+.faq__q { font-size: 1rem; margin: 1rem 0 0.35rem; }
+.faq__a { margin: 0; color: var(--color-text); }
+
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 1rem 0;
+}
+.facts-grid__item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 12px 14px;
+}
+.facts-grid__label { display: block; font-size: 0.78rem; color: var(--color-muted); }
+.facts-grid__value { display: block; font-weight: 600; margin-top: 2px; }
+.facts-grid__note { display: block; font-size: 0.78rem; color: var(--color-muted); margin-top: 4px; }
+
+.cta-official {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+}
+.cta-official:hover { text-decoration: none; background: color-mix(in srgb, var(--color-accent) 85%, black); }
+
+.page-updated { color: var(--color-muted); font-size: 0.85rem; }
+
+.article-body table { margin: 1rem 0; }
+@media (max-width: 640px) {
+  .article-body table { display: block; overflow-x: auto; }
+}
+.article-body code {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.88em;
+}
+
+.section-compare {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+.section-compare h2 { margin-top: 0; }
+.provider-card__facts {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+.pick-card__title { font-size: 1rem; margin: 0; font-weight: 400; }
+.pick-card__more { margin: 8px 0 0; font-size: 0.88rem; }

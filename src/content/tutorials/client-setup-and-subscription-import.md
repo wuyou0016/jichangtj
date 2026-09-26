@@ -1,9 +1,16 @@
 ---
-title: Windows / iOS / Android / macOS 客户端与订阅导入教程
-description: 拿到订阅链接之后，Windows、macOS、iOS、Android 四个系统分别用什么客户端、怎么导入订阅链接、导入之后要检查什么。
+title: 机场订阅怎么导入？Windows / Mac / iOS / 安卓客户端选择与导入教程
+description: 拿到机场订阅链接之后，Windows、macOS、iOS、Android 分别用什么客户端（Clash Verge Rev、小火箭、Clash Meta for Android、v2rayN）、怎么导入订阅、导入之后要检查什么。
 group: clients
 publishedAt: 2026-09-04
-updatedAt: 2026-09-04
+updatedAt: 2026-09-26
+faq:
+  - q: 订阅链接和节点有什么区别？
+    a: 节点是一台可以连接的服务器；订阅链接是一份会自动更新的节点列表。导入订阅链接后，客户端会定期拉取最新的节点，不需要一个个手动添加。
+  - q: 一个订阅链接可以在几台设备上用？
+    a: 取决于机场的套餐规则，很多机场会限制同时在线的设备数。具体以购买的套餐说明为准，超出限制可能导致部分设备连不上。
+  - q: Clash 订阅和通用订阅有什么区别？
+    a: 格式不同。Clash 订阅给 Clash 系客户端用（Clash Verge Rev、Clash Meta for Android 等），通用订阅（Base64 / V2Ray）给 v2rayN、v2rayNG 等用；小火箭通常有专门的 Shadowrocket 订阅。机场的"一键订阅"里一般都能找到对应格式。
 ---
 
 ## 先搞清楚"订阅链接"是什么
@@ -14,24 +21,26 @@ updatedAt: 2026-09-04
 
 ## Windows
 
-常见客户端是 Clash 系（比如 Clash Verge、Mihomo Party）或 sing-box 系的桌面客户端。基本流程：
+常见客户端是 Clash 系（比如 Clash Verge Rev、Mihomo Party）或 sing-box 系的桌面客户端，习惯 v2ray 系的也可以用 v2rayN。基本流程：
 
 1. 下载安装客户端。
 2. 找到"订阅""配置"或"Profile"相关的设置入口，粘贴订阅链接，点击下载/更新。
 3. 更新成功后，在节点列表里能看到多个节点，选一个测试连接。
 4. 开启系统代理（客户端里通常有个开关），浏览器访问一个网站测试是否生效。
 
+分步骤的详细教程：[Clash Verge Rev 使用教程](/tutorials/clash-verge-rev-tutorial/)、[v2rayN 使用教程](/tutorials/v2rayn-tutorial/)。还在用 Clash for Windows 的话，它已经停止维护，换客户端的方法见[Clash for Windows 停更后用什么](/tutorials/clash-for-windows-alternatives/)。
+
 ## macOS
 
-思路和 Windows 一致，常见客户端有 ClashX、Clash Verge、sing-box 客户端的 macOS 版本。导入订阅、选节点、开代理的步骤基本相同，界面略有差异。
+思路和 Windows 一致，常见客户端有 Clash Verge Rev、ClashX Meta（原版 ClashX 已停止维护）、sing-box 客户端的 macOS 版本。导入订阅、选节点、开代理的步骤基本相同，界面略有差异，Clash Verge Rev 的详细步骤见[Clash Verge Rev 使用教程](/tutorials/clash-verge-rev-tutorial/)。
 
 ## iOS
 
-iOS 上常见的是 Shadowrocket、Stash、Loon 这类客户端（部分需要非中国区 Apple ID 才能下载）。导入订阅的方式通常是：复制订阅链接后打开客户端，客户端会识别剪贴板内容并提示"是否添加该订阅"，确认即可；也可以在客户端内手动粘贴到订阅管理里。
+iOS 上常见的是 Shadowrocket（小火箭）、Stash、Loon 这类客户端（部分需要非中国区 Apple ID 才能下载）。导入订阅的方式通常是：复制订阅链接后打开客户端，客户端会识别剪贴板内容并提示"是否添加该订阅"，确认即可；也可以在客户端内手动粘贴到订阅管理里。小火箭的完整步骤见[小火箭 Shadowrocket 使用教程](/tutorials/shadowrocket-tutorial/)。
 
 ## Android
 
-常见客户端有 Clash Meta for Android、sing-box for Android、v2rayNG 等，视你的订阅链接格式支持的协议而定。导入方式和桌面端类似：打开客户端的订阅/配置管理界面，粘贴链接并更新。
+常见客户端有 Clash Meta for Android、sing-box for Android、v2rayNG 等，视你的订阅链接格式支持的协议而定。导入方式和桌面端类似：打开客户端的订阅/配置管理界面，粘贴链接并更新。Clash Meta for Android 的完整步骤见[Clash Meta for Android 使用教程](/tutorials/clash-meta-for-android-tutorial/)。
 
 ## 导入之后要检查什么
 
@@ -39,4 +48,4 @@ iOS 上常见的是 Shadowrocket、Stash、Loon 这类客户端（部分需要�
 - **测试延迟和连通性**：大多数客户端有内置的延迟测试功能，先测一遍找几个延迟较低的节点。
 - **实际打开一个网页**：延迟测试通过不代表一定能正常访问，最好实际打开一个网站确认。
 
-如果导入或连接过程中遇到问题，可以看[常见问题排查](/tutorials/common-connection-problems/)这篇文章；如果对节点、线路、协议这些概念还不熟悉，可以看[进阶术语解释](/tutorials/glossary-nodes-routes-protocols/)。
+如果导入或连接过程中遇到问题，可以看[常见问题排查](/tutorials/common-connection-problems/)这篇文章；如果对节点、线路、协议这些概念还不熟悉，可以看[进阶术语解释](/tutorials/glossary-nodes-routes-protocols/)；各平台 Clash 客户端的完整对照见[Clash 教程与客户端推荐](/clash/)。

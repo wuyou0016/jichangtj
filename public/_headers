@@ -1,0 +1,8 @@
+# Cloudflare Pages 自定义响应头。
+# *.pages.dev 是 Cloudflare 自动分配的预览/备用域名，内容与 jichangtj.net 完全相同，
+# 不让搜索引擎收录，避免和主域名产生重复内容。主域名 jichangtj.net 不受影响。
+https://jichangtj-cwu.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.jichangtj-cwu.pages.dev/*
+  X-Robots-Tag: noindex

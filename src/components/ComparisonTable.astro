@@ -1,0 +1,69 @@
+---
+// 机场对比表：起步价、流量、单位流量成本、实测丢包率、第三方客户端支持、资料可信度。
+// 数据全部来自 providers.json 的 quickFacts，没有的字段显示"待确认"/"暂无实测"，不做推测。
+import type { CollectionEntry } from 'astro:content';
+import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../config/data-confidence';
+import {
+  THIRD_PARTY_CLIENT_LABEL,
+  formatPacketLoss,
+  formatStartingPrice,
+  formatTraffic,
+  formatUnitCost,
+} from '../config/provider-facts';
+
+interface Props {
+  providers: CollectionEntry<'providers'>[];
+  // 显示排名序号（排行榜顺序）；目录页等非排名场景不显示。
+  ranked?: boolean;
+  caption?: string;
+}
+
+const { providers, ranked = false, caption } = Astro.props;
+---
+
+<div class="table-wrap">
+  <table class="compare-table">
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>
+        {ranked && <th scope="col">排名</th>}
+        <th scope="col">机场</th>
+        <th scope="col">起步价</th>
+        <th scope="col">月流量</th>
+        <th scope="col">单位流量成本</th>
+        <th scope="col">实测丢包率</th>
+        <th scope="col">Clash 等第三方客户端</th>
+        <th scope="col">资料来源</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        providers.map((provider, index) => {
+          const facts = provider.data.quickFacts;
+          const confidence = provider.data.dataConfidence as DataConfidence;
+          return (
+            <tr>
+              {ranked && <td>{index + 1}</td>}
+              <th scope="row">
+                <a href={`/airports/${provider.data.slug}/`}>{provider.data.name}</a>
+              </th>
+              <td>{formatStartingPrice(facts)}</td>
+              <td>{formatTraffic(facts)}</td>
+              <td>{formatUnitCost(facts)}</td>
+              <td>{formatPacketLoss(facts)}</td>
+              <td>{THIRD_PARTY_CLIENT_LABEL[facts.thirdPartyClient]}</td>
+              <td>
+                <span class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[confidence]}`}>
+                  {DATA_CONFIDENCE_LABEL[confidence]}
+                </span>
+              </td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>
+<p class="table-note">
+  起步价、流量来自站长核实或第三方公开资料，年付/月付口径可能不同，以官网为准；单位流量成本 = 起步套餐折合月价 ÷ 月流量，仅供横向参考；丢包率为本站在珠海联通网络下的多次测试区间，测试方法见<a href="/methodology/">评测方法</a>。
+</p>

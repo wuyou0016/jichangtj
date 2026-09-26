@@ -42,3 +42,12 @@
 ---
 
 <!-- 后续每次上线或复核，在下面新增一个 `## 日期 标题` 条目，保留历史记录，不要覆盖旧内容。 -->
+
+## 2026-09-26 SEO 深度优化（待合并上线）
+
+本次改动在 `claude/elegant-sagan-hb8wrn` 分支，**尚未合并到 `master`、尚未部署**。改动内容、关键词对应关系、维护规则和上线后待办见 [`docs/seo-optimization-2026-09.md`](./seo-optimization-2026-09.md)。
+
+上线后请在这里补一条记录：上线 commit、sitemap 重新提交状态、请求编入索引的 URL，以及 `jichangtj-cwu.pages.dev` 的 `X-Robots-Tag: noindex` 验证结果。
+
+---
+

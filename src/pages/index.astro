@@ -1,9 +1,12 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ComparisonTable from '../components/ComparisonTable.astro';
+import FaqSection from '../components/FaqSection.astro';
 import { siteConfig } from '../config/site';
 import { resolveCanonicalUrl } from '../config/seo';
 import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../config/data-confidence';
+import { formatYearMonth } from '../config/provider-facts';
 
 const scenarios = await getCollection('scenarios');
 const providers = await getCollection('providers');
@@ -12,10 +15,10 @@ const tutorials = await getCollection('tutorials');
 // 首屏"30 秒先选方向"固定 4 个场景入口，顺序与文案独立于 /scenarios/ 列表页的排序。
 const HERO_SCENARIO_ORDER = ['budget', 'gaming', 'remote-work', 'streaming'];
 const HERO_TAGLINE: Record<string, string> = {
-  budget: '看单位流量成本',
-  gaming: '看延迟与丢包',
-  'remote-work': '看长期稳定性',
-  streaming: '看真实解锁记录',
+  budget: '便宜机场：看单位流量成本',
+  gaming: '游戏机场：看延迟与丢包',
+  'remote-work': '稳定机场：看长期丢包率',
+  streaming: '流媒体机场：看真实解锁记录',
 };
 const heroScenarios = HERO_SCENARIO_ORDER.map((slug) => scenarios.find((s) => s.data.slug === slug)).filter(
   (s): s is NonNullable<typeof s> => Boolean(s),
@@ -34,35 +37,86 @@ const rankingEntries = overallRanking
     )
   : [];
 const top3 = rankingEntries.slice(0, 3);
+const rankedProviders = rankingEntries
+  .map((entry) => entry.provider)
+  .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+const rankingUpdatedAt = overallRanking?.data.updatedAt ?? new Date();
+const yearMonth = formatYearMonth(rankingUpdatedAt);
+const year = rankingUpdatedAt.getUTCFullYear();
+const testedCount = providers.filter((p) => p.data.quickFacts.packetLoss).length;
 
 const CORE_ENTRIES = [
-  { href: '/scenarios/', title: '按场景选', desc: '按预算、游戏、办公、流媒体分别给建议' },
-  { href: '/rankings/', title: '综合推荐', desc: '不想分场景就看这个，全部 9 家排序理由' },
-  { href: '/airports/', title: '机场导航', desc: '浏览已收录服务商，查看套餐与线路资料' },
-  { href: '/methodology/', title: '评测方法', desc: '本站怎么测的、数据可信度标签什么意思' },
-  { href: '/tutorials/', title: '使用教程', desc: '新手入门、客户端设置、常见问题排查' },
+  { href: '/rankings/', title: '机场推荐排行榜', desc: `全部 ${providers.length} 家排序与理由，每月更新` },
+  { href: '/scenarios/', title: '按场景选机场', desc: '便宜、游戏、办公、流媒体分别推荐' },
+  { href: '/tests/', title: '机场实测数据', desc: `${testedCount} 家机场的丢包率跟踪结果` },
+  { href: '/airports/', title: '机场导航', desc: '已收录机场的官网、套餐与资料来源' },
+  { href: '/clash/', title: 'Clash 教程', desc: 'Clash 客户端下载、订阅导入与模式设置' },
 ];
+
+// 梯子客户端教程入口：固定挑最常被搜索的几篇，顺序即展示顺序。
+const CLIENT_TUTORIAL_IDS = [
+  'clash-verge-rev-tutorial',
+  'shadowrocket-tutorial',
+  'clash-meta-for-android-tutorial',
+  'v2rayn-tutorial',
+];
+const clientTutorials = CLIENT_TUTORIAL_IDS.map((id) => tutorials.find((t) => t.id === id)).filter(
+  (t): t is NonNullable<typeof t> => Boolean(t),
+);
 
 const PRINCIPLES = [
   { title: '推荐用于缩小范围，详情页用于核对证据', desc: '综合推荐和场景推荐是编辑判断，能帮你快速排除明显不合适的选项；真正下决定前，去服务商详情页看套餐、线路和资料来源。' },
   { title: '不同使用场景看不同指标', desc: '游戏和远程办公在意丢包率，预算有限在意单位流量成本，流媒体解锁在意有没有真实测试支撑——没有一个指标能回答所有场景的问题。' },
   { title: '陌生服务商优先选短周期套餐', desc: '第一次用一家没了解过的服务商，先用月付或更短周期实际体验，确认稳定后再考虑年付，能避免大额预付后才发现不合适。' },
-  { title: '标签说明"资料从哪来"，不是打分', desc: '"已有本站实测""仅第三方资料"这些标签描述的是信息可信度，不代表服务好不好，具体含义见评测方法页。' },
+  { title: '要用 Clash 先确认支持通用订阅', desc: '部分机场只能用官方客户端，订阅链接导不进 Clash、小火箭。对比表里单独列出了"第三方客户端"一栏，没有资料的标"待确认"。' },
 ];
 
+// 新手快速通道：固定 4 篇入门文章。
+const STARTER_TUTORIAL_IDS = [
+  'what-is-airport-and-how-to-choose',
+  'tizi-vpn-airport-comparison',
+  'client-setup-and-subscription-import',
+  'common-connection-problems',
+];
 const TUTORIAL_GROUP_LABEL: Record<string, string> = {
   basics: '新手先读',
   clients: '客户端入门',
   troubleshooting: '常见问题',
   advanced: '进阶理解',
 };
-const tutorialHighlights = ['basics', 'clients', 'troubleshooting', 'advanced']
-  .map((group) => tutorials.find((t) => t.data.group === group))
-  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+const starterTutorials = STARTER_TUTORIAL_IDS.map((id) => tutorials.find((t) => t.id === id)).filter(
+  (t): t is NonNullable<typeof t> => Boolean(t),
+);
 
-const title = '机场推荐，按你的使用场景选｜机场TJ';
-const description =
-  '机场TJ按使用场景整理机场代理选择建议——预算有限、游戏加速、远程办公、流媒体解锁，先找到你的场景再看推荐，比一份笼统的排行榜更快找到答案。';
+const top1Name = top3[0]?.provider?.data.name ?? '';
+const top1KeyFact = top3[0]?.keyFact;
+
+const faqItems = [
+  {
+    q: `${year} 年机场推荐哪家好？`,
+    a: `没有对所有人都最好的机场，先看使用场景：预算有限看单位流量成本，游戏和远程办公看丢包率，流媒体看有没有真实解锁记录。如果不想细分，本站${yearMonth}综合推荐第 1 位是${top1Name}${top1KeyFact ? `（${top1KeyFact}）` : ''}，完整排序和理由见机场推荐排行榜。`,
+  },
+  {
+    q: '机场、梯子、VPN 有什么区别？',
+    a: '“梯子”是翻墙工具的统称。机场是按流量或时间收费、一个订阅里提供几十上百个节点的代理服务，需要配合 Clash、小火箭等客户端使用；传统 VPN 通常是一家公司运营全部服务器、用自家 App 一键连接。两者是产品形态不同，机场更灵活、价格通常更低，VPN 更省心。',
+  },
+  {
+    q: '买了机场怎么用？支持 Clash 吗？',
+    a: '大多数机场会提供订阅链接，复制到 Clash Verge Rev、小火箭（Shadowrocket）、Clash Meta for Android、v2rayN 等客户端里导入即可。但也有机场只能用官方自研客户端，购买前可以看对比表里的“第三方客户端”一栏，具体步骤见 Clash 教程。',
+  },
+  {
+    q: '第一次买机场，选月付还是年付？',
+    a: '第一次用一家服务商，优先月付或更短周期，用一个月确认晚高峰表现和客服响应，再决定是否年付。机场行业里服务商停运、改名重开的情况并不罕见，短周期能控制损失。',
+  },
+  {
+    q: '本站的推荐和数据可信吗？',
+    a: '本站把官方信息、第三方资料和站长实测分开标注，丢包率是在固定网络环境下多次测试得到的区间，不是单次数据；推荐顺序是编辑判断，每条都写明理由。部分官网链接含推广参数，已在隐私政策中说明。测试方法和局限性见评测方法页。',
+  },
+];
+
+const title = `${year}机场推荐：稳定好用的梯子与 Clash 机场实测对比｜机场TJ`;
+const description = `${yearMonth}更新：${providers.length} 家机场的实测丢包率、起步价与单位流量成本对比，按预算、游戏、远程办公、流媒体场景推荐稳定好用的梯子，附 Clash、小火箭、v2rayN 使用教程。`;
 const canonicalUrl = resolveCanonicalUrl('/');
 ---
 
@@ -70,15 +124,15 @@ const canonicalUrl = resolveCanonicalUrl('/');
   <section class="hero">
     <div class="hero__grid">
       <div class="hero__text">
-        <p class="hero__eyebrow">{siteConfig.brandName}</p>
-        <h1>机场推荐，按你的使用场景选</h1>
+        <p class="hero__eyebrow">{siteConfig.brandName} · {yearMonth}更新</p>
+        <h1>{year} 机场推荐：按场景选稳定好用的梯子</h1>
         <p class="hero__lead">
-          帮你按预算、游戏、远程办公、流媒体等真实需求理解选择依据，而不是机械看一份总榜。
+          {providers.length} 家机场的实测丢包率、起步价和单位流量成本放在一张表里对比，再按预算、游戏、远程办公、流媒体给出推荐；已经买好订阅的话，Clash、小火箭、v2rayN 教程也在这里。
         </p>
         <div class="hero__ctas">
-          <a href="/scenarios/" class="hero__cta hero__cta--primary">按场景选</a>
-          <a href="/rankings/" class="hero__cta">看综合推荐</a>
-          <a href="/tutorials/" class="hero__cta">从新手教程开始</a>
+          <a href="/rankings/" class="hero__cta hero__cta--primary">看机场推荐排行榜</a>
+          <a href="/scenarios/" class="hero__cta">按场景选</a>
+          <a href="/clash/" class="hero__cta">Clash 教程</a>
         </div>
       </div>
       <svg class="hero__art" viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="节点与线路示意图">
@@ -102,7 +156,7 @@ const canonicalUrl = resolveCanonicalUrl('/');
         heroScenarios.map((scenario) => (
           <a href={`/scenarios/${scenario.data.slug}/`} class="scenario-card">
             <span class="scenario-card__emoji">{scenario.data.emoji}</span>
-            <span class="scenario-card__title">{scenario.data.title.split('，')[0]}</span>
+            <span class="scenario-card__title">{scenario.data.shortTitle}</span>
             <p class="scenario-card__desc">{HERO_TAGLINE[scenario.data.slug]}</p>
           </a>
         ))
@@ -110,36 +164,8 @@ const canonicalUrl = resolveCanonicalUrl('/');
     </div>
   </section>
 
-  <section class="section-principles">
-    <h2>选择前先知道</h2>
-    <div class="principle-list">
-      {
-        PRINCIPLES.map((p) => (
-          <div class="principle-item">
-            <p class="principle-item__title">{p.title}</p>
-            <p class="principle-item__desc">{p.desc}</p>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="section-core">
-    <h2>核心入口</h2>
-    <div class="core-grid">
-      {
-        CORE_ENTRIES.map((entry) => (
-          <a href={entry.href} class="core-card">
-            <strong>{entry.title}</strong>
-            <span>{entry.desc}</span>
-          </a>
-        ))
-      }
-    </div>
-  </section>
-
   <section class="section-top3">
-    <h2>综合推荐 Top 3</h2>
+    <h2>{yearMonth}综合推荐 Top 3</h2>
     <p class="hub-stats">综合推荐不等于所有人的最佳选择，具体理由和数据可信度已经标在每张卡片上。</p>
 
     <div class="top3-grid">
@@ -182,13 +208,71 @@ const canonicalUrl = resolveCanonicalUrl('/');
       }
     </div>
 
-    <a href="/rankings/" class="section-link">查看完整综合榜（全部 {rankingEntries.length} 家）→</a>
+    <a href="/rankings/" class="section-link">查看完整机场推荐排行榜（全部 {rankingEntries.length} 家）→</a>
+  </section>
+
+  <section class="section-compare">
+    <h2>{yearMonth}机场对比：价格、流量与实测丢包率</h2>
+    <p>
+      按综合推荐顺序排列。想省钱就看"单位流量成本"，打游戏、远程办公就看"实测丢包率"，要用 Clash、小火箭导入订阅就先看"第三方客户端"一栏。
+    </p>
+    <ComparisonTable providers={rankedProviders} ranked />
+    <a href="/tests/" class="section-link">查看丢包率测试方法与完整数据 →</a>
+  </section>
+
+  <section class="section-next">
+    <h2>梯子怎么用：Clash / 小火箭 / v2rayN 教程</h2>
+    <p>买好机场之后，把订阅链接导入客户端才能用。按你的设备选一篇：</p>
+    <div class="tutorial-list">
+      <a href="/clash/" class="tutorial-card">
+        <span class="tutorial-card__group">专题</span>
+        <strong>Clash 教程与客户端推荐</strong>
+        <span>Clash for Windows 停更后用什么、各平台 Clash 客户端怎么选、订阅怎么导入。</span>
+      </a>
+      {
+        clientTutorials.map((t) => (
+          <a href={`/tutorials/${t.id}/`} class="tutorial-card">
+            <span class="tutorial-card__group">{TUTORIAL_GROUP_LABEL[t.data.group]}</span>
+            <strong>{t.data.title}</strong>
+            <span>{t.data.description}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section-principles">
+    <h2>选择前先知道</h2>
+    <div class="principle-list">
+      {
+        PRINCIPLES.map((p) => (
+          <div class="principle-item">
+            <p class="principle-item__title">{p.title}</p>
+            <p class="principle-item__desc">{p.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section-core">
+    <h2>核心入口</h2>
+    <div class="core-grid">
+      {
+        CORE_ENTRIES.map((entry) => (
+          <a href={entry.href} class="core-card">
+            <strong>{entry.title}</strong>
+            <span>{entry.desc}</span>
+          </a>
+        ))
+      }
+    </div>
   </section>
 
   <section class="section-data-note">
     <h2>证据与数据中心</h2>
     <p>
-      每个服务商的信息分三类：官方自己说的、第三方资料整理的、本站实测的，可信度不一样，本站不会混在一起呈现。当前收录 {providers.length} 家服务商，标注的资料可信度包括——{confidenceLabelList}，具体分类方法和测试局限性说明见<a href="/methodology/">评测方法与数据说明</a>，每家的具体来源列在各自的<a href="/airports/">服务商详情页</a>里。
+      每个服务商的信息分三类：官方自己说的、第三方资料整理的、本站实测的，可信度不一样，本站不会混在一起呈现。当前收录 {providers.length} 家服务商，其中 {testedCount} 家有本站持续跟踪的<a href="/tests/">丢包率实测数据</a>；标注的资料可信度包括——{confidenceLabelList}，具体分类方法和测试局限性说明见<a href="/methodology/">评测方法与数据说明</a>，每家的具体来源列在各自的<a href="/airports/">服务商详情页</a>里。
     </p>
   </section>
 
@@ -196,7 +280,7 @@ const canonicalUrl = resolveCanonicalUrl('/');
     <h2>新手快速通道</h2>
     <div class="tutorial-list">
       {
-        tutorialHighlights.map((t) => (
+        starterTutorials.map((t) => (
           <a href={`/tutorials/${t.id}/`} class="tutorial-card">
             <span class="tutorial-card__group">{TUTORIAL_GROUP_LABEL[t.data.group]}</span>
             <strong>{t.data.title}</strong>
@@ -207,6 +291,8 @@ const canonicalUrl = resolveCanonicalUrl('/');
     </div>
     <a href="/tutorials/" class="section-link">查看全部使用教程 →</a>
   </section>
+
+  <FaqSection items={faqItems} />
 
   <section class="section-about-brief">
     <h2>关于机场TJ</h2>
@@ -221,12 +307,12 @@ const canonicalUrl = resolveCanonicalUrl('/');
     set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: `${siteConfig.brandName}场景分类`,
-      itemListElement: heroScenarios.map((s, i) => ({
+      name: `${yearMonth}机场推荐`,
+      itemListElement: rankedProviders.map((p, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        name: s.data.title,
-        url: new URL(`/scenarios/${s.data.slug}/`, siteConfig.url).toString(),
+        name: p.data.name,
+        url: new URL(`/airports/${p.data.slug}/`, siteConfig.url).toString(),
       })),
     })}
   />
