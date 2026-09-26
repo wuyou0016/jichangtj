@@ -1,6 +1,7 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
 
@@ -21,7 +22,7 @@ const canonicalUrl = resolveCanonicalUrl('/rankings/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 综合推荐完整榜单</nav>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '综合推荐完整榜单', href: '/rankings/' }]} />
 
   <h1>综合推荐完整榜单</h1>
   <p>
@@ -68,17 +69,6 @@ const canonicalUrl = resolveCanonicalUrl('/rankings/');
       name: title,
       description,
       url: canonicalUrl,
-    })}
-  />
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '综合推荐完整榜单', item: canonicalUrl },
-      ],
     })}
   />
 </BaseLayout>

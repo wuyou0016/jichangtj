@@ -1,6 +1,7 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 
 export async function getStaticPaths() {
@@ -39,9 +40,13 @@ function formatDate(value: Date): string {
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb">
-    <a href="/">首页</a> › <a href="/scenarios/">按场景选</a> › {scenario.data.title}
-  </nav>
+  <Breadcrumbs
+    items={[
+      { name: '首页', href: '/' },
+      { name: '按场景选', href: '/scenarios/' },
+      { name: scenario.data.title, href: `/scenarios/${scenario.data.slug}/` },
+    ]}
+  />
 
   <h1>{scenario.data.emoji} {scenario.data.title}</h1>
   <p>{scenario.data.description}</p>

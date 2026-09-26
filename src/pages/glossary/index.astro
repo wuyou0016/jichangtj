@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const entries = await getCollection('glossary');
+
+const CATEGORY_ORDER = ['concept', 'protocol', 'line', 'billing'] as const;
+const CATEGORY_LABEL: Record<(typeof CATEGORY_ORDER)[number], string> = {
+  concept: '概念辨析',
+  protocol: '传输协议',
+  line: '线路架构',
+  billing: '计费与流量',
+};
+const CATEGORY_DESC: Record<(typeof CATEGORY_ORDER)[number], string> = {
+  concept: '"机场""梯子""VPN"这些词到底是什么关系，先从这里理清楚。',
+  protocol: 'Shadowsocks、VMess、VLESS、Trojan 这些协议名字具体指什么，各自优缺点是什么。',
+  line: 'IPLC、IEPL、中转、落地、BGP 多线，节点名称里常见的线路术语。',
+  billing: '流量倍率这类容易被忽略、但直接影响钱包的计费细节。',
+};
+
+const groups = CATEGORY_ORDER.map((key) => ({
+  key,
+  label: CATEGORY_LABEL[key],
+  description: CATEGORY_DESC[key],
+  items: entries
+    .filter((e) => e.data.category === key)
+    .sort((a, b) => a.data.term.localeCompare(b.data.term, 'zh-CN')),
+}));
+
+const title = '机场术语库｜Shadowsocks、VMess、Trojan、IPLC 等协议与线路名词解释｜机场TJ';
+const description =
+  '机场、梯子、VPN 相关术语一次查全——协议（Shadowsocks/VMess/VLESS/Trojan/Hysteria2/Reality）、线路（IPLC/IEPL/中转/落地）、计费（流量倍率）等常见名词解释。';
+const canonicalUrl = resolveCanonicalUrl('/glossary/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '术语库', href: '/glossary/' }]} />
+
+  <h1>机场术语库</h1>
+  <p>
+    "机场""梯子""VPN"这几个词经常被混着用，节点列表里的 Shadowsocks、VMess、Trojan、IPLC 这些名字也不是人人都清楚具体含义。这里把常见术语按类型整理成词条，每条单独成页，方便直接搜到你想查的那个词。不知道从哪开始，建议先看<a href="/glossary/airport-ladder-vpn-difference/">机场、梯子、VPN 是什么关系</a>。
+  </p>
+
+  {
+    groups.map((group) => (
+      <section class="tutorial-group">
+        <h2>{group.label}</h2>
+        <p class="tutorial-group__desc">{group.description}</p>
+        {group.items.length > 0 ? (
+          <div class="tutorial-list">
+            {group.items.map((item) => (
+              <a href={`/glossary/${item.id}/`} class="tutorial-card">
+                <strong>{item.data.term}</strong>
+                <span>{item.data.description}</span>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="tutorial-group__empty">这一类还在补充中。</p>
+        )}
+      </section>
+    ))
+  }
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/tutorials/">使用教程</a></li>
+    <li><a href="/faq/">常见问题</a></li>
+    <li><a href="/methodology/">评测方法与数据说明</a></li>
+  </ul>
+</BaseLayout>

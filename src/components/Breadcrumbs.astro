@@ -1,0 +1,45 @@
+---
+// 站内统一的面包屑：同时负责可见导航和 BreadcrumbList 结构化数据，
+// 避免每个页面手写重复的 JSON-LD（之前每个详情页都各自拼一份，容易漏改）。
+import { resolveCanonicalUrl } from '../config/seo';
+
+interface Crumb {
+  name: string;
+  href: string;
+}
+
+interface Props {
+  items: Crumb[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  {
+    items.map((item, index) => (
+      <>
+        {index > 0 && <span class="breadcrumbs__sep">›</span>}
+        {index === items.length - 1 ? (
+          <span aria-current="page">{item.name}</span>
+        ) : (
+          <a href={item.href}>{item.name}</a>
+        )}
+      </>
+    ))
+  }
+</nav>
+
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: resolveCanonicalUrl(item.href),
+    })),
+  })}
+/>

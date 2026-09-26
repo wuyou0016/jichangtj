@@ -1,0 +1,32 @@
+---
+// 长文章用的目录：直接吃 Astro Content render() 返回的 headings 数组，
+// 不额外解析 Markdown，也不需要手动维护目录列表。
+// 只收 h2/h3，h1 是标题本身不需要进目录。
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 2 && (
+    <details class="toc" open>
+      <summary>本文目录</summary>
+      <ol>
+        {items.map((h) => (
+          <li style={h.depth === 3 ? 'margin-left: 1rem; list-style: circle;' : undefined}>
+            <a href={`#${h.slug}`}>{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  )
+}

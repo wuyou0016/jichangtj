@@ -1,0 +1,129 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('glossary');
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: Awaited<ReturnType<typeof getCollection<'glossary'>>>[number];
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+
+const CATEGORY_LABEL: Record<string, string> = {
+  concept: '概念辨析',
+  protocol: '传输协议',
+  line: '线路架构',
+  billing: '计费与流量',
+};
+
+const allGlossary = await getCollection('glossary');
+const relatedGlossary = (entry.data.relatedGlossary ?? [])
+  .map((slug) => allGlossary.find((g) => g.id === slug))
+  .filter((g): g is NonNullable<typeof g> => Boolean(g));
+
+const allScenarios = await getCollection('scenarios');
+const relatedScenarios = allScenarios.filter((s) => entry.data.relatedScenarios?.includes(s.data.slug));
+
+function formatDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
+const title = `${entry.data.title}｜机场术语库｜机场TJ`;
+const description = entry.data.description;
+const canonicalUrl = resolveCanonicalUrl(`/glossary/${entry.id}/`);
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl} ogType="article">
+  <Breadcrumbs
+    items={[
+      { name: '首页', href: '/' },
+      { name: '术语库', href: '/glossary/' },
+      { name: entry.data.term, href: `/glossary/${entry.id}/` },
+    ]}
+  />
+
+  <p class="status-dot">{CATEGORY_LABEL[entry.data.category] ?? entry.data.category}</p>
+  <h1>{entry.data.title}</h1>
+  <p class="hub-stats">发布于 {formatDate(entry.data.publishedAt)} · 更新于 {formatDate(entry.data.updatedAt)}</p>
+
+  <TableOfContents headings={headings} />
+
+  <div class="article-body">
+    <Content />
+  </div>
+
+  {
+    relatedGlossary.length > 0 && (
+      <>
+        <h2>相关术语</h2>
+        <ul class="quick-links">
+          {relatedGlossary.map((g) => (
+            <li>
+              <a href={`/glossary/${g.id}/`}>{g.data.term}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    relatedScenarios.length > 0 && (
+      <>
+        <h2>相关场景</h2>
+        <ul class="quick-links">
+          {relatedScenarios.map((s) => (
+            <li>
+              <a href={`/scenarios/${s.data.slug}/`}>{s.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/glossary/">查看全部术语</a></li>
+    <li><a href="/tutorials/">使用教程</a></li>
+    <li><a href="/airports/">机场导航</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTerm',
+      name: entry.data.term,
+      description,
+      url: canonicalUrl,
+      inDefinedTermSet: resolveCanonicalUrl('/glossary/'),
+    })}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: entry.data.title,
+      description,
+      url: canonicalUrl,
+      datePublished: entry.data.publishedAt.toISOString().slice(0, 10),
+      dateModified: entry.data.updatedAt.toISOString().slice(0, 10),
+      author: { '@type': 'Organization', name: siteConfig.brandName },
+      publisher: { '@type': 'Organization', name: siteConfig.brandName },
+    })}
+  />
+</BaseLayout>

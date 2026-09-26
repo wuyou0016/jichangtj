@@ -23,4 +23,8 @@ export const siteConfig = {
   author: {
     name: '机场TJ编辑团队',
   },
+
+  social: {
+    telegram: 'https://t.me/xxxxtony',
+  },
 } as const;

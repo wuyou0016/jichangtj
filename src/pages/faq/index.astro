@@ -1,0 +1,196 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+interface FaqItem {
+  question: string;
+  answer: string;
+  links?: { href: string; label: string }[];
+}
+
+interface FaqGroup {
+  heading: string;
+  items: FaqItem[];
+}
+
+const GROUPS: FaqGroup[] = [
+  {
+    heading: '基础概念',
+    items: [
+      {
+        question: '机场是什么？和大家常说的"梯子""VPN"是一回事吗？',
+        answer:
+          '"机场"是国内圈子对一种按流量/时长收费、提供多个节点订阅的代理服务的行业叫法；"梯子"是"翻墙工具"的通俗统称，不特指某种技术；"VPN"本来是一个具体的网络技术术语，但日常语境里也经常被泛化指代任何翻墙工具。三者解决的需求大多相同，只是叫法和产品形态不同。',
+        links: [{ href: '/glossary/airport-ladder-vpn-difference/', label: '机场、梯子、VPN 是什么关系（详细版）' }],
+      },
+      {
+        question: '机场和传统 VPN 该怎么选？',
+        answer:
+          '追求"打开就能用、不想管技术细节"，传统 VPN 门槛更低；追求"更多节点、更灵活切换线路、愿意花点时间学客户端设置"，机场的可玩性和上限更高。两者不是谁更好，是产品形态不同。',
+        links: [{ href: '/glossary/airport-ladder-vpn-difference/', label: '查看详细对比表' }],
+      },
+      {
+        question: 'Shadowsocks、VMess、VLESS、Trojan 这些协议我该选哪个？',
+        answer:
+          '不需要死记硬背，简单说：Shadowsocks 兼容性最好、适合老设备；Trojan 和 Reality 抗封锁能力更强；Hysteria2 在网络不稳定、丢包多的环境下速度体验通常更好。具体每种协议是什么、怎么选，术语库里逐条有解释。',
+        links: [{ href: '/glossary/', label: '查看全部协议术语' }],
+      },
+    ],
+  },
+  {
+    heading: '选购与决策',
+    items: [
+      {
+        question: '第一次用机场，需要注意什么？',
+        answer:
+          '先明确自己的使用场景（预算、游戏、办公、流媒体，关注的指标不一样），第一次用一家新服务商优先选月付或更短周期套餐，用一段时间确认稳定后再考虑年付，能避免大额预付后才发现不合适。',
+        links: [
+          { href: '/tutorials/what-is-airport-and-how-to-choose/', label: '新手完整入门教程' },
+          { href: '/scenarios/', label: '按场景选' },
+        ],
+      },
+      {
+        question: '机场多少钱一个月？为什么不同服务商价格差这么多？',
+        answer:
+          '价格差异主要来自线路成本——用公网线路的套餐通常更便宜，用 IPLC/IEPL 专线的套餐成本高、价格也更高；另外要注意部分高质量节点会有"流量倍率"，标称流量和实际可用流量不是一回事，算总账前建议先搞清楚倍率规则。',
+        links: [
+          { href: '/glossary/what-is-traffic-multiplier/', label: '流量倍率是什么' },
+          { href: '/scenarios/budget/', label: '预算有限场景怎么算账' },
+        ],
+      },
+      {
+        question: '月付还是年付划算？',
+        answer:
+          '第一次用一家没了解过的服务商，优先月付或更短周期，哪怕单价贵一点，用一个月体验稳定性和客服响应再决定；已经用了几个月、体验稳定的服务商，年付通常单价更低，但也要接受"服务商未必能长期稳定运营"这个风险。',
+        links: [{ href: '/tutorials/what-is-airport-and-how-to-choose/', label: '查看完整说明' }],
+      },
+      {
+        question: '免费的机场或免费 VPN 能长期用吗？',
+        answer:
+          '免费服务通常在节点数量、带宽、稳定性上会有明显限制，也存在部分免费服务靠出售用户数据盈利的风险。短期应急可以用，长期稳定使用建议还是选一家资料透明、可以先小额验证的付费服务商。',
+      },
+    ],
+  },
+  {
+    heading: '可靠性与风险',
+    items: [
+      {
+        question: '机场会不会跑路？怎么判断一家服务商靠不靠谱？',
+        answer:
+          '机场行业确实存在服务商停止运营、更名重开的情况，没有百分之百的保证方法，但有一些可以提前留意的信号，比如官网信息是否透明、是否要求一次性大额年付、能否查到基本的运营历史等。',
+        links: [{ href: '/tutorials/how-to-avoid-risky-airports/', label: '识别高风险服务商的信号清单' }],
+      },
+      {
+        question: '机场TJ 的推荐是客观打分吗？',
+        answer:
+          '不是。综合推荐和场景推荐是编辑判断，不是算法打分，每条都附具体理由；服务商信息按"官方公开信息 / 第三方资料 / 本站测试"三类来源分开标注，不会混在一起呈现。',
+        links: [{ href: '/methodology/', label: '查看完整评测方法说明' }],
+      },
+      {
+        question: '用机场/翻墙工具在法律和合规层面需要注意什么？',
+        answer:
+          '这类服务在不同地区的监管政策不同，具体是否合规取决于你所在地区的法律法规，本站不提供法律建议，也不对具体使用行为的合规性做保证，请自行了解并遵守所在地区的相关规定。',
+      },
+    ],
+  },
+  {
+    heading: '使用与技术',
+    items: [
+      {
+        question: '机场需要用什么客户端软件？苹果、安卓、电脑都一样吗？',
+        answer:
+          '机场本身不是软件，是节点资源+订阅服务，具体连接要靠客户端软件，不同平台常用客户端不一样——iOS 常用 Shadowrocket，Windows 常用 Clash Verge，Android 常用 sing-box/NekoBox 系客户端，安装和订阅导入方法各平台略有区别。',
+        links: [
+          { href: '/tutorials/client-setup-and-subscription-import/', label: '客户端入门与订阅导入教程' },
+          { href: '/tutorials/', label: '查看全部平台教程' },
+        ],
+      },
+      {
+        question: '一个订阅可以几台设备同时用？',
+        answer:
+          '因服务商而异，有的限制同时在线设备数，有的不限制但会限制总带宽，具体规则请以对应服务商官网说明为准，本站在各服务商详情页标注的是资料整理时能确认的信息。',
+        links: [{ href: '/airports/', label: '查看各服务商详情' }],
+      },
+      {
+        question: '连接失败、速度很慢，应该怎么排查？',
+        answer:
+          '先确认订阅链接是否过期、客户端是否选对了节点和协议模式，再检查是不是高峰期线路拥堵，具体排查步骤见常见问题教程。',
+        links: [{ href: '/tutorials/common-connection-problems/', label: '常见连接问题排查' }],
+      },
+      {
+        question: '什么是 IPLC/IEPL 专线，值不值得多花钱？',
+        answer:
+          'IPLC/IEPL 是运营商之间的专用线路，不经过公共互联网，理论上更稳定，但成本高、价格也更高，是否值得取决于你的场景——远程办公、视频会议这类对稳定性要求高的场景更值得考虑，日常刷网页看视频不一定需要。',
+        links: [{ href: '/glossary/what-is-iplc/', label: '查看 IPLC 详细说明' }],
+      },
+    ],
+  },
+];
+
+const allItems = GROUPS.flatMap((g) => g.items);
+
+const title = '常见问题 FAQ｜机场、梯子、VPN 怎么选、怎么用、安不安全｜机场TJ';
+const description =
+  '机场、梯子、VPN 相关高频问题一次说清楚——是什么关系、怎么选、协议怎么选、会不会跑路、客户端怎么用、月付年付怎么选等常见问题解答。';
+const canonicalUrl = resolveCanonicalUrl('/faq/');
+---
+
+<BaseLayout title={title} description={description} canonical={canonicalUrl}>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '常见问题', href: '/faq/' }]} />
+
+  <h1>常见问题 FAQ</h1>
+  <p>
+    关于机场、梯子、VPN 的高频问题整理在这里，按主题分组。如果这里没有你想找的答案，可以去看更完整的<a href="/glossary/">术语库</a>和<a href="/tutorials/">使用教程</a>，或者通过<a href="/contact/">联系方式</a>告诉我们。
+  </p>
+
+  {
+    GROUPS.map((group) => (
+      <section class="tutorial-group">
+        <h2>{group.heading}</h2>
+        <div class="faq-list">
+          {group.items.map((item) => (
+            <details class="faq-item">
+              <summary>{item.question}</summary>
+              <div class="faq-item__body">
+                <p>{item.answer}</p>
+                {item.links && item.links.length > 0 && (
+                  <ul class="quick-links">
+                    {item.links.map((link) => (
+                      <li>
+                        <a href={link.href}>{link.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <p>你可能还想看：</p>
+  <ul class="quick-links">
+    <li><a href="/glossary/">机场术语库</a></li>
+    <li><a href="/tutorials/">使用教程</a></li>
+    <li><a href="/methodology/">评测方法与数据说明</a></li>
+  </ul>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: allItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    })}
+  />
+</BaseLayout>

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 
 const scenarios = (await getCollection('scenarios')).sort(
@@ -13,10 +14,10 @@ const canonicalUrl = resolveCanonicalUrl('/scenarios/');
 ---
 
 <BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 按场景选</nav>
+  <Breadcrumbs items={[{ name: '首页', href: '/' }, { name: '按场景选', href: '/scenarios/' }]} />
 
   <h1>按场景选机场</h1>
-  <p>不同用途关注的维度完全不一样，先找到最接近你情况的场景。</p>
+  <p>不同用途关注的维度完全不一样，先找到最接近你情况的场景。看完场景推荐，还想了解机场、梯子、VPN 这些概念本身，可以去<a href="/glossary/">术语库</a>。</p>
 
   <div class="scenario-grid">
     {
@@ -36,16 +37,4 @@ const canonicalUrl = resolveCanonicalUrl('/scenarios/');
     <li><a href="/rankings/">综合推荐榜</a></li>
     <li><a href="/tutorials/">使用教程</a></li>
   </ul>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '按场景选', item: canonicalUrl },
-      ],
-    })}
-  />
 </BaseLayout>

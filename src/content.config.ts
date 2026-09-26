@@ -117,7 +117,8 @@ const tutorialSchema = z.object({
   title: z.string(),
   description: z.string(),
   // 分组决定在 /tutorials/ 聚合页里出现在哪个区块，不是难度评分。
-  group: z.enum(['basics', 'clients', 'troubleshooting', 'advanced']),
+  // safety：避坑与风险识别，不是"怎么操作"，是"怎么判断靠不靠谱"。
+  group: z.enum(['basics', 'clients', 'troubleshooting', 'advanced', 'safety']),
   publishedAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   // 关联场景 slug，用于场景页反向链接到相关教程。
@@ -129,4 +130,29 @@ const tutorials = defineCollection({
   schema: tutorialSchema,
 });
 
-export const collections = { providers, scenarios, rankings, tutorials };
+// ---------------------------------------------------------------------------
+// glossary（术语库：协议、线路、计费术语，以及机场/梯子/VPN 这类概念辨析）
+// 每篇独立成页，是本站覆盖长尾搜索词的主要内容类型。
+// ---------------------------------------------------------------------------
+
+const glossaryCategorySchema = z.enum(['protocol', 'line', 'billing', 'concept']);
+
+const glossarySchema = z.object({
+  term: z.string(),
+  title: z.string(),
+  description: z.string(),
+  category: glossaryCategorySchema,
+  aliases: z.array(z.string()).optional(),
+  publishedAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  // 关联的其他术语 slug，用于详情页互相跳转。
+  relatedGlossary: z.array(z.string()).optional(),
+  relatedScenarios: z.array(z.string()).optional(),
+});
+
+const glossary = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/glossary' }),
+  schema: glossarySchema,
+});
+
+export const collections = { providers, scenarios, rankings, tutorials, glossary };
