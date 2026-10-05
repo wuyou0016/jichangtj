@@ -1,0 +1,13 @@
+---
+interface Props {
+  tone?: 'note' | 'warn' | 'ok' | 'info';
+  label?: string;
+}
+const { tone = 'note', label } = Astro.props;
+const defaults = { note: '说明', warn: '留意', ok: '结论', info: '提示' };
+---
+
+<div class={`callout${tone === 'note' ? '' : ` callout--${tone}`}`}>
+  <b>{label ?? defaults[tone]}</b>
+  <div><slot /></div>
+</div>

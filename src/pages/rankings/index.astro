@@ -1,84 +1,152 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
-import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+import Crumbs from '../../components/Crumbs.astro';
+import Chip from '../../components/Chip.astro';
+import Faq from '../../components/Faq.astro';
+import { loadSite } from '../../data/helpers';
+import { FACTS, CLIENT_LABEL } from '../../data/providers/facts';
+import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
+import { siteConfig } from '../../config/site';
 
-const overallRanking = await getEntry('rankings', 'overall');
-const rankingEntries = overallRanking
-  ? await Promise.all(
-      overallRanking.data.entries.map(async (entry, index) => ({
-        ...entry,
-        rank: index + 1,
-        provider: await getEntry(entry.providerId),
-      })),
-    )
-  : [];
-
-const title = '综合推荐完整榜单｜机场TJ';
-const description = '机场TJ 全部 9 家服务商的综合推荐顺序，每条附具体理由与数据可信度标签。';
-const canonicalUrl = resolveCanonicalUrl('/rankings/');
+const { ranking, rankingEntry } = await loadSite();
+const upd = formatDate(rankingEntry.data.updatedAt);
+const labels = Object.entries(DATA_CONFIDENCE_LABEL) as [DataConfidence, string][];
+const faq = [
+  { q: '排行榜是怎么排的？', a: '是编辑判断，不是算分。排序主要看三件事：价格资料是否有多来源印证、本站是否有测试数据、官方入口和资料是否透明。每一条都写明了理由和需要留意的地方。' },
+  { q: '为什么无忧链接排第一？', a: '本站对它做过丢包率持续跟踪和流媒体解锁检测，起步价经过站长本人核实，在已收录的 9 家里资料支撑最充分。这是资料层面的判断，测试在固定网络环境下完成，不代表所有地区的体验，建议先月付验证。' },
+  { q: '排名靠后的服务商就是不好吗？', a: '不是。排名靠后多半是资料有限、说法不一致，或本站暂时没有测试数据；这些信息不足本身，是购买前需要自己多核实的点，不等于服务差。' },
+  { q: '排行榜多久更新？', a: '资料或测试数据有变化时更新，页面标注了更新日期。价格与活动以官网结算页为准。' },
+];
+const title = '机场排行榜 2026（10 月更新）｜9 家机场综合推荐顺序与理由｜机场TJ';
+const description = '机场TJ 综合排行榜（2026 年 10 月更新）：9 家已收录机场代理的推荐顺序，每条写明排序理由、数据来源与留意事项，并区分官方、第三方与站长自测信息，不含无依据的评分。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 综合推荐完整榜单</nav>
-
-  <h1>综合推荐完整榜单</h1>
-  <p>
-    这是全部 {rankingEntries.length} 家服务商的综合推荐顺序，供不想按场景挑的用户参考——不是客观算出来的分数，具体理由逐条列出。如果你已经知道自己的使用场景，去<a href="/scenarios/">按场景选</a>可能更快。
-  </p>
-
-  <div class="ranking-full-list">
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={resolveCanonicalUrl('/rankings/')}
+  ld={[
     {
-      rankingEntries.map(
-        (entry) =>
-          entry.provider && (
-            <div class="pick-card">
-              <p>
-                <span class="pick-card__rank">{entry.rank}</span>
-                <a href={`/airports/${entry.provider.data.slug}/`} class="pick-card__name">
-                  {entry.provider.data.name}
-                </a>
-                <span
-                  class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[entry.provider.data.dataConfidence as DataConfidence]}`}
-                >
-                  {DATA_CONFIDENCE_LABEL[entry.provider.data.dataConfidence as DataConfidence]}
-                </span>
-              </p>
-              <p class="pick-card__reason">{entry.reason}</p>
-              {entry.caution && <p class="pick-card__caution">⚠️ {entry.caution}</p>}
-            </div>
-          ),
-      )
-    }
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: '机场TJ 综合排行榜',
+      itemListOrder: 'https://schema.org/ItemListOrderAscending',
+      numberOfItems: ranking.length,
+      itemListElement: ranking.map((r) => ({ '@type': 'ListItem', position: r.rank, name: r.provider.data.name, url: resolveCanonicalUrl(`/airports/${r.provider.data.slug}/`) })),
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '综合排行榜', href: '/rankings/' }]} />
+  <div class="banner">
+    <p class="eyebrow">排行榜 · Ranking</p>
+    <h1>机场排行榜：9 家综合推荐顺序与理由</h1>
+    <p class="lead">不想先分场景，就看这份综合顺序。它是编辑判断，不是客观算分——每一位都写明了理由、来源和需要留意的地方，你可以自己判断是否同意。</p>
+    <div class="metarow"><span>更新 {upd}</span><span class="sep">·</span><span>{ranking.length} 家</span><span class="sep">·</span><span>版本 {rankingEntry.data.scoringVersion}</span><span class="sep">·</span><a href="/methodology/" style="color:var(--amber)">排序依据与方法 →</a></div>
   </div>
 
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/scenarios/">按场景选</a></li>
-    <li><a href="/airports/">机场导航</a></li>
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-  </ul>
+  <section class="sec">
+    <div class="sec-head"><div><h2>一眼看全部</h2><p>点标签筛选资料类型，点表头排序。</p></div></div>
+    <div class="filters" role="group" aria-label="按资料标签筛选">
+      <span class="lab">资料标签</span>
+      <button class="pill" type="button" data-filter="all" aria-pressed="true">全部</button>
+      {labels.map(([k, l]) => <button class="pill" type="button" data-filter={k} aria-pressed="false">{l}</button>)}
+    </div>
+    <div class="board" id="rank-board">
+      <div class="board-head"><span>综合排行榜 · Ranking</span><span>更新 {upd}</span></div>
+      <div class="board-cols" style="grid-template-columns:56px minmax(0,1.4fr) minmax(0,1.2fr) auto"><span>名次</span><span>服务商</span><span>起步价</span><span>资料标签</span></div>
+      {
+        ranking.map((r) => (
+          <a class="board-row" style="grid-template-columns:56px minmax(0,1.4fr) minmax(0,1.2fr) auto" href={`#r-${r.provider.data.slug}`} data-conf={r.provider.data.dataConfidence}>
+            <span class="go">{String(r.rank).padStart(2, '0')}</span>
+            <span class="where">{r.provider.data.name}{r.rank === 1 && <small style="margin-left:8px;color:var(--amber);font-family:var(--mono)">首推</small>}</span>
+            <span class="pick"><small>{FACTS[r.provider.id]?.price.headline}</small></span>
+            <span><Chip c={r.provider.data.dataConfidence as DataConfidence} /></span>
+          </a>
+        ))
+      }
+      <div class="board-foot">名次是综合推荐顺序，资料标签只描述“信息怎么来的”。</div>
+    </div>
+  </section>
 
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: title,
-      description,
-      url: canonicalUrl,
-    })}
-  />
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '综合推荐完整榜单', item: canonicalUrl },
-      ],
-    })}
-  />
+  <section class="sec">
+    <div class="sec-head"><div><h2>逐位说明</h2><p>每位的排序理由、关键数据与需要留意的地方。</p></div></div>
+    <div style="display:grid;gap:20px">
+      {
+        ranking.map((r) => {
+          const f = FACTS[r.provider.id];
+          const dd = r.provider.data;
+          return (
+            <article id={`r-${dd.slug}`} class={`pass${r.rank === 1 ? ' pass--gold' : ''}`} data-conf={dd.dataConfidence} style="scroll-margin-top:90px">
+              <div class="pass-main">
+                <div class="pass-head">
+                  <h3><a href={`/airports/${dd.slug}/`}>{dd.name}</a></h3>
+                  <Chip c={dd.dataConfidence as DataConfidence} />
+                  {r.rank === 1 && <span class="tag tag--amber">首推</span>}
+                </div>
+                <p style="margin:0 0 6px">{r.reason}</p>
+                {r.caution && <p class="muted" style="margin:0;font-size:.9rem"><b>留意：</b>{r.caution}</p>}
+                {f && (
+                  <ul class="pass-facts">
+                    <li><span>起步价</span>{f.price.headline}</li>
+                    <li><span>丢包率（站长自测）</span>{f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无测试数据'}</li>
+                    <li><span>客户端</span>{CLIENT_LABEL[f.client.type]}</li>
+                  </ul>
+                )}
+              </div>
+              <div class="pass-stub">
+                <div class="stub-rank"><small>综合排名</small>{String(r.rank).padStart(2, '0')}</div>
+                <div style="display:grid;gap:8px">
+                  <a class="btn btn--ghost btn--sm" href={`/airports/${dd.slug}/`}>查看资料</a>
+                  <a class="btn btn--amber btn--sm" href={dd.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">官网入口 ↗</a>
+                </div>
+              </div>
+            </article>
+          );
+        })
+      }
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="split">
+      <div class="article">
+        <h2>怎么读这份榜单</h2>
+        <ul>
+          <li><b>顺序不是评分。</b>本站没有可比较的结构化数据，不做综合打分——写了就是编。</li>
+          <li><b>标签说明“资料怎么来的”。</b>“已有本站实测”表示站长做过持续测试，“多来源资料参考”表示有 2 个以上独立第三方来源可互相印证，其余两类表示资料有限。</li>
+          <li><b>站长自测有局限。</b>测试在固定网络环境（珠海联通）下完成，是多批次范围而非单次数据，不代表其他地区或运营商。</li>
+          <li><b>想按需求选，不要只看总榜。</b>游戏、办公、预算、流媒体关注的指标不同，请看<a href="/scenarios/">按场景选</a>。</li>
+        </ul>
+        <h2>榜单版本记录</h2>
+        <ul class="timeline">
+          <li><time datetime="2026-10-05">2026-10-05</time><b>措辞与口径更新</b>统一价格口径（无忧链接 MINI 包月约 6.6 元/月起），去掉绝对化表述，并写明站长自测的环境与局限。</li>
+          <li><time datetime="2026-09-03">2026-09-03</time><b>首次发布</b>收录 9 家服务商，给出综合推荐顺序与逐条理由。</li>
+        </ul>
+        <h2>常见问题</h2>
+        <Faq items={faq} />
+      </div>
+      <aside class="aside">
+        <div class="asidecard"><h2>相关页面</h2><ul>
+          <li><a href="/compare/">服务商对比（可排序）</a></li>
+          <li><a href="/data/">数据中心：丢包率图表</a></li>
+          <li><a href="/scenarios/">按场景选</a></li>
+          <li><a href="/methodology/">评测方法与数据说明</a></li>
+          <li><a href="/knowledge/airport-red-flags/">买前红旗清单</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    const pills = document.querySelectorAll<HTMLButtonElement>('.pill[data-filter]');
+    const items = document.querySelectorAll<HTMLElement>('[data-conf]');
+    pills.forEach((b) =>
+      b.addEventListener('click', () => {
+        const f = b.dataset.filter!;
+        pills.forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+        items.forEach((el) => el.classList.toggle('hide', f !== 'all' && el.dataset.conf !== f));
+      }),
+    );
+  </script>
 </BaseLayout>

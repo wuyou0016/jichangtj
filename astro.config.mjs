@@ -16,6 +16,15 @@ lastmod['/airports/'] = latest(providers.map((/** @type {any} */ p) => p.updated
 const scenarios = readJson('src/data/scenarios/scenarios.json');
 for (const sc of scenarios) lastmod[`/scenarios/${sc.slug}/`] = String(sc.updatedAt).slice(0, 10);
 lastmod['/scenarios/'] = latest(scenarios.map((/** @type {any} */ sc) => sc.updatedAt)) ?? '';
+const guideDates = [];
+for (const f of fs.readdirSync('src/content/guides')) {
+  const m = fs.readFileSync(`src/content/guides/${f}`, 'utf8').match(/^updatedAt:\s*([0-9-]{10})/m);
+  if (m) {
+    lastmod[`/knowledge/${f.replace(/[.]md$/, '')}/`] = m[1];
+    guideDates.push(m[1]);
+  }
+}
+lastmod['/knowledge/'] = latest(guideDates) ?? '';
 lastmod['/rankings/'] = latest(readJson('src/data/rankings/rankings.json').map((/** @type {any} */ r) => r.updatedAt)) ?? '';
 const tutDir = 'src/content/tutorials';
 const tutDates = [];
@@ -35,6 +44,9 @@ function isSitemapExcluded(pageUrl) {
   const url = new URL(pageUrl);
 
   if (url.pathname === '/404' || url.pathname === '/404/' || url.pathname === '/404.html') {
+    return true;
+  }
+  if (url.pathname === '/search/') {
     return true;
   }
   if (url.search) {

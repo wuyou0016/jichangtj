@@ -1,233 +1,253 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Chip from '../components/Chip.astro';
+import PassCard from '../components/PassCard.astro';
+import LossRange from '../components/LossRange.astro';
+import Faq from '../components/Faq.astro';
 import { siteConfig } from '../config/site';
-import { resolveCanonicalUrl } from '../config/seo';
-import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../config/data-confidence';
+import { resolveCanonicalUrl, formatDate } from '../config/seo';
+import { loadSite, shortName, GUIDE_TOPIC_LABEL, safeJson } from '../data/helpers';
+import { FACTS } from '../data/providers/facts';
+import { HOME_FAQ } from '../data/faq';
+import { UPDATES, KIND_LABEL } from '../data/updates';
+import { TERMS } from '../data/glossary';
+import type { DataConfidence } from '../config/data-confidence';
 
-const scenarios = await getCollection('scenarios');
-const providers = await getCollection('providers');
-const tutorials = await getCollection('tutorials');
+const { providers, byId, scenarios, guides, ranking } = await loadSite();
+const champion = ranking[0]!;
+const lossCount = Object.values(FACTS).filter((f) => f.loss).length;
 
-// 首屏"30 秒先选方向"固定 4 个场景入口，顺序与文案独立于 /scenarios/ 列表页的排序。
-const HERO_SCENARIO_ORDER = ['budget', 'gaming', 'remote-work', 'streaming'];
-const HERO_TAGLINE: Record<string, string> = {
-  budget: '看单位流量成本',
-  gaming: '看延迟与丢包',
-  'remote-work': '看长期稳定性',
-  streaming: '看真实解锁记录',
-};
-const heroScenarios = HERO_SCENARIO_ORDER.map((slug) => scenarios.find((s) => s.data.slug === slug)).filter(
-  (s): s is NonNullable<typeof s> => Boolean(s),
-);
+const board = scenarios.map((s) => {
+  const first = byId.get(s.data.picks[0]?.providerId.id ?? '');
+  return { s, first };
+});
+const top5 = ranking.slice(0, 5);
+const rangeRows = providers.map((p) => ({ id: p.id, name: p.data.name, href: `/airports/${p.data.slug}/` }));
+const featuredGuides = guides.slice(0, 4);
+const quickTerms = ['node', 'iplc', 'packet-loss', 'multiplier', 'subscription', 'relay', 'annual-equiv', 'unlock'].map((id) => TERMS.find((t) => t.id === id)!);
+const latest = UPDATES.slice(0, 3);
 
-const confidenceLabelList = Object.values(DATA_CONFIDENCE_LABEL).join('、');
-
-const overallRanking = await getEntry('rankings', 'overall');
-const rankingEntries = overallRanking
-  ? await Promise.all(
-      overallRanking.data.entries.map(async (entry, index) => ({
-        ...entry,
-        rank: index + 1,
-        provider: await getEntry(entry.providerId),
-      })),
-    )
-  : [];
-const top3 = rankingEntries.slice(0, 3);
-
-const CORE_ENTRIES = [
-  { href: '/scenarios/', title: '按场景选', desc: '按预算、游戏、办公、流媒体分别给建议' },
-  { href: '/rankings/', title: '综合推荐', desc: '不想分场景就看这个，全部 9 家排序理由' },
-  { href: '/airports/', title: '机场导航', desc: '浏览已收录服务商，查看套餐与线路资料' },
-  { href: '/methodology/', title: '评测方法', desc: '本站怎么测的、数据可信度标签什么意思' },
-  { href: '/tutorials/', title: '使用教程', desc: '新手入门、客户端设置、常见问题排查' },
-];
-
-const PRINCIPLES = [
-  { title: '推荐用于缩小范围，详情页用于核对证据', desc: '综合推荐和场景推荐是编辑判断，能帮你快速排除明显不合适的选项；真正下决定前，去服务商详情页看套餐、线路和资料来源。' },
-  { title: '不同使用场景看不同指标', desc: '游戏和远程办公在意丢包率，预算有限在意单位流量成本，流媒体解锁在意有没有真实测试支撑——没有一个指标能回答所有场景的问题。' },
-  { title: '陌生服务商优先选短周期套餐', desc: '第一次用一家没了解过的服务商，先用月付或更短周期实际体验，确认稳定后再考虑年付，能避免大额预付后才发现不合适。' },
-  { title: '标签说明"资料从哪来"，不是打分', desc: '"已有本站实测""仅第三方资料"这些标签描述的是信息可信度，不代表服务好不好，具体含义见评测方法页。' },
-];
-
-const TUTORIAL_GROUP_LABEL: Record<string, string> = {
-  basics: '新手先读',
-  clients: '客户端入门',
-  troubleshooting: '常见问题',
-  advanced: '进阶理解',
-};
-const tutorialHighlights = ['basics', 'clients', 'troubleshooting', 'advanced']
-  .map((group) => tutorials.find((t) => t.data.group === group))
-  .filter((t): t is NonNullable<typeof t> => Boolean(t));
-
-const title = '机场推荐，按你的使用场景选｜机场TJ';
+const title = '机场TJ｜2026 机场导航：按场景选机场代理、排行榜与自测数据';
 const description =
-  '机场TJ按使用场景整理机场代理选择建议——预算有限、游戏加速、远程办公、流媒体解锁，先找到你的场景再看推荐，比一份笼统的排行榜更快找到答案。';
-const canonicalUrl = resolveCanonicalUrl('/');
+  '机场TJ是中文机场代理综合导航：按场景选（新手、预算、游戏、办公、流媒体等 8 类）、综合排行榜、服务商对比、站长自测数据中心和专题知识库，官方、第三方与自测信息分开标注。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <section class="hero">
-    <div class="hero__grid">
-      <div class="hero__text">
-        <p class="hero__eyebrow">{siteConfig.brandName}</p>
-        <h1>机场推荐，按你的使用场景选</h1>
-        <p class="hero__lead">
-          帮你按预算、游戏、远程办公、流媒体等真实需求理解选择依据，而不是机械看一份总榜。
-        </p>
-        <div class="hero__ctas">
-          <a href="/scenarios/" class="hero__cta hero__cta--primary">按场景选</a>
-          <a href="/rankings/" class="hero__cta">看综合推荐</a>
-          <a href="/tutorials/" class="hero__cta">从新手教程开始</a>
-        </div>
-      </div>
-      <svg class="hero__art" viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="节点与线路示意图">
-        <line x1="60" y1="170" x2="140" y2="60" stroke="var(--color-border)" stroke-width="2" />
-        <line x1="140" y1="60" x2="220" y2="130" stroke="var(--color-accent)" stroke-width="2.5" />
-        <line x1="140" y1="60" x2="90" y2="40" stroke="var(--color-border)" stroke-width="2" />
-        <line x1="220" y1="130" x2="230" y2="190" stroke="var(--color-border)" stroke-width="2" />
-        <circle cx="60" cy="170" r="8" fill="var(--color-accent-2)" />
-        <circle cx="90" cy="40" r="6" fill="var(--color-border)" />
-        <circle cx="140" cy="60" r="10" fill="var(--color-accent)" />
-        <circle cx="220" cy="130" r="8" fill="var(--color-accent-2)" />
-        <circle cx="230" cy="190" r="6" fill="var(--color-border)" />
-      </svg>
-    </div>
-  </section>
-
-  <section class="section-hero-scenarios">
-    <h2>30 秒先选方向</h2>
-    <div class="scenario-grid scenario-grid--hero">
-      {
-        heroScenarios.map((scenario) => (
-          <a href={`/scenarios/${scenario.data.slug}/`} class="scenario-card">
-            <span class="scenario-card__emoji">{scenario.data.emoji}</span>
-            <span class="scenario-card__title">{scenario.data.title.split('，')[0]}</span>
-            <p class="scenario-card__desc">{HERO_TAGLINE[scenario.data.slug]}</p>
-          </a>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="section-principles">
-    <h2>选择前先知道</h2>
-    <div class="principle-list">
-      {
-        PRINCIPLES.map((p) => (
-          <div class="principle-item">
-            <p class="principle-item__title">{p.title}</p>
-            <p class="principle-item__desc">{p.desc}</p>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="section-core">
-    <h2>核心入口</h2>
-    <div class="core-grid">
-      {
-        CORE_ENTRIES.map((entry) => (
-          <a href={entry.href} class="core-card">
-            <strong>{entry.title}</strong>
-            <span>{entry.desc}</span>
-          </a>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="section-top3">
-    <h2>综合推荐 Top 3</h2>
-    <p class="hub-stats">综合推荐不等于所有人的最佳选择，具体理由和数据可信度已经标在每张卡片上。</p>
-
-    <div class="top3-grid">
-      {
-        top3.map(
-          (entry, index) =>
-            entry.provider && (
-              <div class={`pick-card${index === 0 ? ' pick-card--champion' : ''}`}>
-                {index === 0 && <p class="pick-card__champion-badge">综合推荐 TOP 1</p>}
-                <p class="top3-card__head">
-                  {index > 0 && <span class="pick-card__rank">{entry.rank}</span>}
-                  <a
-                    href={`/airports/${entry.provider.data.slug}/`}
-                    class={`pick-card__name${index === 0 ? ' pick-card__name--champion' : ''}`}
-                  >
-                    {entry.provider.data.name}
-                  </a>
-                  <span
-                    class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[entry.provider.data.dataConfidence as DataConfidence]}`}
-                  >
-                    {DATA_CONFIDENCE_LABEL[entry.provider.data.dataConfidence as DataConfidence]}
-                  </span>
-                </p>
-                {entry.provider.data.scenarioFit.goodFor[0] && (
-                  <p class="top3-card__field">
-                    <strong>适合谁：</strong>
-                    {entry.provider.data.scenarioFit.goodFor[0]}
-                  </p>
-                )}
-                {entry.keyFact && (
-                  <p class="top3-card__field">
-                    <strong>关键依据：</strong>
-                    {entry.keyFact}
-                  </p>
-                )}
-                {entry.caution && <p class="pick-card__caution">⚠️ {entry.caution}</p>}
-              </div>
-            ),
-        )
-      }
-    </div>
-
-    <a href="/rankings/" class="section-link">查看完整综合榜（全部 {rankingEntries.length} 家）→</a>
-  </section>
-
-  <section class="section-data-note">
-    <h2>证据与数据中心</h2>
-    <p>
-      每个服务商的信息分三类：官方自己说的、第三方资料整理的、本站实测的，可信度不一样，本站不会混在一起呈现。当前收录 {providers.length} 家服务商，标注的资料可信度包括——{confidenceLabelList}，具体分类方法和测试局限性说明见<a href="/methodology/">评测方法与数据说明</a>，每家的具体来源列在各自的<a href="/airports/">服务商详情页</a>里。
-    </p>
-  </section>
-
-  <section class="section-next">
-    <h2>新手快速通道</h2>
-    <div class="tutorial-list">
-      {
-        tutorialHighlights.map((t) => (
-          <a href={`/tutorials/${t.id}/`} class="tutorial-card">
-            <span class="tutorial-card__group">{TUTORIAL_GROUP_LABEL[t.data.group]}</span>
-            <strong>{t.data.title}</strong>
-            <span>{t.data.description}</span>
-          </a>
-        ))
-      }
-    </div>
-    <a href="/tutorials/" class="section-link">查看全部使用教程 →</a>
-  </section>
-
-  <section class="section-about-brief">
-    <h2>关于机场TJ</h2>
-    <p>
-      {siteConfig.description}
-      本站不虚构测试结果、用户评价或官方合作，内容维护原则见<a href="/about/">关于机场TJ</a>。
-    </p>
-  </section>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={resolveCanonicalUrl('/')}
+  ld={[
+    {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: `${siteConfig.brandName}场景分类`,
-      itemListElement: heroScenarios.map((s, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: s.data.title,
-        url: new URL(`/scenarios/${s.data.slug}/`, siteConfig.url).toString(),
-      })),
-    })}
-  />
+      name: `${siteConfig.brandName}选择场景`,
+      itemListElement: scenarios.map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s.data.title, url: resolveCanonicalUrl(`/scenarios/${s.data.slug}/`) })),
+    },
+  ]}
+>
+  <section class="hero" aria-labelledby="home-h1">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">TJ · 机场代理选择指南</p>
+        <h1 id="home-h1">先说你<em>要做什么</em>，<br />再决定买哪家机场</h1>
+        <p class="lead">
+          机场TJ 把“买哪家”拆成真实的使用场景：新手入门、预算有限、游戏加速、远程办公、流媒体解锁……每个场景都写明该看什么指标、哪些说法不能信，再给出能核对依据的推荐。
+        </p>
+        <form class="hero-search" action="/search/" method="get" role="search">
+          <input type="search" name="q" placeholder="搜索：丢包率、IPLC、月付还是年付……" aria-label="站内搜索" />
+          <button type="submit">搜索</button>
+        </form>
+        <div class="hero-hints"><span>热门：</span><a href="/knowledge/loss-latency-jitter-explained/">丢包率</a><a href="/knowledge/subscription-link-security/">订阅链接</a><a href="/knowledge/monthly-vs-yearly/">月付还是年付</a><a href="/knowledge/streaming-unlock-verify/">解锁</a></div>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/finder/">3 个问题，帮我选 →</a>
+          <a class="btn btn--ghost" href="/rankings/">看综合排行榜</a>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>{providers.length}</b><span>家服务商资料</span></div>
+          <div class="stat"><b>{scenarios.length}</b><span>个选择场景</span></div>
+          <div class="stat"><b>{lossCount}</b><span>家有丢包率跟踪</span></div>
+          <div class="stat"><b>{guides.length}</b><span>篇专题知识</span></div>
+        </div>
+      </div>
+
+      <div class="board" role="region" aria-label="场景到推荐的信息板">
+        <div class="board-head"><span>场景 → 首选 · Departures</span><span>更新 {siteConfig.updatedAt}</span></div>
+        <div class="board-cols"><span>登机口</span><span>场景</span><span>首选</span><span>资料状态</span></div>
+        {
+          board.map(({ s, first }) => (
+            <a class="board-row" href={`/scenarios/${s.data.slug}/`}>
+              <span class="go">{s.data.gate}</span>
+              <span class="where">{shortName(s)}</span>
+              <span class="pick">{first?.data.name ?? '—'}<small>{first && (FACTS[first.id]?.loss ? `丢包 ${FACTS[first.id]!.loss!.min}–${FACTS[first.id]!.loss!.max}%（自测）` : FACTS[first.id]?.price.headline.slice(0, 22))}</small></span>
+              <span>{first && <Chip c={first.data.dataConfidence as DataConfidence} />}</span>
+            </a>
+          ))
+        }
+        <div class="board-foot">首选 = 该场景推荐列表第一位。推荐是编辑判断，依据逐条写在场景页。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="feature-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">首推 · Top Pick</p>
+        <h2 id="feature-h">综合排行榜第 1 位：{champion.provider.data.name}</h2>
+      </div>
+      <a class="sec-link" href="/rankings/">查看完整排行榜 →</a>
+    </div>
+    <article class="pass pass--gold">
+      <div class="pass-main">
+        <div class="pass-head">
+          <h3><a href={`/airports/${champion.provider.data.slug}/`}>{champion.provider.data.name}</a></h3>
+          <Chip c={champion.provider.data.dataConfidence as DataConfidence} />
+          <span class="tag tag--amber">首推</span>
+        </div>
+        <p style="margin:0">{champion.reason}</p>
+        <ul class="feature-price">
+          <li>MINI 包月 <b>约 ¥6.6</b>/月起</li>
+          <li>舒心 100GB 包月 <b>低至 ¥14</b>/月</li>
+          <li>省心 200GB <b>¥33</b>/月起</li>
+          <li>丢包率（站长自测）<b>0.7%–0.8%</b></li>
+        </ul>
+        <p class="muted" style="margin:12px 0 0;font-size:.88rem">价格口径为站长确认，活动与价格以官网结算页为准；测试环境与局限见评测方法页。{champion.caution}</p>
+      </div>
+      <div class="pass-stub">
+        <div class="stub-rank"><small>综合排名</small>01</div>
+        <div style="display:grid;gap:8px">
+          <a class="btn btn--amber" href={champion.provider.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a>
+          <a class="btn btn--ghost btn--sm" href={`/airports/${champion.provider.data.slug}/`}>查看完整资料</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="sec" aria-labelledby="scen-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">场景 · Gates</p>
+        <h2 id="scen-h">你想解决什么问题？</h2>
+        <p>不同场景看的指标完全不同：游戏看丢包和抖动，办公看长期稳定，预算看价格口径，流媒体看解锁是否被独立验证。</p>
+      </div>
+      <a class="sec-link" href="/scenarios/">全部 {scenarios.length} 个场景 →</a>
+    </div>
+    <div class="cards cards--4">
+      {
+        board.map(({ s, first }) => (
+          <a class="card" href={`/scenarios/${s.data.slug}/`}>
+            <p style="margin:0 0 10px"><span class="gate">{s.data.gate}</span></p>
+            <h3>{shortName(s)}</h3>
+            <p class="muted" style="font-size:.9rem">{s.data.summary}</p>
+            {first && <p style="font-size:.84rem;margin:10px 0 0"><span class="muted">首选：</span><b>{first.data.name}</b></p>}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="rank-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">排行榜 · Ranking</p>
+        <h2 id="rank-h">综合排行榜 Top 5</h2>
+        <p>不想分场景时的参考顺序。每条都附理由和数据来源，排序是编辑判断，不是客观算分。</p>
+      </div>
+      <a class="sec-link" href="/rankings/">全部 {ranking.length} 家 →</a>
+    </div>
+    <div class="cards cards--2" style="grid-template-columns:1fr">
+      {top5.map((r) => <PassCard provider={r.provider} rank={r.rank} gold={r.rank === 1} blurb={r.keyFact} />)}
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="data-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">数据中心 · Data</p>
+        <h2 id="data-h">站长自测丢包率：谁更稳，一眼看</h2>
+        <p>条形图是多批次测试的数值范围，越靠左越好。数据来自站长在固定网络环境下的持续跟踪，不是单次测速，也不代表所有地区。</p>
+      </div>
+      <a class="sec-link" href="/data/">进入数据中心 →</a>
+    </div>
+    <div class="card"><LossRange rows={rangeRows} /></div>
+  </section>
+
+  <section class="sec" aria-labelledby="tool-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">工具 · Tools</p>
+        <h2 id="tool-h">不想自己翻？用这几个工具</h2>
+      </div>
+    </div>
+    <div class="cards cards--4">
+      <a class="card" href="/finder/"><h3>选购向导</h3><p class="muted">回答 3 个问题，得到场景建议和候选服务商，附每一项的依据。</p></a>
+      <a class="card" href="/compare/"><h3>服务商对比</h3><p class="muted">价格口径、丢包区间、客户端支持并排看，可排序、可筛选、可两两对比。</p></a>
+      <a class="card" href="/tools/"><h3>流量成本换算</h3><p class="muted">输入价格、流量和周期，算出每月成本，并判断大概能用多久。</p></a>
+      <a class="card" href="/knowledge/self-test-seven-days/"><h3>一周自测计划</h3><p class="muted">不依赖别人的数据，用 7 天亲自验证一家机场是否适合你。</p></a>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="src-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">信息来源 · Sources</p>
+        <h2 id="src-h">每条信息都标明“从哪来”</h2>
+        <p>机场行业的信息可信度参差不齐，混在一起写会误导人。本站把来源分成三类，标签只描述资料怎么来的，不是评分。</p>
+      </div>
+      <a class="sec-link" href="/methodology/">评测方法与数据说明 →</a>
+    </div>
+    <div class="cards cards--4">
+      <div class="card"><h3>官方公开信息</h3><p class="muted">来自服务商官网、公告或客服回复。可能随时调整，购买前以官网当前页面为准。</p></div>
+      <div class="card"><h3>第三方资料</h3><p class="muted">来自其他导航站、评测站、社区。标注来源与日期，不把别人的资料写成本站测试。</p></div>
+      <div class="card"><h3>本站自测</h3><p class="muted">站长在固定网络环境下的持续丢包率跟踪，个别服务商另有解锁检测。写明方法与局限。</p></div>
+      <div class="card">
+        <h3>四种资料标签</h3>
+        <p style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0"><Chip c="own-test" /><Chip c="cross-verified" /><Chip c="third-party-only" /><Chip c="incomplete" /></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="route-h">
+    <div class="sec-head"><div><p class="eyebrow">新手路线 · Route</p><h2 id="route-h">第一次买，按这四步走</h2></div></div>
+    <ol class="route card">
+      <li><h3>选场景，而不是选品牌</h3><p>先确定你最在意什么：价格、稳定、游戏、流媒体还是出行。在<a href="/scenarios/">按场景选</a>里看对应的判断指标。</p></li>
+      <li><h3>核对资料来源</h3><p>看清价格口径和资料标签。资料是多来源印证的、站长自测的，还是仅单一第三方——可信度不一样。</p></li>
+      <li><h3>只买月付，用满一个周期</h3><p>陌生服务商先小额月付，确认稳定、客服可用、退款规则清楚，再考虑更长周期。见<a href="/knowledge/monthly-vs-yearly/">月付还是年付</a>。</p></li>
+      <li><h3>自己验证，而不是只信数据</h3><p>别人的数据只代表别人的网络。用<a href="/knowledge/self-test-seven-days/">一周自测计划</a>，在你常用的时段亲自测。</p></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="know-h">
+    <div class="sec-head">
+      <div>
+        <p class="eyebrow">知识库 · Knowledge</p>
+        <h2 id="know-h">看不懂的词，这里都有</h2>
+      </div>
+      <a class="sec-link" href="/knowledge/">全部专题 →</a>
+    </div>
+    <div class="cards cards--4">
+      {
+        featuredGuides.map((g) => (
+          <a class="card" href={`/knowledge/${g.id}/`}>
+            <p style="margin:0 0 8px"><span class="tag">{GUIDE_TOPIC_LABEL[g.data.topic]}</span></p>
+            <h3>{g.data.title}</h3>
+            <p class="muted" style="font-size:.9rem">{g.data.description}</p>
+          </a>
+        ))
+      }
+    </div>
+    <p style="margin:18px 0 8px"><b>术语速查：</b></p>
+    <div class="az">{quickTerms.map((t) => <a href={`/glossary/#${t.id}`}>{t.term}</a>)}<a href="/glossary/"><b>全部术语 →</b></a></div>
+  </section>
+
+  <section class="sec" aria-labelledby="faq-h">
+    <div class="sec-head"><div><p class="eyebrow">FAQ</p><h2 id="faq-h">常见问题</h2></div><a class="sec-link" href="/faq/">全部问题 →</a></div>
+    <Faq items={HOME_FAQ} open />
+  </section>
+
+  <section class="sec" aria-labelledby="upd-h">
+    <div class="sec-head"><div><p class="eyebrow">更新 · Changelog</p><h2 id="upd-h">最近更新</h2></div><a class="sec-link" href="/updates/">更新日志 →</a></div>
+    <ul class="timeline">
+      {latest.map((u) => <li><time datetime={u.date}>{u.date} · {KIND_LABEL[u.kind]}</time><b>{u.title}</b><span class="muted">{u.body}</span></li>)}
+    </ul>
+  </section>
 </BaseLayout>

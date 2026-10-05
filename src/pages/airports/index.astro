@@ -1,71 +1,119 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
-import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+import Crumbs from '../../components/Crumbs.astro';
+import Chip from '../../components/Chip.astro';
+import Faq from '../../components/Faq.astro';
+import { loadSite, scenariosFor, shortName } from '../../data/helpers';
+import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
+import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
 
-// 目录展示顺序（与场景推荐无关，纯前台陈列顺序）：
-// 无忧链接是本站资料最完整、唯一有本站真实流媒体解锁测试的服务商，固定排最前面。
-const providers = [...(await getCollection('providers'))].sort((a, b) => {
-  if (a.id === 'wuyou-lianjie') return -1;
-  if (b.id === 'wuyou-lianjie') return 1;
-  return 0;
-});
-
-const statusLabel: Record<string, string> = {
-  active: '正常运营',
-  inactive: '暂停服务',
-  discontinued: '已停止服务',
-  watch: '观察中',
-};
-
-const title = '机场导航｜机场代理服务商目录｜机场TJ';
-const description = '浏览机场TJ收录的机场代理服务商，了解基础信息、第三方资料与场景适配说明。';
-const canonicalUrl = resolveCanonicalUrl('/airports/');
+const { providers, scenarios, ranking, rankOf } = await loadSite();
+const ordered = [...providers].sort((a, b) => (rankOf.get(a.id) ?? 99) - (rankOf.get(b.id) ?? 99));
+const labels = Object.entries(DATA_CONFIDENCE_LABEL) as [DataConfidence, string][];
+const faq = [
+  { q: '机场导航收录了哪些服务商？', a: `目前收录 ${providers.length} 家，每家都有官方入口说明、第三方资料、站长自测记录（如有）和适合 / 不适合的场景。` },
+  { q: '列表的顺序是什么意思？', a: '这里按综合排行榜的名次排列。名次是编辑判断，不是评分，理由见综合排行榜。' },
+  { q: '为什么有的服务商资料很少？', a: '本站只写有来源的信息。官方入口需要注册或验证码才能看到套餐的，本站不会为了写全而编造内容，缺的部分明确标成“资料未列出”。' },
+  { q: '我想让某家服务商被收录，怎么办？', a: '可以通过页脚的“入驻申请”或联系页告知。收录与否取决于能否找到可核对的官方入口，不影响排行榜的编辑判断。' },
+];
+const title = '机场导航 2026：9 家机场代理资料与站长自测｜机场TJ';
+const description = '机场TJ 机场导航收录 9 家机场代理：官方入口、第三方资料、站长自测丢包率、价格口径、客户端支持与适合场景逐家整理，可按资料标签筛选或搜索名称。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 机场导航</nav>
-
-  <h1>机场导航｜机场代理服务商目录</h1>
-  <p>
-    这里是完整的服务商列表，逐个查看官方信息、第三方资料和场景适配说明。如果你已经知道自己的使用场景，直接去<a href="/scenarios/">按场景选</a>更快。
-  </p>
-
-  <div class="provider-grid">
-    {
-      providers.map((provider) => (
-        <a href={`/airports/${provider.data.slug}/`} class="provider-card">
-          <div>
-            <strong>{provider.data.name}</strong>
-          </div>
-          <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
-          <span
-            class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[provider.data.dataConfidence as DataConfidence]}`}
-          >
-            {DATA_CONFIDENCE_LABEL[provider.data.dataConfidence as DataConfidence]}
-          </span>
-        </a>
-      ))
-    }
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/airports/')}>
+  <Crumbs items={[{ name: '机场导航', href: '/airports/' }]} />
+  <div class="banner">
+    <p class="eyebrow">机场导航 · Directory</p>
+    <h1>机场导航：9 家服务商资料对照</h1>
+    <p class="lead">每家服务商的官方入口说明、第三方资料、站长自测记录和适合场景分开列出，不混在一起。资料不足的地方写“暂无”，不替它们编内容。</p>
+    <div class="metarow"><span>收录 {providers.length} 家</span><span class="sep">·</span><span>按综合排名排列</span><span class="sep">·</span><a href="/compare/" style="color:var(--amber)">并排对比 →</a></div>
   </div>
 
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/scenarios/">按场景选</a></li>
-    <li><a href="/rankings/">综合推荐榜</a></li>
-    <li><a href="/tutorials/">使用教程</a></li>
-  </ul>
+  <section class="sec" style="margin-top:28px">
+    <div class="filters" role="group" aria-label="筛选">
+      <span class="lab">资料标签</span>
+      <button class="pill" type="button" data-filter="all" aria-pressed="true">全部</button>
+      {labels.map(([k, l]) => <button class="pill" type="button" data-filter={k} aria-pressed="false">{l}</button>)}
+      <input class="input" id="name-q" type="search" placeholder="搜索名称…" aria-label="按名称搜索" style="max-width:200px;margin-left:auto" />
+    </div>
+    <div class="cards" id="dir-grid">
+      {
+        ordered.map((p) => {
+          const f = FACTS[p.id];
+          const sc = scenariosFor(p, scenarios);
+          return (
+            <a class="card" href={`/airports/${p.data.slug}/`} data-conf={p.data.dataConfidence} data-name={`${p.data.name} ${(p.data.aliases ?? []).join(' ')}`.toLowerCase()}>
+              <p style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 0 10px">
+                <span class="mono muted" style="font-weight:800">#{String(rankOf.get(p.id) ?? 0).padStart(2, '0')}</span>
+                <Chip c={p.data.dataConfidence as DataConfidence} />
+              </p>
+              <h3>{p.data.name}{p.data.slug === 'wuyou-lianjie' && <span class="tag tag--amber" style="margin-left:8px;vertical-align:middle">首推</span>}</h3>
+              {(p.data.aliases ?? []).length > 0 && <p class="muted" style="font-size:.8rem;margin:0 0 8px">{(p.data.aliases ?? []).join(' / ')}</p>}
+              <dl style="margin:0;font-size:.88rem;display:grid;gap:6px">
+                <div><dt class="muted mono" style="font-size:.68rem;letter-spacing:.1em">起步价</dt><dd style="margin:0">{f?.price.headline}</dd></div>
+                <div style="display:flex;gap:18px;flex-wrap:wrap">
+                  <div><dt class="muted mono" style="font-size:.68rem;letter-spacing:.1em">丢包率（自测）</dt><dd style="margin:0">{f?.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无数据'}</dd></div>
+                  <div><dt class="muted mono" style="font-size:.68rem;letter-spacing:.1em">客户端</dt><dd style="margin:0">{f && CLIENT_LABEL[f.client.type]}</dd></div>
+                  <div><dt class="muted mono" style="font-size:.68rem;letter-spacing:.1em">官方入口</dt><dd style="margin:0">{f && ENTRY_LABEL[f.entry.kind]}</dd></div>
+                </div>
+              </dl>
+              {sc.length > 0 && <p style="margin:12px 0 0;display:flex;gap:6px;flex-wrap:wrap">{sc.slice(0, 3).map((x) => <span class="tag">{shortName(x.scenario)}</span>)}{sc.length > 3 && <span class="tag">+{sc.length - 3}</span>}</p>}
+            </a>
+          );
+        })
+      }
+    </div>
+    <p id="dir-empty" class="muted hide">没有符合条件的服务商，试试换个标签或关键词。</p>
+  </section>
 
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '机场导航', item: canonicalUrl },
-      ],
-    })}
-  />
+  <section class="sec">
+    <div class="split">
+      <div class="article">
+        <h2>收录与更新原则</h2>
+        <ul>
+          <li><b>只写有来源的信息。</b>官方说的、第三方说的、本站测的分开标注，缺的就写“暂无”。</li>
+          <li><b>价格口径写明基础。</b>包月价、年付折算价、活动价不混比，也不做每 GB 单价的横向比较。</li>
+          <li><b>官方入口访问受限也如实记录。</b>验证码页、注册墙、中转页，都会写在“官方入口”一栏，提醒你购买前自己打开核对。</li>
+          <li><b>资料会过期。</b>每家页面都标了最后更新时间，价格与活动请以官网结算页为准。</li>
+        </ul>
+        <h2>常见问题</h2>
+        <Faq items={faq} />
+      </div>
+      <aside class="aside">
+        <div class="asidecard"><h2>下一步</h2><ul>
+          <li><a href="/compare/">服务商对比中心</a></li>
+          <li><a href="/rankings/">综合排行榜</a></li>
+          <li><a href="/finder/">选购向导</a></li>
+          <li><a href="/knowledge/airport-red-flags/">买前红旗清单</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    const pills = document.querySelectorAll<HTMLButtonElement>('.pill[data-filter]');
+    const cards = document.querySelectorAll<HTMLElement>('#dir-grid [data-conf]');
+    const q = document.getElementById('name-q') as HTMLInputElement | null;
+    const empty = document.getElementById('dir-empty');
+    let current = 'all';
+    const apply = () => {
+      const kw = (q?.value ?? '').trim().toLowerCase();
+      let shown = 0;
+      cards.forEach((c) => {
+        const ok = (current === 'all' || c.dataset.conf === current) && (!kw || (c.dataset.name ?? '').includes(kw));
+        c.classList.toggle('hide', !ok);
+        if (ok) shown++;
+      });
+      empty?.classList.toggle('hide', shown > 0);
+    };
+    pills.forEach((b) =>
+      b.addEventListener('click', () => {
+        current = b.dataset.filter!;
+        pills.forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+        apply();
+      }),
+    );
+    q?.addEventListener('input', apply);
+  </script>
 </BaseLayout>

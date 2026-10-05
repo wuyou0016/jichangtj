@@ -1,38 +1,30 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
 import { resolveCanonicalUrl } from '../../config/seo';
 
-const title = '联系方式｜机场TJ';
-const description = '如何向机场TJ反馈信息错误、提交服务商资料修正建议。';
-const canonicalUrl = resolveCanonicalUrl('/contact/');
+const title = '联系方式：反馈资料错误、补充来源与入驻申请｜机场TJ';
+const description = '发现机场TJ 上某个服务商的信息有误、过时，或有更准确的第三方资料来源，可以通过 GitHub Issues 反馈；服务商入驻申请请通过页脚的 Telegram 联系。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 联系方式</nav>
-
-  <h1>联系方式</h1>
-  <p>
-    发现某个服务商的信息有误、过时，或者你有更准确的第三方资料来源，欢迎告诉我们。目前反馈渠道是本站的
-    <a href="https://github.com/wuyou0016/jichangtj/issues" target="_blank" rel="noopener">GitHub 仓库 Issues</a>，
-    提交时请尽量说明具体是哪个服务商、哪条信息，以及你参考的来源。
-  </p>
-  <p>核实后会在对应服务商详情页更新信息，并同步更新页面上的最后更新时间。</p>
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/about/">关于机场TJ</a></li>
-    <li><a href="/">返回首页</a></li>
-  </ul>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: title,
-      description,
-      url: canonicalUrl,
-    })}
-  />
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/contact/')}>
+  <Crumbs items={[{ name: '联系方式', href: '/contact/' }]} />
+  <div class="banner">
+    <p class="eyebrow">联系 · Contact</p>
+    <h1>联系方式</h1>
+    <p class="lead">发现某个服务商的信息有误、过时，或者你有更准确的第三方资料来源，欢迎告诉我们。</p>
+  </div>
+  <div class="cards cards--2" style="margin-top:28px">
+    <div class="card"><h3>反馈资料错误 / 补充来源</h3><p class="muted">目前反馈渠道是本站的 <a href="https://github.com/wuyou0016/jichangtj/issues" target="_blank" rel="noopener">GitHub 仓库 Issues</a>。提交时请尽量说明具体是哪个服务商、哪条信息，以及你参考的来源。</p></div>
+    <div class="card"><h3>服务商入驻申请</h3><p class="muted">希望被收录的服务商，请通过页脚的“入驻申请”（Telegram）联系。收录取决于能否找到可核对的官方入口，不影响排行榜的编辑判断。</p></div>
+  </div>
+  <section class="sec"><div class="article">
+    <h2>反馈之后会发生什么</h2>
+    <ol class="route" style="margin-bottom:1.2em">
+      <li><h3>核实</h3><p>对照官方入口与可引用的来源，确认信息是否确有出入。</p></li>
+      <li><h3>更新</h3><p>核实后会在对应服务商详情页更新信息，并同步更新页面上的最后更新时间。</p></li>
+      <li><h3>记录</h3><p>影响较大的调整（价格口径、排序理由、措辞）会记录在<a href="/updates/">更新日志</a>里。</p></li>
+    </ol>
+    <p class="muted">你可能还想看：<a href="/methodology/">评测方法与数据说明</a>、<a href="/about/">关于机场TJ</a>、<a href="/">返回首页</a>。</p>
+  </div></section>
 </BaseLayout>

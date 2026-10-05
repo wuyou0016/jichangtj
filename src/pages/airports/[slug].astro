@@ -1,186 +1,229 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
-import { DATA_CONFIDENCE_LABEL, DATA_CONFIDENCE_TONE, type DataConfidence } from '../../config/data-confidence';
+import Crumbs from '../../components/Crumbs.astro';
+import Chip from '../../components/Chip.astro';
+import Faq from '../../components/Faq.astro';
+import LossRange from '../../components/LossRange.astro';
+import { loadSite, scenariosFor, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
+import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
 
 export async function getStaticPaths() {
   const providers = await getCollection('providers');
-  return providers.map((provider) => ({
-    params: { slug: provider.data.slug },
-    props: { provider },
-  }));
-}
-
-interface Props {
-  provider: Awaited<ReturnType<typeof getCollection<'providers'>>>[number];
+  return providers.map((p) => ({ params: { slug: p.data.slug }, props: { provider: p } }));
 }
 
 const { provider } = Astro.props;
+const d = provider.data;
+const f = FACTS[provider.id]!;
+const { providers, scenarios, guides, ranking, rankOf } = await loadSite();
+const rank = rankOf.get(provider.id)!;
+const rankEntry = ranking.find((r) => r.provider.id === provider.id)!;
+const sc = scenariosFor(provider, scenarios);
+const ownNotes = d.thirdPartyNotes?.filter((n) => n.source === '站长本人测试') ?? [];
+const thirdNotes = d.thirdPartyNotes?.filter((n) => n.source !== '站长本人测试') ?? [];
+const path = `/airports/${d.slug}/`;
+const statusLabel: Record<string, string> = { active: '正常运营', inactive: '暂停服务', discontinued: '已停止服务', watch: '观察中' };
 
-const scenarios = await getCollection('scenarios');
-const relatedScenarios = scenarios.filter((s) =>
-  s.data.picks.some((pick) => pick.providerId.id === provider.id),
-);
+// 同类对照：综合排名紧邻的 3 家。
+const ordered = [...providers].sort((a, b) => (rankOf.get(a.id) ?? 99) - (rankOf.get(b.id) ?? 99));
+const at = ordered.findIndex((p) => p.id === provider.id);
+const neighbours = [-2, -1, 1, 2, 3].map((n) => ordered[at + n]).filter((p): p is NonNullable<typeof p> => Boolean(p)).slice(0, 3);
 
-const ownTestNotes = provider.data.thirdPartyNotes?.filter((n) => n.source === '站长本人测试') ?? [];
-const thirdPartyOnlyNotes = provider.data.thirdPartyNotes?.filter((n) => n.source !== '站长本人测试') ?? [];
+// 已验证 / 未验证
+const verify: { item: string; status: 'ok' | 'part' | 'no'; text: string }[] = [
+  { item: '价格', status: f.price.basis.includes('站长确认') ? 'ok' : f.price.basis.includes('两个') ? 'part' : 'no', text: f.price.basis },
+  { item: '丢包率', status: f.loss ? 'ok' : 'no', text: f.loss ? '本站自测，多批次范围（固定网络环境）' : '本站没有对它做过持续测试' },
+  { item: '流媒体解锁', status: f.unlock ? 'ok' : 'no', text: f.unlock ?? '本站未做检测，现有描述均为第三方转述的服务商宣传' },
+  { item: '线路 / 专线说法', status: 'no', text: '无法由用户直接验证，本站不替服务商背书，以你实际测到的延迟与丢包为准' },
+  { item: '官方套餐页', status: f.entry.kind === 'failed' || f.entry.kind === 'redirect' ? 'no' : 'part', text: f.entry.text },
+];
+const statusText = { ok: '已核对', part: '部分核对', no: '未核对' } as const;
 
-const relatedTutorials = (await getCollection('tutorials')).filter((t) => t.data.group === 'advanced').slice(0, 1);
+const hasLoss = Boolean(f.loss);
+const titleCore = hasLoss ? '价格口径、站长自测与适合场景' : '价格口径、资料来源与适合场景';
+const title = `${d.name}怎么样？${titleCore}｜机场TJ`;
+const description = `${d.name}资料速查：${f.price.headline}；${hasLoss ? `站长自测丢包率 ${f.loss!.min}%–${f.loss!.max}%；` : ''}资料标签「${DATA_CONFIDENCE_LABEL[d.dataConfidence as DataConfidence]}」，附适合与不适合的场景、买前检查和同类对照。`;
 
-const statusLabel: Record<string, string> = {
-  active: '正常运营',
-  inactive: '暂停服务',
-  discontinued: '已停止服务',
-  watch: '观察中',
-};
+const faq = [
+  { q: `${d.name}适合哪些场景？`, a: `${d.scenarioFit.goodFor.join('；')}。` },
+  { q: `${d.name}不太适合哪些场景？`, a: `${d.scenarioFit.notIdealFor.join('；')}。` },
+  { q: `${d.name}的价格是多少？`, a: `${f.price.headline}（${f.price.basis}）。价格与活动以官网结算页为准，本站标注的是资料整理时的信息。` },
+  { q: `${d.name}有测速或丢包数据吗？`, a: f.loss ? `有。站长在固定网络环境（珠海联通）下对它做过持续跟踪，丢包率约 ${f.loss.min}%–${f.loss.max}%${f.loss.note ? `（${f.loss.note}）` : ''}，是多批次范围而非单次数据，不代表其他地区。` : '没有。本站目前没有对它做过持续测试，也不会用宣传语或其他站点的数字替代。购买前建议用月付自己验证。' },
+  { q: `${d.name}能用 Clash 等第三方客户端吗？`, a: `${f.client.text}。` },
+  { q: `${d.name}的官方入口怎么访问？`, a: `${f.entry.text}。购买前请自己打开官网核对最新套餐与规则。` },
+];
 
-function formatDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
-}
-
-const title = `${provider.data.name}适合哪些场景？｜机场TJ`;
-const description = `${provider.data.name}的官方公开信息、第三方资料，以及按不同使用场景整理的适配说明。`;
-const canonicalUrl = resolveCanonicalUrl(`/airports/${provider.data.slug}/`);
+const sections = [
+  ['quick', '速查卡'],
+  ['verify', '本站核对了什么'],
+  ['test', '站长自测'],
+  ['sources', '第三方资料'],
+  ['fit', '适合场景'],
+  ['check', '买前检查'],
+  ['compare', '同类对照'],
+  ['faq', 'FAQ'],
+] as const;
+const relGuides = ['airport-red-flags', 'monthly-vs-yearly', 'self-test-seven-days'].map((id) => guides.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => Boolean(g));
+const isWuyou = d.slug === 'wuyou-lianjie';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb">
-    <a href="/">首页</a> › <a href="/airports/">机场导航</a> › {provider.data.name}
-  </nav>
-
-  <h1>{provider.data.name}｜适合哪些场景</h1>
-  <p>
-    <span class="status-dot">{statusLabel[provider.data.status] ?? provider.data.status}</span>
-    <span
-      class={`confidence-tag confidence-tag--${DATA_CONFIDENCE_TONE[provider.data.dataConfidence as DataConfidence]}`}
-    >
-      {DATA_CONFIDENCE_LABEL[provider.data.dataConfidence as DataConfidence]}
-    </span>
-  </p>
-
-  <h2>基础资料</h2>
-  <div class="info-panel">
-    <p>{provider.data.vendor.description}</p>
-    <p><a href={provider.data.vendor.officialWebsite} rel="nofollow noopener" target="_blank">访问 {provider.data.name} 官网 ↗</a></p>
-  </div>
-
-  <h2>适合的使用场景</h2>
-  <div class="suitability">
-    <div class="suitability__group suitability__group--for">
-      <h3>适合什么场景</h3>
-      <ul>
-        {provider.data.scenarioFit.goodFor.map((item) => <li>{item}</li>)}
-      </ul>
-    </div>
-    <div class="suitability__group suitability__group--against">
-      <h3>不太适合什么场景</h3>
-      <ul>
-        {provider.data.scenarioFit.notIdealFor.map((item) => <li>{item}</li>)}
-      </ul>
-    </div>
-  </div>
-
-  {
-    ownTestNotes.length > 0 && (
-      <>
-        <h2>本站测试</h2>
-        <div class="info-panel">
-          <ul class="note-list">
-            {ownTestNotes.map((note) => (
-              <li>
-                <p class="note-list__source">{note.source} · {formatDate(note.date)}</p>
-                <p class="note-list__claim">{note.claim}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    )
-  }
-
-  {
-    thirdPartyOnlyNotes.length > 0 && (
-      <>
-        <h2>套餐、线路与第三方资料</h2>
-        <div class="info-panel info-panel--third-party">
-          <ul class="note-list">
-            {thirdPartyOnlyNotes.map((note) => (
-              <li>
-                <p class="note-list__source">
-                  {note.source} · {formatDate(note.date)}
-                  {note.sourceUrl && (
-                    <>
-                      {' '}
-                      · <a href={note.sourceUrl} rel="nofollow noopener" target="_blank">来源链接 ↗</a>
-                    </>
-                  )}
-                </p>
-                <p class="note-list__claim">{note.claim}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    )
-  }
-
-  <h2>需要用户自行确认的项目</h2>
-  <div class="info-panel info-panel--third-party">
-    <ul>
-      <li>最新套餐价格、流量档位与限时优惠，以官网当前页面为准，本站标注的是资料整理时的信息。</li>
-      <li>协议、线路等技术细节可能随服务商调整而变化，长期使用前建议先用短周期套餐验证。</li>
-      {provider.data.dataConfidence !== 'own-test' && <li>本站尚未对该服务商做过实测，购买前建议先用小额套餐或免费试用验证实际体验。</li>}
-    </ul>
-  </div>
-
-  {
-    relatedScenarios.length > 0 && (
-      <>
-        <h2>出现在这些场景推荐里</h2>
-        <ul class="quick-links">
-          {relatedScenarios.map((s) => (
-            <li>
-              <a href={`/scenarios/${s.data.slug}/`}>{s.data.title}</a>
-            </li>
-          ))}
-        </ul>
-      </>
-    )
-  }
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/airports/">查看更多机场导航</a></li>
-    <li><a href="/scenarios/">按场景选</a></li>
-    <li><a href="/rankings/">综合推荐榜</a></li>
-    {relatedTutorials.map((t) => (
-      <li><a href={`/tutorials/${t.id}/`}>{t.data.title}</a></li>
-    ))}
-  </ul>
-
-  <p>本页最后更新于 {formatDate(provider.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注，不会混在一起呈现。</p>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={resolveCanonicalUrl(path)}
+  ogType="article"
+  ld={[
+    {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: title,
       description,
-      url: canonicalUrl,
-    })}
-  />
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '机场导航', item: resolveCanonicalUrl('/airports/') },
-        { '@type': 'ListItem', position: 3, name: provider.data.name, item: canonicalUrl },
-      ],
-    })}
-  />
+      url: resolveCanonicalUrl(path),
+      dateModified: formatDate(d.updatedAt),
+      isPartOf: { '@type': 'WebSite', name: siteConfig.brandName, url: siteConfig.url },
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '机场导航', href: '/airports/' }, { name: d.name, href: path }]} />
+  <div class="banner">
+    <p class="eyebrow">服务商资料 · Provider #{String(rank).padStart(2, '0')}</p>
+    <h1>{d.name}怎么样？{titleCore}</h1>
+    <p style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center">
+      <Chip c={d.dataConfidence as DataConfidence} />
+      <span class="tag">{statusLabel[d.status] ?? d.status}</span>
+      <span class="tag">综合排名第 {rank}</span>
+      {isWuyou && <span class="tag tag--amber">首推</span>}
+      {(d.aliases ?? []).length > 0 && <span class="tag">别名：{(d.aliases ?? []).join(' / ')}</span>}
+    </p>
+    <p class="lead">{rankEntry.reason}</p>
+    <div class="btn-row">
+      <a class="btn btn--amber" href={d.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">访问 {d.name} 官网 ↗</a>
+      <a class="btn btn--ghost" href="/compare/" style="background:transparent;color:#fff;border-color:var(--board-line)">和其他家对比</a>
+    </div>
+    <div class="metarow" style="margin-top:14px"><span>资料更新 {formatDate(d.updatedAt)}</span><span class="sep">·</span><span>最近核实 {formatDate(d.lastVerified)}</span></div>
+  </div>
+
+  <nav class="tabs" aria-label="本页目录">{sections.map(([id, l]) => <a href={`#${id}`}>{l}</a>)}</nav>
+
+  <div class="split" style="margin-top:22px">
+    <div class="article">
+      <h2 id="quick">速查卡</h2>
+      <dl class="dl">
+        <dt>起步价</dt><dd><b>{f.price.headline}</b><br /><span class="muted">口径：{f.price.basis}</span></dd>
+        <dt>丢包率</dt><dd>{f.loss ? <><b>{f.loss.min}%–{f.loss.max}%</b>（站长自测{f.loss.note ? `，${f.loss.note}` : ''}）</> : '暂无测试数据'}</dd>
+        <dt>协议</dt><dd>{f.protocols}</dd>
+        <dt>客户端</dt><dd><b>{CLIENT_LABEL[f.client.type]}</b><br /><span class="muted">{f.client.text}</span></dd>
+        <dt>官方入口</dt><dd><b>{ENTRY_LABEL[f.entry.kind]}</b><br /><span class="muted">{f.entry.text}</span></dd>
+        <dt>解锁检测</dt><dd>{f.unlock ?? '本站未做检测'}</dd>
+        <dt>需要留意</dt><dd><ul style="margin:0;padding-left:1.1em">{f.flags.map((x) => <li>{x}</li>)}</ul></dd>
+      </dl>
+      <div class="callout"><b>说明</b><div><p>{d.vendor.description}</p></div></div>
+
+      <h2 id="verify">本站核对了什么、没核对什么</h2>
+      <p>下表把“本站能确认的”和“只是别人说的”分开。没核对的项目不等于有问题，只是需要你购买前自己确认。</p>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>项目</th><th>状态</th><th>说明</th></tr></thead>
+          <tbody>
+            {verify.map((v) => <tr><th scope="row">{v.item}</th><td><span class={`chip chip--${v.status === 'ok' ? 'own' : v.status === 'part' ? 'cross' : 'inc'}`}>{statusText[v.status]}</span></td><td>{v.text}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="test">站长自测</h2>
+      {
+        f.loss ? (
+          <>
+            <p>下图是本站已测服务商的丢包率区间（数值越小越好），当前服务商已高亮。数据为站长在固定网络环境下的多批次跟踪，<b>不是单次测速</b>，也不代表其他地区或运营商。</p>
+            <div class="card" style="margin-bottom:1.2em"><LossRange rows={providers.map((p) => ({ id: p.id, name: p.data.name, href: `/airports/${p.data.slug}/` }))} highlight={provider.id} /></div>
+          </>
+        ) : (
+          <div class="callout callout--warn"><b>无数据</b><div><p>本站目前没有对 {d.name} 做过持续测试，所以这里没有丢包率图表。我们不会用宣传语或别的站点的数字来凑。建议你用月付套餐，按<a href="/knowledge/self-test-seven-days/">一周自测计划</a>自己验证。</p></div></div>
+        )
+      }
+      {ownNotes.length > 0 && <ul class="notes">{ownNotes.map((n) => <li class="own"><div class="src"><span class="chip chip--own">站长自测</span><span>{formatDate(n.date)}</span></div><p>{n.claim}</p></li>)}</ul>}
+      <p class="muted" style="font-size:.88rem">测试方法与局限见<a href="/methodology/">评测方法与数据说明</a>；全部数据汇总见<a href="/data/">数据中心</a>。</p>
+
+      <h2 id="sources">第三方资料</h2>
+      {
+        thirdNotes.length > 0 ? (
+          <ul class="notes">{thirdNotes.map((n) => <li><div class="src"><span class="chip chip--third">第三方</span><span>{n.source}</span><span>{formatDate(n.date)}</span>{n.sourceUrl && <a href={n.sourceUrl} rel="nofollow noopener" target="_blank">来源链接 ↗</a>}</div><p>{n.claim}</p></li>)}</ul>
+        ) : (
+          <p>本站目前没有为 {d.name} 收录可引用的第三方资料。官方入口的情况见上方速查卡。</p>
+        )
+      }
+
+      <h2 id="fit">适合与不适合的场景</h2>
+      <div class="fit">
+        <div class="yes"><h3>适合</h3><ul>{d.scenarioFit.goodFor.map((x) => <li>{x}</li>)}</ul></div>
+        <div class="no"><h3>不太适合</h3><ul>{d.scenarioFit.notIdealFor.map((x) => <li>{x}</li>)}</ul></div>
+      </div>
+      {
+        sc.length > 0 && (
+          <>
+            <h3>出现在这些场景推荐里</h3>
+            <div class="cards cards--2" style="margin-bottom:1.4em">
+              {sc.map((x) => <a class="card" href={`/scenarios/${x.scenario.data.slug}/`}><p style="margin:0 0 8px"><span class="gate">{x.scenario.data.gate}</span> <span class="tag" style="margin-left:6px">本场景第 {x.pos + 1} 位</span></p><h3>{shortName(x.scenario)}</h3><p class="muted" style="font-size:.9rem;margin:0">{x.scenario.data.picks[x.pos]?.reason.slice(0, 70)}…</p></a>)}
+            </div>
+          </>
+        )
+      }
+
+      <h2 id="check">买前检查清单</h2>
+      <ul class="checklist">
+        <li>打开官网，核对最新套餐、价格和退款规则（官方入口：{ENTRY_LABEL[f.entry.kind]}）</li>
+        <li>确认客户端：{f.client.type === 'official-only' ? '只能用官方客户端，确认你接受这一点' : f.client.type === 'conflict' ? '不同来源说法不一，先向客服确认第三方客户端是否可用' : '资料没有提到第三方客户端兼容性，购买前先问客服'}</li>
+        <li>只买最低档月付，用满第一个周期再决定是否续费</li>
+        <li>在你常用的晚高峰时段连测几天，记录断线与变慢</li>
+        {f.flags.slice(0, 2).map((x) => <li>留意：{x}</li>)}
+        <li>订阅链接当成账号密码保管，不要分享</li>
+      </ul>
+      <p>更完整的检查项见<a href="/knowledge/airport-red-flags/">买前红旗清单</a>和<a href="/knowledge/monthly-vs-yearly/">月付还是年付</a>。</p>
+
+      <h2 id="compare">同类对照</h2>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>服务商</th><th>起步价</th><th>丢包率（自测）</th><th>客户端</th><th>资料标签</th></tr></thead>
+          <tbody>
+            {[provider, ...neighbours].map((p) => {
+              const pf = FACTS[p.id]!;
+              return <tr><th scope="row">{p.id === provider.id ? <b>{p.data.name}（本页）</b> : <a href={`/airports/${p.data.slug}/`}>{p.data.name}</a>}</th><td>{pf.price.headline}</td><td class="num">{pf.loss ? `${pf.loss.min}%–${pf.loss.max}%` : '暂无'}</td><td>{CLIENT_LABEL[pf.client.type]}</td><td><Chip c={p.data.dataConfidence as DataConfidence} /></td></tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="faq">常见问题</h2>
+      <Faq items={faq} open />
+
+      <h2>继续阅读</h2>
+      <div class="cards cards--2">
+        {relGuides.map((g) => <a class="card" href={`/knowledge/${g.id}/`}><p style="margin:0 0 8px"><span class="tag">{GUIDE_TOPIC_LABEL[g.data.topic]}</span></p><h3>{g.data.title}</h3><p class="muted" style="font-size:.9rem">{g.data.description}</p></a>)}
+      </div>
+      <p class="muted" style="font-size:.88rem;margin-top:1.4em">本页最后更新于 {formatDate(d.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长自测数据，分别标注，不会混在一起呈现。{siteConfig.disclosure}</p>
+    </div>
+
+    <aside class="aside" aria-label="侧栏">
+      <div class="toc"><h2>本页目录</h2><ol>{sections.map(([id, l]) => <li><a href={`#${id}`}>{l}</a></li>)}</ol></div>
+      <div class={`asidecard${isWuyou ? ' asidecard--gold' : ''}`}>
+        <h2>{isWuyou ? '首推 · 官网入口' : '官网入口'}</h2>
+        <p style="font-size:.9rem;margin:0 0 10px">{f.price.headline}</p>
+        <a class="btn btn--amber btn--sm" href={d.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">访问官网 ↗</a>
+      </div>
+      {
+        !isWuyou && (
+          <div class="asidecard asidecard--gold">
+            <h2>首推 · 无忧链接</h2>
+            <p style="font-size:.9rem;margin:0 0 10px">综合排行榜第 1 位，MINI 包月约 ¥6.6/月起。</p>
+            <a class="btn btn--ghost btn--sm" href="/airports/wuyou-lianjie/">查看资料</a>
+          </div>
+        )
+      }
+      <div class="asidecard"><h2>其他服务商</h2><ul>{ordered.filter((p) => p.id !== provider.id).map((p) => <li><a href={`/airports/${p.data.slug}/`}>{p.data.name}</a></li>)}</ul></div>
+    </aside>
+  </div>
 </BaseLayout>

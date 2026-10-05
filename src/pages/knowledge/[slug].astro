@@ -1,0 +1,88 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Faq from '../../components/Faq.astro';
+import { loadSite, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
+import { TERM_MAP } from '../../data/glossary';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((g) => ({ params: { slug: g.id }, props: { guide: g } }));
+}
+
+const { guide } = Astro.props;
+const d = guide.data;
+const { Content, headings } = await render(guide);
+const { scenarios, guides, byId } = await loadSite();
+const toc = headings.filter((h) => h.depth === 2);
+const path = `/knowledge/${guide.id}/`;
+const minutes = Math.max(2, Math.round(((guide.body ?? '').match(/[一-鿿]/g) ?? []).length / 420));
+const relScen = (d.relatedScenarios ?? []).map((s) => scenarios.find((x) => x.data.slug === s)).filter((s): s is NonNullable<typeof s> => Boolean(s));
+const relGuides = (d.relatedGuides ?? []).map((id) => guides.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => Boolean(g));
+const relTerms = (d.relatedGlossary ?? []).map((id) => TERM_MAP[id]).filter((t): t is NonNullable<typeof t> => Boolean(t));
+const wuyou = byId.get('wuyou-lianjie');
+const faqItems = d.faq ?? [];
+---
+
+<BaseLayout
+  title={`${d.title}｜机场TJ`}
+  description={d.description}
+  canonical={resolveCanonicalUrl(path)}
+  ogType="article"
+  ld={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: d.title,
+      description: d.description,
+      url: resolveCanonicalUrl(path),
+      datePublished: formatDate(d.publishedAt),
+      dateModified: formatDate(d.updatedAt),
+      author: { '@type': 'Organization', name: siteConfig.author.name },
+      publisher: { '@type': 'Organization', name: siteConfig.brandName },
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '知识库', href: '/knowledge/' }, { name: d.title, href: path }]} />
+  <div class="banner">
+    <p class="eyebrow">{GUIDE_TOPIC_LABEL[d.topic]} · 知识库</p>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.description}</p>
+    <div class="metarow"><span>约 {minutes} 分钟</span><span class="sep">·</span><span>发布 {formatDate(d.publishedAt)}</span><span class="sep">·</span><span>更新 {formatDate(d.updatedAt)}</span></div>
+  </div>
+
+  <div class="split" style="margin-top:26px">
+    <div>
+      <div class="takeaway"><b>一句话结论</b><p>{d.takeaway}</p></div>
+      <div class="article-body article"><Content /></div>
+
+      {faqItems.length > 0 && <div class="article" style="margin-top:2em"><h2 id="faq">常见问题</h2><Faq items={faqItems} /></div>}
+
+      {relTerms.length > 0 && <div style="margin-top:2em"><h2 style="font-size:1.2rem;margin-bottom:10px">相关术语</h2><div class="az">{relTerms.map((t) => <a href={`/glossary/#${t.id}`}>{t.term}</a>)}</div></div>}
+
+      {(relScen.length > 0 || relGuides.length > 0) && (
+        <div style="margin-top:2em">
+          <h2 style="font-size:1.2rem;margin-bottom:12px">继续阅读</h2>
+          <div class="cards cards--2">
+            {relScen.map((s) => <a class="card" href={`/scenarios/${s.data.slug}/`}><p style="margin:0 0 8px"><span class="gate">{s.data.gate}</span> <span class="tag" style="margin-left:6px">场景</span></p><h3>{shortName(s)}</h3><p class="muted" style="font-size:.9rem;margin:0">{s.data.summary}</p></a>)}
+            {relGuides.map((g) => <a class="card" href={`/knowledge/${g.id}/`}><p style="margin:0 0 8px"><span class="tag">{GUIDE_TOPIC_LABEL[g.data.topic]}</span></p><h3>{g.data.title}</h3><p class="muted" style="font-size:.9rem;margin:0">{g.data.takeaway}</p></a>)}
+          </div>
+        </div>
+      )}
+      <p class="muted" style="font-size:.88rem;margin-top:2em">本文最后更新于 {formatDate(d.updatedAt)}。内容是通用判断方法，不构成对任何服务商的保证；具体服务商的资料与数据标注见各自详情页。{siteConfig.disclosure}</p>
+    </div>
+
+    <aside class="aside" aria-label="侧栏">
+      {toc.length > 0 && <div class="toc"><h2>本文目录</h2><ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></div>}
+      <div class="asidecard asidecard--gold">
+        <h2>首推 · 无忧链接</h2>
+        <p style="font-size:.9rem;margin:0 0 10px">MINI 包月约 ¥6.6/月起；本站对它做过丢包率持续跟踪与解锁检测（站长自测）。</p>
+        <a class="btn btn--amber btn--sm" href={wuyou?.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a>
+      </div>
+      <div class="asidecard"><h2>工具</h2><ul><li><a href="/finder/">选购向导</a></li><li><a href="/tools/">流量成本换算 / 自测表</a></li><li><a href="/compare/">服务商对比</a></li><li><a href="/glossary/">术语表</a></li></ul></div>
+    </aside>
+  </div>
+</BaseLayout>

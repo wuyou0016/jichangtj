@@ -1,0 +1,153 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Faq from '../../components/Faq.astro';
+import { loadSite, shortName, safeJson } from '../../data/helpers';
+import { FACTS, CLIENT_LABEL } from '../../data/providers/facts';
+import { DATA_CONFIDENCE_LABEL } from '../../config/data-confidence';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const { scenarios, byId, rankOf } = await loadSite();
+const data = {
+  scenarios: scenarios.map((s) => ({
+    slug: s.data.slug,
+    gate: s.data.gate,
+    short: shortName(s),
+    title: s.data.title,
+    summary: s.data.summary ?? '',
+    picks: s.data.picks.map((p) => {
+      const pr = byId.get(p.providerId.id)!;
+      const f = FACTS[pr.id]!;
+      return {
+        id: pr.id,
+        slug: pr.data.slug,
+        name: pr.data.name,
+        rank: rankOf.get(pr.id) ?? 99,
+        conf: pr.data.dataConfidence,
+        confLabel: DATA_CONFIDENCE_LABEL[pr.data.dataConfidence as keyof typeof DATA_CONFIDENCE_LABEL],
+        price: f.price.headline,
+        monthly: f.monthly,
+        loss: f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无测试数据',
+        lossMin: f.loss?.min ?? null,
+        client: f.client.type,
+        clientLabel: CLIENT_LABEL[f.client.type],
+        clientText: f.client.text,
+        reason: p.reason,
+        url: pr.data.vendor.officialWebsite,
+      };
+    }),
+  })),
+};
+const faq = [
+  { q: '向导的推荐依据是什么？', a: '它只是把场景页里已有的推荐，按你选的优先级重新排序，并标出和你的客户端要求是否冲突。所有依据都来自本站已收录的资料，没有额外打分。' },
+  { q: '为什么“价格优先”的排序不是每 GB 单价？', a: '各家价格口径不同（包月、年付折算、活动价），本站不做每 GB 的横向比较。价格优先时按公开的起步月均价由低到高排，仅作参考。' },
+  { q: '结果里没有我想要的服务商怎么办？', a: '向导只展示该场景下“有依据可推荐”的服务商。其余请去机场导航或对比中心自行查看，购买前以官网为准。' },
+];
+const title = '机场选购向导：3 个问题，给你场景建议与候选服务商｜机场TJ';
+const description = '机场TJ 选购向导：回答用途、优先级和客户端要求 3 个问题，得到对应的场景建议、候选服务商排序与每一项的依据，所有推荐都来自本站已收录的资料。';
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/finder/')}>
+  <Crumbs items={[{ name: '选购向导', href: '/finder/' }]} />
+  <div class="banner">
+    <p class="eyebrow">选购向导 · Finder</p>
+    <h1>3 个问题，帮你缩小范围</h1>
+    <p class="lead">选用途、选优先级、选客户端要求。向导会给出场景建议和候选服务商，并标明每一项的依据，以及它是否满足你的客户端要求。</p>
+  </div>
+
+  <section class="sec" style="margin-top:28px">
+    <div class="split">
+      <form class="card" id="wiz" onsubmit="return false" style="padding:24px">
+        <fieldset class="wizard-step">
+          <legend>① 你主要用来做什么？</legend>
+          <div class="opts" id="opt-scenario">
+            {data.scenarios.map((s, i) => <label class="opt"><input type="radio" name="scenario" value={s.slug} checked={i === 0} /><span>{s.short}<small>{s.gate} · {s.summary.slice(0, 22)}…</small></span></label>)}
+          </div>
+        </fieldset>
+        <fieldset class="wizard-step">
+          <legend>② 你最看重什么？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="priority" value="stable" checked /><span>稳定优先<small>按丢包率由低到高</small></span></label>
+            <label class="opt"><input type="radio" name="priority" value="price" /><span>价格优先<small>按公开起步月均价由低到高</small></span></label>
+            <label class="opt"><input type="radio" name="priority" value="trust" /><span>资料可信优先<small>按资料标签与综合名次</small></span></label>
+          </div>
+        </fieldset>
+        <fieldset class="wizard-step">
+          <legend>③ 客户端要求？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="client" value="any" checked /><span>都行，装官方的就好<small>不想折腾配置</small></span></label>
+            <label class="opt"><input type="radio" name="client" value="third" /><span>必须能用 Clash 等第三方<small>要自己的规则 / 多设备统一</small></span></label>
+          </div>
+        </fieldset>
+        <p class="muted" style="margin:0;font-size:.86rem">选完即时出结果，不会上传任何内容。</p>
+      </form>
+
+      <aside class="aside">
+        <div class="asidecard"><h2>提示</h2><ul>
+          <li>向导不替代自己验证：任何推荐都建议先月付试用。</li>
+          <li>想看更多维度，用<a href="/compare/">对比中心</a>。</li>
+          <li>想了解判断依据，读<a href="/methodology/">评测方法</a>。</li>
+        </ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sec" aria-live="polite" id="result-sec">
+    <div class="sec-head"><div><p class="eyebrow">结果 · Result</p><h2 id="res-title">—</h2><p id="res-sum" class="muted"></p></div><a class="sec-link" id="res-link" href="/scenarios/">查看场景详情 →</a></div>
+    <div id="res-list" style="display:grid;gap:16px"></div>
+    <div class="callout callout--info" style="margin-top:18px"><b>提示</b><div><p>结果来自场景页的已有推荐，按你的优先级重排。价格与活动以官网为准；站长自测丢包率为固定环境下的多批次区间，见<a href="/data/">数据中心</a>。</p></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="split"><div class="article"><h2>常见问题</h2><Faq items={faq} /></div><div></div></div>
+  </section>
+
+  <script type="application/json" id="finder-data" set:html={safeJson(data)} />
+  <script>
+    type Pick = {
+      id: string; slug: string; name: string; rank: number; conf: string; confLabel: string; price: string; monthly: number | null;
+      loss: string; lossMin: number | null; client: string; clientLabel: string; clientText: string; reason: string; url: string;
+    };
+    type Sc = { slug: string; gate: string; short: string; title: string; summary: string; picks: Pick[] };
+    const data = JSON.parse(document.getElementById('finder-data')!.textContent!) as { scenarios: Sc[] };
+    const form = document.getElementById('wiz') as HTMLFormElement;
+    const val = (n: string) => (form.querySelector(`input[name="${n}"]:checked`) as HTMLInputElement).value;
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+    const order: Record<string, number> = { 'own-test': 0, 'cross-verified': 1, 'third-party-only': 2, incomplete: 3 };
+
+    const render = () => {
+      const sc = data.scenarios.find((s) => s.slug === val('scenario'))!;
+      const pr = val('priority');
+      const cl = val('client');
+      const picks = sc.picks.slice().sort((a, b) => {
+        if (pr === 'stable') return (a.lossMin ?? 99) - (b.lossMin ?? 99) || a.rank - b.rank;
+        if (pr === 'price') return (a.monthly ?? 999) - (b.monthly ?? 999) || a.rank - b.rank;
+        return (order[a.conf] ?? 9) - (order[b.conf] ?? 9) || a.rank - b.rank;
+      });
+      document.getElementById('res-title')!.textContent = `${sc.gate} · ${sc.title}`;
+      document.getElementById('res-sum')!.textContent = sc.summary;
+      (document.getElementById('res-link') as HTMLAnchorElement).href = `/scenarios/${sc.slug}/`;
+      const prNote = pr === 'stable' ? '按站长自测丢包率区间下限由低到高排列，没有数据的排在最后。' : pr === 'price' ? '按公开起步月均价由低到高排列（口径不同，仅作参考，价格以官网为准）。' : '按资料标签（站长自测 > 多来源 > 单一第三方 > 待补充）与综合名次排列。';
+      document.getElementById('res-list')!.innerHTML =
+        `<p class="muted" style="margin:0">${prNote}</p>` +
+        picks
+          .map((p, i) => {
+            let fit = '';
+            if (cl === 'third') {
+              fit =
+                p.client === 'official-only'
+                  ? `<span class="chip chip--inc">不满足：资料显示仅官方客户端</span>`
+                  : p.client === 'conflict'
+                    ? `<span class="chip chip--inc">需先确认：来源对第三方客户端说法不一</span>`
+                    : `<span class="chip chip--inc">需先确认：资料未提及第三方客户端</span>`;
+            } else {
+              fit = `<span class="chip chip--own">客户端：${esc(p.clientLabel)}</span>`;
+            }
+            return `<article class="card"><p style="margin:0 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="gate">#${i + 1}</span><b style="font-size:1.1rem"><a href="/airports/${esc(p.slug)}/">${esc(p.name)}</a></b><span class="chip chip--${p.conf === 'own-test' ? 'own' : p.conf === 'cross-verified' ? 'cross' : p.conf === 'third-party-only' ? 'third' : 'inc'}">${esc(p.confLabel)}</span>${fit}</p><p style="margin:0 0 8px">${esc(p.reason)}</p><p class="muted" style="margin:0;font-size:.9rem">起步价：${esc(p.price)}　·　丢包率（自测）：${esc(p.loss)}</p><p style="margin:10px 0 0;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn--ghost btn--sm" href="/airports/${esc(p.slug)}/">查看资料</a><a class="btn btn--amber btn--sm" href="${esc(p.url)}" target="_blank" rel="nofollow sponsored noopener">官网入口 ↗</a></p></article>`;
+          })
+          .join('');
+    };
+    form.addEventListener('change', render);
+    render();
+  </script>
+</BaseLayout>

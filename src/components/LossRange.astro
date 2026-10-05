@@ -1,0 +1,41 @@
+---
+import { FACTS, LOSS_AXIS_MAX, lossTier } from '../data/providers/facts';
+
+interface Props {
+  rows: { id: string; name: string; href: string }[];
+  /** 隐藏没有数据的行 */
+  onlyWithData?: boolean;
+  /** 高亮某一行（详情页里突出当前服务商） */
+  highlight?: string;
+}
+const { rows, onlyWithData = true, highlight } = Astro.props;
+const data = rows
+  .map((r) => ({ ...r, f: FACTS[r.id] }))
+  .filter((r) => (onlyWithData ? r.f?.loss : true))
+  .sort((a, b) => (a.f?.loss?.min ?? 99) - (b.f?.loss?.min ?? 99));
+const pct = (v: number) => `${(Math.min(v, LOSS_AXIS_MAX) / LOSS_AXIS_MAX) * 100}%`;
+const ticks = [0, 1, 2, 3, 4];
+---
+
+<div class="rangechart" role="img" aria-label="各服务商站长自测丢包率区间对比图，数值越小越好">
+  {
+    data.map((r) => {
+      const l = r.f!.loss!;
+      const tier = lossTier(r.f);
+      return (
+        <div class={`range${r.id === highlight ? " range--me" : ""}`}>
+          <span class="range-name"><a href={r.href}>{r.name}</a></span>
+          <span class="range-track">
+            <span class={`range-bar range-bar--${tier}`} style={`left:${pct(l.min)};width:calc(${pct(l.max)} - ${pct(l.min)})`}></span>
+          </span>
+          <span class="range-val">{l.min}–{l.max}%</span>
+        </div>
+      );
+    })
+  }
+  <div class="range-axis" aria-hidden="true">
+    <span></span>
+    <span class="ticks">{ticks.map((t) => <span>{t}%</span>)}</span>
+    <span></span>
+  </div>
+</div>
