@@ -1,81 +1,38 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
+import Crumbs from '../../components/Crumbs.astro';
+import { loadSite } from '../../data/helpers';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
 
-const tutorials = await getCollection('tutorials');
-
-const GROUP_ORDER = ['basics', 'clients', 'troubleshooting', 'advanced'] as const;
-const GROUP_LABEL: Record<(typeof GROUP_ORDER)[number], string> = {
-  basics: '新手先读',
-  clients: '客户端入门',
-  troubleshooting: '常见问题',
-  advanced: '进阶理解',
-};
-const GROUP_DESC: Record<(typeof GROUP_ORDER)[number], string> = {
-  basics: '第一次接触机场代理，先从这里了解基本概念和怎么选。',
-  clients: 'Windows、macOS、iOS、Android 常见客户端和订阅导入方法。',
-  troubleshooting: '连接失败、速度慢、订阅导不进去，遇到问题先来这里查。',
-  advanced: '节点、线路、协议、丢包率这些术语具体是什么意思。',
-};
-
-const groups = GROUP_ORDER.map((key) => ({
-  key,
-  label: GROUP_LABEL[key],
-  description: GROUP_DESC[key],
-  items: tutorials
-    .filter((t) => t.data.group === key)
-    .sort((a, b) => a.data.publishedAt.getTime() - b.data.publishedAt.getTime()),
-}));
-
-const title = '使用教程｜新手入门、客户端设置与常见问题排查｜机场TJ';
-const description = '机场TJ 使用教程聚合页——新手先读、客户端入门、常见问题排查、进阶术语理解，按难度分组整理。';
-const canonicalUrl = resolveCanonicalUrl('/tutorials/');
+const { tutorials } = await loadSite();
+const GROUPS: [string, string, string][] = [
+  ['basics', '新手先读', '机场是什么、和 VPN 有什么区别、第一次怎么选。'],
+  ['clients', '客户端入门', '拿到订阅链接之后：用什么客户端、怎么导入。'],
+  ['troubleshooting', '常见问题', '导入失败、连不上、很慢，按顺序排查。'],
+  ['advanced', '进阶理解', '节点、线路、协议这些词到底是什么意思。'],
+];
+const title = '机场使用教程：新手入门、客户端导入订阅、连接失败排查｜机场TJ';
+const description = '机场TJ 使用教程：机场代理是什么、怎么选，Windows / macOS / iOS / Android 客户端怎么导入订阅，连不上、订阅失败、速度慢怎么排查，以及节点、线路、协议术语解释。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 使用教程</nav>
-
-  <h1>使用教程</h1>
-  <p>从"机场代理是什么"到客户端设置、常见问题排查，按由浅入深整理。内容会持续补充，暂时没有覆盖到的问题，欢迎通过<a href="/contact/">联系方式</a>告诉我们。</p>
-
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/tutorials/')}>
+  <Crumbs items={[{ name: '使用教程', href: '/tutorials/' }]} />
+  <div class="banner">
+    <p class="eyebrow">教程 · Tutorials</p>
+    <h1>使用教程：从入门到排错</h1>
+    <p class="lead">按“新手先读 → 客户端入门 → 常见问题 → 进阶理解”的顺序排列。想系统地学判断方法，也可以去<a href="/knowledge/" style="color:var(--amber)">知识库</a>。</p>
+  </div>
   {
-    groups.map((group) => (
-      <section class="tutorial-group">
-        <h2>{group.label}</h2>
-        <p class="tutorial-group__desc">{group.description}</p>
-        {group.items.length > 0 ? (
-          <div class="tutorial-list">
-            {group.items.map((item) => (
-              <a href={`/tutorials/${item.id}/`} class="tutorial-card">
-                <strong>{item.data.title}</strong>
-                <span>{item.data.description}</span>
-              </a>
-            ))}
+    GROUPS.map(([k, label, blurb]) => {
+      const items = tutorials.filter((t) => t.data.group === k);
+      return items.length > 0 && (
+        <section class="sec">
+          <div class="sec-head"><div><h2>{label}</h2><p>{blurb}</p></div></div>
+          <div class="cards cards--2">
+            {items.map((t) => <a class="card" href={`/tutorials/${t.id}/`}><p style="margin:0 0 8px"><span class="tag">{label}</span> <span class="muted" style="font-size:.8rem;margin-left:6px">更新 {formatDate(t.data.updatedAt)}</span></p><h3>{t.data.title}</h3><p class="muted" style="margin:0">{t.data.description}</p></a>)}
           </div>
-        ) : (
-          <p class="tutorial-group__empty">这一类还在补充中，暂时没有文章。</p>
-        )}
-      </section>
-    ))
+        </section>
+      );
+    })
   }
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/airports/">机场导航</a></li>
-    <li><a href="/scenarios/">按场景选</a></li>
-  </ul>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '使用教程', item: canonicalUrl },
-      ],
-    })}
-  />
 </BaseLayout>

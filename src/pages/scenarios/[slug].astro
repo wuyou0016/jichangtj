@@ -1,152 +1,217 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
+import Crumbs from '../../components/Crumbs.astro';
+import Faq from '../../components/Faq.astro';
+import Chip from '../../components/Chip.astro';
+import { loadSite, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
+import { FACTS, CLIENT_LABEL, coverage } from '../../data/providers/facts';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
+import { siteConfig } from '../../config/site';
+import type { DataConfidence } from '../../config/data-confidence';
 
 export async function getStaticPaths() {
   const scenarios = await getCollection('scenarios');
-  return scenarios.map((scenario) => ({
-    params: { slug: scenario.data.slug },
-    props: { scenario },
-  }));
+  return scenarios.map((s) => ({ params: { slug: s.data.slug }, props: { entry: s } }));
 }
 
-interface Props {
-  scenario: Awaited<ReturnType<typeof getCollection<'scenarios'>>>[number];
-}
+const { entry } = Astro.props;
+const d = entry.data;
+const { scenarios, byId, guides, tutorials } = await loadSite();
+const picks = d.picks.map((p, i) => ({ ...p, n: i + 1, provider: byId.get(p.providerId.id)! }));
+const relGuides = (d.relatedGuides ?? []).map((id) => guides.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => Boolean(g));
+const relTutorials = tutorials.filter((t) => t.data.relatedScenarios?.includes(d.slug));
+const others = scenarios.filter((s) => s.data.slug !== d.slug);
+const idx = scenarios.findIndex((s) => s.data.slug === d.slug);
+const prev = scenarios[(idx - 1 + scenarios.length) % scenarios.length]!;
+const next = scenarios[(idx + 1) % scenarios.length]!;
+const path = `/scenarios/${d.slug}/`;
+const wuyou = byId.get('wuyou-lianjie');
+const pickedIds = new Set(picks.map((p) => p.provider.id));
+// 未列入推荐的服务商：只写“资料缺口”，不下好坏判断。
+const notPicked = [...byId.values()]
+  .filter((p) => !pickedIds.has(p.id))
+  .map((p) => {
+    const f = FACTS[p.id]!;
+    const gaps: string[] = [];
+    if (!f.loss) gaps.push('本站没有测试数据');
+    if (f.monthly === null) gaps.push('价格资料不足');
+    if (f.client.type === 'unknown') gaps.push('客户端资料未提及');
+    if (f.client.type === 'conflict') gaps.push('客户端说法不一');
+    if (f.loss && f.loss.max > 2.8) gaps.push(`已测丢包率区间偏高（${f.loss.min}%–${f.loss.max}%）`);
+    if (gaps.length === 0) gaps.push('本站对这个场景没有足够的专门依据');
+    return { p, gaps };
+  });
 
-const { scenario } = Astro.props;
-const allScenarios = await getCollection('scenarios');
-const otherScenarios = allScenarios.filter((s) => s.data.slug !== scenario.data.slug);
+const sections = [
+  ['why', '该看哪些指标'],
+  ['picks', `推荐（${picks.length} 家）`],
+  ['mistakes', '常见误区'],
+  ['checklist', '检查清单'],
+  ['faq', 'FAQ'],
+  ['more', '继续阅读'],
+] as const;
 
-const picks = await Promise.all(
-  scenario.data.picks.map(async (pick) => ({
-    ...pick,
-    provider: await getEntry(pick.providerId),
-  })),
-);
-
-const allTutorials = await getCollection('tutorials');
-const relatedTutorials = allTutorials.filter((t) => t.data.relatedScenarios?.includes(scenario.data.slug));
-
-const title = `${scenario.data.title}｜机场TJ`;
-const description = scenario.data.description;
-const canonicalUrl = resolveCanonicalUrl(`/scenarios/${scenario.data.slug}/`);
-
-function formatDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
-}
+const title = `${d.title}｜判断指标与推荐｜机场TJ`;
+const description = `${d.summary ?? d.description} 含判断指标、${picks.length} 个有依据的推荐、常见误区与检查清单。`;
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb">
-    <a href="/">首页</a> › <a href="/scenarios/">按场景选</a> › {scenario.data.title}
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={resolveCanonicalUrl(path)}
+  ogType="article"
+  ld={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: d.title,
+      description: d.description,
+      url: resolveCanonicalUrl(path),
+      datePublished: formatDate(d.publishedAt),
+      dateModified: formatDate(d.updatedAt),
+      author: { '@type': 'Organization', name: siteConfig.author.name },
+      publisher: { '@type': 'Organization', name: siteConfig.brandName },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `${d.title}：推荐列表`,
+      itemListElement: picks.map((p) => ({ '@type': 'ListItem', position: p.n, name: p.provider.data.name, url: resolveCanonicalUrl(`/airports/${p.provider.data.slug}/`) })),
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '按场景选', href: '/scenarios/' }, { name: shortName(entry), href: path }]} />
+  <div class="banner">
+    <p class="eyebrow"><span class="gate" style="margin-right:10px">{d.gate}</span>场景 · {d.slug}</p>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.description}</p>
+    <div class="metarow"><span>更新 {formatDate(d.updatedAt)}</span><span class="sep">·</span><span>{d.whatMatters.length} 个判断指标</span><span class="sep">·</span><span>{picks.length} 个推荐</span><span class="sep">·</span><span>{d.checklist?.length ?? 0} 项检查清单</span></div>
+  </div>
+
+  <nav class="tabs" aria-label="本页目录">
+    {sections.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
   </nav>
 
-  <h1>{scenario.data.emoji} {scenario.data.title}</h1>
-  <p>{scenario.data.description}</p>
+  <div class="split" style="margin-top:22px">
+    <div class="article-body article">
+      {d.summary && <div class="takeaway"><b>一句话结论</b><p>{d.summary}</p></div>}
 
-  <h2>这个场景该关注什么</h2>
-  <div class="what-matters">
-    {
-      scenario.data.whatMatters.map((item) => (
-        <div class="what-matters__item">
-          <p class="what-matters__point">{item.point}</p>
-          <p class="what-matters__explanation">{item.explanation}</p>
+      <h2 id="why">该看哪些指标</h2>
+      <p>这个场景和别的场景最大的不同，是下面这几点：</p>
+      <ol class="route" style="margin:0 0 1.2em">
+        {d.whatMatters.map((w) => <li><h3>{w.point}</h3><p>{w.explanation}</p></li>)}
+      </ol>
+
+      <h2 id="picks">推荐：{picks.length} 家，依据逐条写明</h2>
+      <p>推荐是编辑判断，只引用本站已有的资料。每一条都标了资料标签，标签只说明“信息从哪来”，不是评分。</p>
+      <div style="display:grid;gap:18px;margin:0 0 1.4em">
+        {
+          picks.map((p) => {
+            const f = FACTS[p.provider.id];
+            const dd = p.provider.data;
+            return (
+              <article class={`pass${dd.slug === 'wuyou-lianjie' ? ' pass--gold' : ''}`}>
+                <div class="pass-main">
+                  <div class="pass-head">
+                    <h3><a href={`/airports/${dd.slug}/`}>{dd.name}</a></h3>
+                    <Chip c={dd.dataConfidence as DataConfidence} />
+                    {dd.slug === 'wuyou-lianjie' && <span class="tag tag--amber">首推</span>}
+                  </div>
+                  <p style="margin:0">{p.reason}</p>
+                  {f && (
+                    <ul class="pass-facts">
+                      <li><span>起步价</span>{f.price.headline}</li>
+                      <li><span>丢包率（站长自测）</span>{f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无测试数据'}</li>
+                      <li><span>客户端</span>{CLIENT_LABEL[f.client.type]}</li>
+                    </ul>
+                  )}
+                </div>
+                <div class="pass-stub">
+                  <div class="stub-rank"><small>本场景第</small>{String(p.n).padStart(2, '0')}</div>
+                  <div style="display:grid;gap:8px">
+                    <a class="btn btn--ghost btn--sm" href={`/airports/${dd.slug}/`}>查看资料</a>
+                    <a class="btn btn--amber btn--sm" href={dd.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">官网入口 ↗</a>
+                  </div>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+      {picks.length > 1 && (
+        <>
+          <h3>并排看</h3>
+          <div class="tbl-wrap">
+            <table class="tbl" style="min-width:620px">
+              <thead><tr><th>推荐</th><th>起步价</th><th>丢包率（自测）</th><th>客户端</th><th>资料完整度</th></tr></thead>
+              <tbody>
+                {picks.map((p) => {
+                  const f = FACTS[p.provider.id]!;
+                  return <tr><th scope="row"><a href={`/airports/${p.provider.data.slug}/`}>{p.provider.data.name}</a></th><td>{f.price.headline}</td><td class="num">{f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无'}</td><td>{CLIENT_LABEL[f.client.type]}</td><td class="num"><b>{coverage(f).score}</b>/6</td></tr>;
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {notPicked.length > 0 && (
+        <div class="acc" style="margin:0 0 1.4em">
+          <details>
+            <summary>未列入这个场景推荐的 {notPicked.length} 家，原因是什么</summary>
+            <div class="ans">
+              <p>下面写的是“资料缺口”，不是对服务好坏的判断：缺少可核对的依据，本站就不为凑数而推荐。</p>
+              <ul>{notPicked.map((n) => <li><a href={`/airports/${n.p.data.slug}/`}>{n.p.data.name}</a>：{n.gaps.join('；')}</li>)}</ul>
+            </div>
+          </details>
         </div>
-      ))
-    }
+      )}
+      {picks.length < 3 && <div class="callout callout--warn"><b>说明</b><div><p>这个场景目前只有 {picks.length} 条有依据的推荐：没有独立验证的信息，本站不会为了凑数而列出。其余服务商请去<a href="/airports/">机场导航</a>查看各自的资料。</p></div></div>}
+
+      {d.commonMistakes && d.commonMistakes.length > 0 && (
+        <>
+          <h2 id="mistakes">常见误区</h2>
+          <div class="callout callout--warn"><b>踩坑</b><div><ul style="margin:0">{d.commonMistakes.map((m) => <li>{m}</li>)}</ul></div></div>
+        </>
+      )}
+
+      {d.checklist && d.checklist.length > 0 && (
+        <>
+          <h2 id="checklist">检查清单</h2>
+          <ul class="checklist">{d.checklist.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      {d.faq && d.faq.length > 0 && (
+        <>
+          <h2 id="faq">常见问题</h2>
+          <Faq items={d.faq} />
+        </>
+      )}
+
+      <h2 id="more">继续阅读</h2>
+      <div class="cards cards--2" style="margin-bottom:1.4em">
+        {relGuides.map((g) => <a class="card" href={`/knowledge/${g.id}/`}><p style="margin:0 0 8px"><span class="tag">{GUIDE_TOPIC_LABEL[g.data.topic]}</span></p><h3>{g.data.title}</h3><p class="muted" style="font-size:.9rem">{g.data.description}</p></a>)}
+        {relTutorials.map((t) => <a class="card" href={`/tutorials/${t.id}/`}><p style="margin:0 0 8px"><span class="tag">教程</span></p><h3>{t.data.title}</h3><p class="muted" style="font-size:.9rem">{t.data.description}</p></a>)}
+      </div>
+      <p class="muted" style="font-size:.88rem">本页最后更新于 {formatDate(d.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长自测数据，分别标注。测试方法与局限见<a href="/methodology/">评测方法与数据说明</a>。</p>
+      <div class="cards cards--2" style="margin-top:20px">
+        <a class="card" href={`/scenarios/${prev.data.slug}/`}><p class="muted" style="margin:0;font-size:.8rem">← 上一个场景</p><h3 style="margin:4px 0 0">{shortName(prev)}</h3></a>
+        <a class="card" href={`/scenarios/${next.data.slug}/`}><p class="muted" style="margin:0;font-size:.8rem;text-align:right">下一个场景 →</p><h3 style="margin:4px 0 0;text-align:right">{shortName(next)}</h3></a>
+      </div>
+    </div>
+
+    <aside class="aside" aria-label="侧栏">
+      <div class="toc"><h2>本页目录</h2><ol>{sections.map(([id, label]) => <li><a href={`#${id}`}>{label}</a></li>)}</ol></div>
+      <div class="asidecard asidecard--gold">
+        <h2>首推 · 无忧链接</h2>
+        <p style="font-size:.9rem;margin:0 0 10px">MINI 包月约 ¥6.6/月起；本站对它做过丢包率持续跟踪与解锁检测（站长自测）。</p>
+        <a class="btn btn--amber btn--sm" href={wuyou?.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a>
+      </div>
+      <div class="asidecard">
+        <h2>其他场景</h2>
+        <ul>{others.map((s) => <li><span class="gate" style="min-width:36px;height:22px;font-size:.72rem;margin-right:8px">{s.data.gate}</span><a href={`/scenarios/${s.data.slug}/`}>{shortName(s)}</a></li>)}</ul>
+      </div>
+    </aside>
   </div>
-
-  <h2>参考选择</h2>
-  {
-    picks.map((pick, index) =>
-      pick.provider ? (
-        <div class="pick-card">
-          <p>
-            <span class="pick-card__rank">{index + 1}</span>
-            <a href={`/airports/${pick.provider.data.slug}/`} class="pick-card__name">
-              {pick.provider.data.name}
-            </a>
-          </p>
-          <p class="pick-card__reason">{pick.reason}</p>
-        </div>
-      ) : null,
-    )
-  }
-
-  {
-    scenario.data.commonMistakes && scenario.data.commonMistakes.length > 0 && (
-      <>
-        <h2>常见误区</h2>
-        <ul>
-          {scenario.data.commonMistakes.map((mistake) => (
-            <li>{mistake}</li>
-          ))}
-        </ul>
-      </>
-    )
-  }
-
-  {
-    relatedTutorials.length > 0 && (
-      <>
-        <h2>相关教程</h2>
-        <ul class="quick-links">
-          {relatedTutorials.map((t) => (
-            <li>
-              <a href={`/tutorials/${t.id}/`}>{t.data.title}</a>
-            </li>
-          ))}
-        </ul>
-      </>
-    )
-  }
-
-  <p class="scenario-caveat">实际体验受地区、网络环境、访问时间和具体套餐影响，以上建议仅供参考，购买前建议自行验证。</p>
-
-  <h2>其他场景</h2>
-  <div class="scenario-grid">
-    {
-      otherScenarios.map((s) => (
-        <a href={`/scenarios/${s.data.slug}/`} class="scenario-card">
-          <span class="scenario-card__emoji">{s.data.emoji}</span>
-          <span class="scenario-card__title">{s.data.title}</span>
-          <p class="scenario-card__desc">{s.data.description}</p>
-        </a>
-      ))
-    }
-  </div>
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/rankings/">综合推荐榜</a></li>
-    <li><a href="/airports/">机场导航</a></li>
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-  </ul>
-
-  <p>本页最后更新于 {formatDate(scenario.data.updatedAt)}。信息按来源分为官方公开信息、第三方资料与站长实测数据，分别标注。</p>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: title,
-      description,
-      url: canonicalUrl,
-    })}
-  />
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '按场景选', item: resolveCanonicalUrl('/scenarios/') },
-        { '@type': 'ListItem', position: 3, name: scenario.data.title, item: canonicalUrl },
-      ],
-    })}
-  />
 </BaseLayout>

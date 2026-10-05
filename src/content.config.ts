@@ -72,6 +72,12 @@ const scenarioSchema = z.object({
   picks: z.array(scenarioPickSchema),
   // 这个场景里最容易踩的坑，不是泛泛的"要小心"，要具体到会导致什么误判。
   commonMistakes: z.array(z.string()).optional(),
+  // 2026-10 改版新增：登机口编号（仅用于页面呈现）、一句话结论、买前/试用检查清单、场景 FAQ、关联知识库文章。
+  gate: z.string().optional(),
+  summary: z.string().optional(),
+  checklist: z.array(z.string()).optional(),
+  faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+  relatedGuides: z.array(z.string()).optional(),
   publishedAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -129,4 +135,28 @@ const tutorials = defineCollection({
   schema: tutorialSchema,
 });
 
-export const collections = { providers, scenarios, rankings, tutorials };
+// ---------------------------------------------------------------------------
+// guides（知识库：价格怎么看、怎么自测、红旗清单等专题长文）
+// ---------------------------------------------------------------------------
+
+const guideSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  // 知识库分区，决定在 /knowledge/ 里归到哪一组。
+  topic: z.enum(['buy', 'test', 'tech', 'safety']),
+  publishedAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  // 一句话结论，显示在文章顶部的结论条里。
+  takeaway: z.string(),
+  relatedScenarios: z.array(z.string()).optional(),
+  relatedGuides: z.array(z.string()).optional(),
+  relatedGlossary: z.array(z.string()).optional(),
+  faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+});
+
+const guides = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: 'src/content/guides' }),
+  schema: guideSchema,
+});
+
+export const collections = { providers, scenarios, rankings, tutorials, guides };

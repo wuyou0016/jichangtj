@@ -1,0 +1,47 @@
+---
+import type { Provider } from '../data/helpers';
+import Chip from './Chip.astro';
+import Coverage from './Coverage.astro';
+import { FACTS, CLIENT_LABEL, lossTier } from '../data/providers/facts';
+import type { DataConfidence } from '../config/data-confidence';
+
+interface Props {
+  provider: Provider;
+  rank?: number;
+  gold?: boolean;
+  /** 显示在卡片里的补充一句话（如排序理由摘要） */
+  blurb?: string;
+}
+const { provider, rank, gold = false, blurb } = Astro.props;
+const d = provider.data;
+const f = FACTS[provider.id];
+const href = `/airports/${d.slug}/`;
+---
+
+<article class={`pass${gold ? ' pass--gold' : ''}`}>
+  <div class="pass-main">
+    <div class="pass-head">
+      <h3><a href={href}>{d.name}</a></h3>
+      <Chip c={d.dataConfidence as DataConfidence} />
+      {gold && <span class="tag tag--amber">首推</span>}
+    </div>
+    {blurb && <p class="muted" style="margin:0">{blurb}</p>}
+    {
+      f && (
+        <ul class="pass-facts">
+          <li><span>起步价</span>{f.price.headline}</li>
+          <li><span>丢包率（站长自测）</span>{f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无测试数据'}</li>
+          <li><span>客户端</span>{CLIENT_LABEL[f.client.type]}</li>
+        </ul>
+      )
+    }
+    {f && <div style="margin-top:14px"><Coverage f={f} compact /></div>}
+  </div>
+  <div class="pass-stub">
+    {rank !== undefined && <div class="stub-rank"><small>综合排名</small>{String(rank).padStart(2, '0')}</div>}
+    <div style="display:grid;gap:8px">
+      <a class="btn btn--ghost btn--sm" href={href}>查看资料</a>
+      <a class="btn btn--amber btn--sm" href={d.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">官网入口 ↗</a>
+    </div>
+  </div>
+</article>

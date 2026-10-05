@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Faq from '../../components/Faq.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const days = ['第 1 天', '第 2 天', '第 3 天', '第 4 天', '第 5 天', '第 6 天', '第 7 天'];
+const faq = [
+  { q: '换算器会把数据上传吗？', a: '不会。所有计算都在你的浏览器里完成，不会发送到任何服务器。' },
+  { q: '为什么要填“节点倍率”？', a: '部分高质量节点按倍数扣流量，倍率 2 表示用 1GB 扣 2GB。如果你主要用这类节点，实际可用流量要除以倍率；不确定就填 1。' },
+  { q: '自测记录表怎么用？', a: '连续 7 天，每天在你常用的晚高峰时段至少记录一次，重点看“同一时段反复出现的问题”。完整的 7 天安排见《一周自测计划》。', more: { href: '/knowledge/self-test-seven-days/', label: '一周自测计划' } },
+];
+const title = '机场工具：流量成本换算器与一周自测记录表｜机场TJ';
+const description = '机场TJ 站内工具：流量成本换算器（输入价格、流量、周期和倍率，算每月成本与够用月数）和一周自测记录表（可导出 CSV 或打印），数据只在你的浏览器里计算。';
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/tools/')}>
+  <Crumbs items={[{ name: '工具', href: '/tools/' }]} />
+  <div class="banner">
+    <p class="eyebrow">工具 · Tools</p>
+    <h1>站内工具：算成本、做自测</h1>
+    <p class="lead">两个小工具，帮你把“看起来划算”换算成“实际每月花多少、够不够用”，并把自测结果记下来。全部在你的浏览器里运行，不上传任何数据。</p>
+  </div>
+
+  <section class="sec" aria-labelledby="calc-h" style="margin-top:28px">
+    <div class="sec-head"><div><p class="eyebrow">换算器 · Calculator</p><h2 id="calc-h">流量成本换算器</h2><p>用于换算你自己正在考虑的套餐，不用于品牌之间的排名。</p></div></div>
+    <div class="toolbox">
+      <form class="card" id="calc" onsubmit="return false">
+        <div class="field"><label for="price">套餐价格（元）</label><input class="input" id="price" type="number" min="0" step="0.1" value="84" inputmode="decimal" /></div>
+        <div class="field"><label for="period">计费周期</label><select class="select" id="period"><option value="1">月付（1 个月）</option><option value="3">季付（3 个月）</option><option value="6">半年付（6 个月）</option><option value="12" selected>年付（12 个月）</option></select></div>
+        <div class="field"><label for="flow">整个周期的总流量（GB）</label><input class="input" id="flow" type="number" min="0" step="1" value="600" inputmode="decimal" /></div>
+        <div class="field"><label for="mult">你常用节点的平均倍率</label><input class="input" id="mult" type="number" min="0.1" step="0.1" value="1" inputmode="decimal" /></div>
+        <div class="field"><label for="usage">你预计每月用多少 GB</label><input class="input" id="usage" type="number" min="0" step="1" value="30" inputmode="decimal" /></div>
+        <p class="muted" style="margin:0;font-size:.84rem">示例数值仅为演示，请改成你自己的套餐。</p>
+      </form>
+      <div class="readout" aria-live="polite">
+        <dl>
+          <div><dt>折算每月成本</dt><dd id="o-month">—</dd></div>
+          <div><dt>一次性预付</dt><dd id="o-upfront">—</dd></div>
+          <div><dt>实际可用流量（除以倍率）</dt><dd id="o-eff">—</dd></div>
+          <div><dt>实际每 GB 成本</dt><dd id="o-gb">—</dd></div>
+          <div><dt>按你的月用量，能撑多久</dt><dd id="o-last">—</dd><small id="o-note"></small></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="rec-h">
+    <div class="sec-head"><div><p class="eyebrow">记录表 · Log</p><h2 id="rec-h">一周自测记录表</h2><p>连续 7 天，每天在你常用的晚高峰时段记录一次。测完可导出 CSV 或直接打印。</p></div></div>
+    <div class="tbl-wrap">
+      <table class="tbl" id="rec" style="min-width:760px">
+        <thead><tr><th>日期 / 时段</th><th>节点</th><th>丢包 %</th><th>延迟 ms</th><th>是否断线</th><th>备注</th></tr></thead>
+        <tbody>
+          {days.map((d) => <tr><th scope="row">{d}</th><td><input class="input" aria-label={`${d} 节点`} /></td><td><input class="input" inputmode="decimal" aria-label={`${d} 丢包`} /></td><td><input class="input" inputmode="numeric" aria-label={`${d} 延迟`} /></td><td><select class="select" aria-label={`${d} 是否断线`}><option></option><option>否</option><option>是</option></select></td><td><input class="input" aria-label={`${d} 备注`} /></td></tr>)}
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button class="btn btn--primary" type="button" id="csv">导出 CSV</button><button class="btn btn--ghost" type="button" id="print">打印</button><button class="btn btn--ghost" type="button" id="clear">清空</button></div>
+    <p class="muted" style="font-size:.86rem">怎么测、怎么读结果：见<a href="/knowledge/self-test-seven-days/">一周自测计划</a>和<a href="/knowledge/loss-latency-jitter-explained/">丢包、延迟、抖动</a>。</p>
+  </section>
+
+  <section class="sec"><div class="split"><div class="article"><h2>常见问题</h2><Faq items={faq} /></div><aside class="aside"><div class="asidecard"><h2>相关</h2><ul><li><a href="/knowledge/airport-pricing-explained/">机场价格怎么看</a></li><li><a href="/knowledge/monthly-vs-yearly/">月付还是年付</a></li><li><a href="/compare/">服务商对比</a></li></ul></div></aside></div></section>
+
+  <script>
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const num = (id: string) => Number($(id).value);
+    const fmt = (n: number, d = 2) => (Number.isFinite(n) ? n.toFixed(d).replace(/\.?0+$/, '') : '—');
+    const calc = () => {
+      const price = num('price');
+      const months = num('period');
+      const flow = num('flow');
+      const mult = Math.max(num('mult') || 1, 0.1);
+      const usage = num('usage');
+      const eff = flow / mult;
+      $('o-month').textContent = `¥${fmt(price / months)} / 月`;
+      $('o-upfront').textContent = `¥${fmt(price)}`;
+      $('o-eff').textContent = `${fmt(eff, 1)} GB`;
+      $('o-gb').textContent = eff > 0 ? `¥${fmt(price / eff)} / GB` : '—';
+      if (usage > 0 && eff > 0) {
+        const last = eff / usage;
+        $('o-last').textContent = `约 ${fmt(last, 1)} 个月`;
+        document.getElementById('o-note')!.textContent = last < months ? `不足整个周期（${months} 个月），中途可能需要加购或重置流量。` : '足够覆盖整个周期。';
+      } else {
+        $('o-last').textContent = '—';
+        document.getElementById('o-note')!.textContent = '';
+      }
+    };
+    document.querySelectorAll('#calc input, #calc select').forEach((el) => el.addEventListener('input', calc));
+    calc();
+
+    const rows = () => [...document.querySelectorAll<HTMLTableRowElement>('#rec tbody tr')];
+    document.getElementById('csv')!.addEventListener('click', () => {
+      const head = ['日期/时段', '节点', '丢包%', '延迟ms', '是否断线', '备注'];
+      const lines = rows().map((tr) => {
+        const label = tr.querySelector('th')!.textContent!;
+        const cells = [...tr.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input,select')].map((c) => `"${c.value.replace(/"/g, '""')}"`);
+        return [`"${label}"`, ...cells].join(',');
+      });
+      const blob = new Blob(['﻿' + [head.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'airport-self-test.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    document.getElementById('print')!.addEventListener('click', () => print());
+    document.getElementById('clear')!.addEventListener('click', () => document.querySelectorAll<HTMLInputElement | HTMLSelectElement>('#rec input, #rec select').forEach((c) => (c.value = '')));
+  </script>
+</BaseLayout>

@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "indexnow": "node scripts/submit-indexnow.mjs"
+    "indexnow": "node scripts/submit-indexnow.mjs",
+    "seo-audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

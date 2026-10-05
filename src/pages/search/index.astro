@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const title = '站内搜索｜机场TJ';
+const description = '搜索机场TJ 的场景、服务商、知识库文章、教程、术语和常见问题。';
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/search/')} noindex>
+  <Crumbs items={[{ name: '站内搜索', href: '/search/' }]} />
+  <div class="phead">
+    <h1>站内搜索</h1>
+    <p class="lead">搜索场景、服务商、知识库、教程、术语与常见问题。</p>
+  </div>
+  <form class="search-box" action="/search/" method="get" role="search">
+    <input class="input" id="q" type="search" name="q" placeholder="例如：丢包率、订阅链接、年付、IPLC、解锁…" autocomplete="off" autofocus />
+    <button class="btn btn--primary" type="submit">搜索</button>
+  </form>
+  <p id="count" class="muted" aria-live="polite"></p>
+  <div id="hits"></div>
+  <div id="sugg" class="callout callout--info hide"><b>试试</b><div><p>没有结果？换个关键词，或直接看<a href="/glossary/">术语表</a>、<a href="/knowledge/">知识库</a>、<a href="/faq/">常见问题</a>。</p></div></div>
+
+  <script>
+    type Item = { t: string; u: string; k: string; d: string };
+    const q = document.getElementById('q') as HTMLInputElement;
+    const hits = document.getElementById('hits')!;
+    const count = document.getElementById('count')!;
+    const sugg = document.getElementById('sugg')!;
+    let items: Item[] = [];
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+    const hl = (s: string, words: string[]) => {
+      let out = esc(s);
+      words.forEach((w) => {
+        if (!w) return;
+        out = out.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), (m) => `<mark>${m}</mark>`);
+      });
+      return out;
+    };
+    const run = () => {
+      const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      if (!words.length) {
+        hits.innerHTML = '';
+        count.textContent = '';
+        sugg.classList.add('hide');
+        return;
+      }
+      const scored = items
+        .map((it) => {
+          const t = it.t.toLowerCase();
+          const d = it.d.toLowerCase();
+          let s = 0;
+          for (const w of words) {
+            if (t.includes(w)) s += 10;
+            if (d.includes(w)) s += 3;
+            if (!t.includes(w) && !d.includes(w)) return { it, s: 0 };
+          }
+          return { it, s };
+        })
+        .filter((x) => x.s > 0)
+        .sort((a, b) => b.s - a.s)
+        .slice(0, 40);
+      count.textContent = `找到 ${scored.length} 条结果`;
+      sugg.classList.toggle('hide', scored.length > 0);
+      hits.innerHTML = scored
+        .map(({ it }) => {
+          const snippet = it.d.length > 110 ? it.d.slice(0, 110) + '…' : it.d;
+          return `<a class="hit" href="${esc(it.u)}"><b>${hl(it.t, words)}</b><small>${esc(it.k)}</small><div class="muted" style="font-size:.9rem">${hl(snippet, words)}</div></a>`;
+        })
+        .join('');
+    };
+    fetch('/search-index.json')
+      .then((r) => r.json())
+      .then((j: Item[]) => {
+        items = j;
+        const init = new URLSearchParams(location.search).get('q');
+        if (init) q.value = init;
+        run();
+      });
+    q.addEventListener('input', run);
+  </script>
+</BaseLayout>

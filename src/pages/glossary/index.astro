@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import { TERMS, GROUPS, TERM_MAP } from '../../data/glossary';
+import { loadSite } from '../../data/helpers';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const { guides } = await loadSite();
+const groups = (Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((g) => ({ g, label: GROUPS[g], terms: TERMS.filter((t) => t.group === g) }));
+const title = `机场术语表：节点、线路、协议、IPLC、倍率、丢包率等 ${TERMS.length} 个词｜机场TJ`;
+const description = `机场TJ 术语表：用大白话解释机场、节点、线路、订阅链接、协议（SS / VLESS / Trojan / Hysteria2）、IPLC、倍率、丢包率、延迟、抖动、解锁、送中、跑路等 ${TERMS.length} 个常见术语，并说明对选购的影响。`;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={resolveCanonicalUrl('/glossary/')}
+  ld={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTermSet',
+      name: '机场代理术语表',
+      url: resolveCanonicalUrl('/glossary/'),
+      hasDefinedTerm: TERMS.map((t) => ({ '@type': 'DefinedTerm', name: t.term, description: t.def, url: `${resolveCanonicalUrl('/glossary/')}#${t.id}` })),
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '术语表', href: '/glossary/' }]} />
+  <div class="banner">
+    <p class="eyebrow">术语表 · Glossary</p>
+    <h1>机场术语表：{TERMS.length} 个常见词，一次说清</h1>
+    <p class="lead">每个词都回答两件事：它通常指什么，以及它对选购有什么影响。解释保持中立，不替任何服务商背书。</p>
+    <div class="metarow"><input class="input" id="g-q" type="search" placeholder="筛选术语…" aria-label="筛选术语" style="max-width:260px;background:var(--surface)" /></div>
+  </div>
+
+  <div class="split split--left" style="margin-top:26px">
+    <aside class="aside">
+      <div class="toc"><h2>分类</h2><ol>{groups.map((g) => <li><a href={`#grp-${g.g}`}>{g.label}（{g.terms.length}）</a></li>)}</ol></div>
+      <div class="asidecard"><h2>相关</h2><ul><li><a href="/knowledge/">专题知识库</a></li><li><a href="/faq/">常见问题</a></li><li><a href="/tutorials/">使用教程</a></li></ul></div>
+    </aside>
+    <div class="article" style="max-width:none">
+      {
+        groups.map((g) => (
+          <section id={`grp-${g.g}`} data-grp style="scroll-margin-top:90px">
+            <h2>{g.label}</h2>
+            {
+              g.terms.map((t) => (
+                <article class="term" id={t.id} data-term={`${t.term} ${t.alt ?? ''} ${t.def}`.toLowerCase()}>
+                  <h3>{t.term}{t.alt && <small>{t.alt}</small>}</h3>
+                  <p>{t.def}</p>
+                  {t.note && <p class="muted" style="font-size:.9rem">{t.note}</p>}
+                  <p class="see">
+                    {t.guides && t.guides.length > 0 && <>相关文章：{t.guides.map((id, i) => { const gd = guides.find((x) => x.id === id); return gd ? <><a href={`/knowledge/${id}/`}>{gd.data.title}</a>{i < t.guides!.length - 1 ? '、' : ''}</> : null; })}　</>}
+                    {t.see && t.see.length > 0 && <>另见：{t.see.map((id, i) => <><a href={`#${id}`}>{TERM_MAP[id]?.term}</a>{i < t.see!.length - 1 ? '、' : ''}</>)}</>}
+                  </p>
+                </article>
+              ))
+            }
+          </section>
+        ))
+      }
+      <p id="g-empty" class="muted hide">没有匹配的术语。</p>
+    </div>
+  </div>
+
+  <script>
+    const q = document.getElementById('g-q') as HTMLInputElement;
+    const terms = document.querySelectorAll<HTMLElement>('[data-term]');
+    const grps = document.querySelectorAll<HTMLElement>('[data-grp]');
+    q.addEventListener('input', () => {
+      const kw = q.value.trim().toLowerCase();
+      let shown = 0;
+      terms.forEach((t) => {
+        const ok = !kw || (t.dataset.term ?? '').includes(kw);
+        t.classList.toggle('hide', !ok);
+        if (ok) shown++;
+      });
+      grps.forEach((g) => g.classList.toggle('hide', ![...g.querySelectorAll('[data-term]')].some((t) => !t.classList.contains('hide'))));
+      document.getElementById('g-empty')!.classList.toggle('hide', shown > 0);
+    });
+  </script>
+</BaseLayout>

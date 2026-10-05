@@ -1,102 +1,72 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
+import Crumbs from '../../components/Crumbs.astro';
+import { loadSite, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
 import { siteConfig } from '../../config/site';
 
 export async function getStaticPaths() {
   const tutorials = await getCollection('tutorials');
-  return tutorials.map((tutorial) => ({
-    params: { slug: tutorial.id },
-    props: { tutorial },
-  }));
-}
-
-interface Props {
-  tutorial: Awaited<ReturnType<typeof getCollection<'tutorials'>>>[number];
+  return tutorials.map((t) => ({ params: { slug: t.id }, props: { tutorial: t } }));
 }
 
 const { tutorial } = Astro.props;
-const { Content } = await render(tutorial);
-
-const GROUP_LABEL: Record<string, string> = {
-  basics: '新手先读',
-  clients: '客户端入门',
-  troubleshooting: '常见问题',
-  advanced: '进阶理解',
-};
-
-const allScenarios = await getCollection('scenarios');
-const relatedScenarios = allScenarios.filter((s) => tutorial.data.relatedScenarios?.includes(s.data.slug));
-
-function formatDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
-}
-
-const title = `${tutorial.data.title}｜机场TJ`;
-const description = tutorial.data.description;
-const canonicalUrl = resolveCanonicalUrl(`/tutorials/${tutorial.id}/`);
+const d = tutorial.data;
+const { Content, headings } = await render(tutorial);
+const { scenarios, guides, tutorials, byId } = await loadSite();
+const toc = headings.filter((h) => h.depth === 2);
+const GROUP_LABEL: Record<string, string> = { basics: '新手先读', clients: '客户端入门', troubleshooting: '常见问题', advanced: '进阶理解' };
+const relScen = scenarios.filter((s) => d.relatedScenarios?.includes(s.data.slug));
+const moreGuides = guides.slice(0, 3);
+const otherTutorials = tutorials.filter((t) => t.id !== tutorial.id);
+const path = `/tutorials/${tutorial.id}/`;
+const wuyou = byId.get('wuyou-lianjie');
+const minutes = Math.max(2, Math.round(((tutorial.body ?? '').match(/[一-鿿]/g) ?? []).length / 420));
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl} ogType="article">
-  <nav aria-label="Breadcrumb">
-    <a href="/">首页</a> › <a href="/tutorials/">使用教程</a> › {tutorial.data.title}
-  </nav>
-
-  <p class="status-dot">{GROUP_LABEL[tutorial.data.group] ?? tutorial.data.group}</p>
-  <h1>{tutorial.data.title}</h1>
-  <p class="hub-stats">发布于 {formatDate(tutorial.data.publishedAt)} · 更新于 {formatDate(tutorial.data.updatedAt)}</p>
-
-  <div class="article-body">
-    <Content />
-  </div>
-
-  {
-    relatedScenarios.length > 0 && (
-      <>
-        <h2>相关场景</h2>
-        <ul class="quick-links">
-          {relatedScenarios.map((s) => (
-            <li>
-              <a href={`/scenarios/${s.data.slug}/`}>{s.data.title}</a>
-            </li>
-          ))}
-        </ul>
-      </>
-    )
-  }
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/tutorials/">查看全部使用教程</a></li>
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/airports/">机场导航</a></li>
-  </ul>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
+<BaseLayout
+  title={`${d.title}｜机场TJ`}
+  description={d.description}
+  canonical={resolveCanonicalUrl(path)}
+  ogType="article"
+  ld={[
+    {
       '@context': 'https://schema.org',
       '@type': 'Article',
-      headline: tutorial.data.title,
-      description,
-      url: canonicalUrl,
-      datePublished: tutorial.data.publishedAt.toISOString().slice(0, 10),
-      dateModified: tutorial.data.updatedAt.toISOString().slice(0, 10),
+      headline: d.title,
+      description: d.description,
+      url: resolveCanonicalUrl(path),
+      datePublished: formatDate(d.publishedAt),
+      dateModified: formatDate(d.updatedAt),
       author: { '@type': 'Organization', name: siteConfig.brandName },
       publisher: { '@type': 'Organization', name: siteConfig.brandName },
-    })}
-  />
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '首页', item: resolveCanonicalUrl('/') },
-        { '@type': 'ListItem', position: 2, name: '使用教程', item: resolveCanonicalUrl('/tutorials/') },
-        { '@type': 'ListItem', position: 3, name: tutorial.data.title, item: canonicalUrl },
-      ],
-    })}
-  />
+    },
+  ]}
+>
+  <Crumbs items={[{ name: '使用教程', href: '/tutorials/' }, { name: d.title, href: path }]} />
+  <div class="banner">
+    <p class="eyebrow">{GROUP_LABEL[d.group] ?? d.group} · 教程</p>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.description}</p>
+    <div class="metarow"><span>约 {minutes} 分钟</span><span class="sep">·</span><span>发布 {formatDate(d.publishedAt)}</span><span class="sep">·</span><span>更新 {formatDate(d.updatedAt)}</span></div>
+  </div>
+  <div class="split" style="margin-top:26px">
+    <div>
+      <div class="article-body article"><Content /></div>
+      <div style="margin-top:2em">
+        <h2 style="font-size:1.2rem;margin-bottom:12px">继续阅读</h2>
+        <div class="cards cards--2">
+          {relScen.map((s) => <a class="card" href={`/scenarios/${s.data.slug}/`}><p style="margin:0 0 8px"><span class="gate">{s.data.gate}</span> <span class="tag" style="margin-left:6px">场景</span></p><h3>{shortName(s)}</h3><p class="muted" style="font-size:.9rem;margin:0">{s.data.summary}</p></a>)}
+          {moreGuides.map((g) => <a class="card" href={`/knowledge/${g.id}/`}><p style="margin:0 0 8px"><span class="tag">{GUIDE_TOPIC_LABEL[g.data.topic]}</span></p><h3>{g.data.title}</h3><p class="muted" style="font-size:.9rem;margin:0">{g.data.takeaway}</p></a>)}
+        </div>
+      </div>
+      <p class="muted" style="font-size:.88rem;margin-top:2em">本文最后更新于 {formatDate(d.updatedAt)}。不同客户端、版本的界面细节可能有出入，以你实际安装的版本为准。{siteConfig.disclosure}</p>
+    </div>
+    <aside class="aside">
+      {toc.length > 0 && <div class="toc"><h2>本文目录</h2><ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></div>}
+      <div class="asidecard asidecard--gold"><h2>首推 · 无忧链接</h2><p style="font-size:.9rem;margin:0 0 10px">支持通用订阅，可按习惯选客户端；MINI 包月约 ¥6.6/月起。</p><a class="btn btn--amber btn--sm" href={wuyou?.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a></div>
+      <div class="asidecard"><h2>其他教程</h2><ul>{otherTutorials.map((t) => <li><a href={`/tutorials/${t.id}/`}>{t.data.title.split(/[？：——]/)[0]}</a></li>)}</ul></div>
+    </aside>
+  </div>
 </BaseLayout>

@@ -1,50 +1,46 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { resolveCanonicalUrl } from '../../config/seo';
+import Crumbs from '../../components/Crumbs.astro';
 import { siteConfig } from '../../config/site';
+import { resolveCanonicalUrl } from '../../config/seo';
 
-const title = '关于机场TJ';
-const description = '机场TJ 是什么、由谁维护、内容原则是什么，以及信息如何分类和更新。';
-const canonicalUrl = resolveCanonicalUrl('/about/');
+const title = '关于机场TJ：为什么按场景整理机场代理，以及内容原则';
+const description = '机场TJ 是什么、为什么按场景而不是一份总榜整理机场代理、内容原则、信息如何分类和更新、联盟推广披露，以及由谁维护。';
 ---
 
-<BaseLayout title={title} description={description} canonical={canonicalUrl}>
-  <nav aria-label="Breadcrumb"><a href="/">首页</a> › 关于机场TJ</nav>
-
-  <h1>关于机场TJ</h1>
-  <p>{siteConfig.description}</p>
-
-  <h2>为什么按场景整理，而不是一份榜单</h2>
-  <p>
-    游戏加速在意延迟和丢包，远程办公在意能不能连续几周不掉线，预算有限的用户在意单位流量成本——这些诉求关注的维度完全不一样，一份笼统的"哪个机场最好"排行榜很难同时回答好每一种需求。机场TJ 按场景把选择建议拆开写，再提供一份综合推荐作为不想细分场景时的参考。
-  </p>
-
-  <h2>内容原则</h2>
-  <ul>
-    <li>不虚构用户评价、测试结果、官方合作或认证。</li>
-    <li>官方信息、第三方资料、本站测试三类来源分开标注，不混在一起呈现，具体分类方法见<a href="/methodology/">评测方法与数据说明</a>。</li>
-    <li>综合推荐的排序是编辑判断，不是客观算分，每条排名都附具体理由。</li>
-    <li>发现资料有误或过时，会在核实后更新，页面上标注了最后更新时间。</li>
-  </ul>
-
-  <h2>由谁维护</h2>
-  <p>{siteConfig.author.name}维护本站内容。本站不是任何机场服务商的官方渠道，也不代表任何服务商的官方立场。</p>
-
-  <p>你可能还想看：</p>
-  <ul class="quick-links">
-    <li><a href="/methodology/">评测方法与数据说明</a></li>
-    <li><a href="/contact/">联系方式</a></li>
-    <li><a href="/">返回首页</a></li>
-  </ul>
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: title,
-      description,
-      url: canonicalUrl,
-    })}
-  />
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/about/')}>
+  <Crumbs items={[{ name: '关于机场TJ', href: '/about/' }]} />
+  <div class="banner">
+    <p class="eyebrow">关于 · About</p>
+    <h1>关于机场TJ</h1>
+    <p class="lead">{siteConfig.description}</p>
+  </div>
+  <div class="split" style="margin-top:26px">
+    <div class="article-body article">
+      <h2>为什么按场景整理，而不是一份榜单</h2>
+      <p>游戏加速在意延迟和丢包，远程办公在意能不能连续几周不掉线，预算有限的用户在意单位流量成本，看流媒体的用户在意解锁有没有被独立验证——这些诉求关注的维度完全不一样，一份笼统的“哪个机场最好”排行榜很难同时回答好每一种需求。机场TJ 按场景把选择建议拆开写，再提供一份综合排行榜作为不想细分场景时的参考。</p>
+      <h2>现在有什么</h2>
+      <ul>
+        <li><a href="/scenarios/">8 个选择场景</a>：新手、预算、游戏、办公、流媒体、学习、出差出境、怕跑路。</li>
+        <li><a href="/rankings/">综合排行榜</a>与<a href="/compare/">服务商对比</a>：价格口径、丢包区间、客户端支持并排看。</li>
+        <li><a href="/data/">数据中心</a>：站长自测数据汇总，写明环境与局限。</li>
+        <li><a href="/knowledge/">知识库</a>、<a href="/glossary/">术语表</a>与<a href="/tutorials/">使用教程</a>：教你自己判断。</li>
+        <li><a href="/finder/">选购向导</a>与<a href="/tools/">站内工具</a>：换算成本、做一周自测。</li>
+      </ul>
+      <h2>内容原则</h2>
+      <ul>
+        <li>不虚构用户评价、测试结果、官方合作或认证。</li>
+        <li>官方信息、第三方资料、本站测试三类来源分开标注，不混在一起呈现，具体分类方法见<a href="/methodology/">评测方法与数据说明</a>。</li>
+        <li>综合推荐的排序是编辑判断，不是客观算分，每条排名都附具体理由。</li>
+        <li>自测数据写明环境、工具、范围与局限，没有数据就写“暂无”。</li>
+        <li>发现资料有误或过时，会在核实后更新，页面上标注了最后更新时间，重要调整记录在<a href="/updates/">更新日志</a>。</li>
+      </ul>
+      <h2>联盟推广披露</h2>
+      <p>{siteConfig.disclosure}推广关系不用来改变资料的写法：官方入口访问受限、资料不足、本站没有测试数据，这些都会如实标注。详见<a href="/terms/">服务条款与免责声明</a>。</p>
+      <h2>由谁维护</h2>
+      <p>{siteConfig.author.name}维护本站内容。本站不是任何机场服务商的官方渠道，也不代表任何服务商的官方立场。</p>
+      <p>你可能还想看：<a href="/methodology/">评测方法与数据说明</a>、<a href="/contact/">联系方式</a>、<a href="/">返回首页</a>。</p>
+    </div>
+    <aside class="aside"><div class="asidecard"><h2>快速入口</h2><ul><li><a href="/finder/">选购向导</a></li><li><a href="/rankings/">综合排行榜</a></li><li><a href="/data/">数据中心</a></li><li><a href="/faq/">常见问题</a></li></ul></div></aside>
+  </div>
 </BaseLayout>

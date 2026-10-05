@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = '页面不存在｜机场TJ';
+const description = '你访问的页面不存在或已移动。可以从首页、按场景选、综合排行榜、知识库或站内搜索继续找。';
+---
+
+<BaseLayout title={title} description={description} noindex>
+  <div class="banner" style="margin-top:12px">
+    <p class="eyebrow">404 · Gate not found</p>
+    <h1>这个登机口不存在</h1>
+    <p class="lead">你访问的页面不存在，或者已经移动。下面这些入口也许能帮你找到想要的内容。</p>
+    <div class="btn-row"><a class="btn btn--amber" href="/">回到首页</a><a class="btn btn--ghost" href="/search/" style="background:transparent;color:#fff;border-color:var(--board-line)">站内搜索</a></div>
+  </div>
+  <section class="sec">
+    <div class="cards cards--4">
+      <a class="card" href="/scenarios/"><h3>按场景选</h3><p class="muted">8 个使用场景，各自看什么指标。</p></a>
+      <a class="card" href="/rankings/"><h3>综合排行榜</h3><p class="muted">9 家服务商的推荐顺序与理由。</p></a>
+      <a class="card" href="/knowledge/"><h3>知识库</h3><p class="muted">价格、自测、丢包、红旗清单。</p></a>
+      <a class="card" href="/faq/"><h3>常见问题</h3><p class="muted">购买、价格、数据、使用、安全。</p></a>
+    </div>
+  </section>
+</BaseLayout>

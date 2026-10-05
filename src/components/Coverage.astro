@@ -1,0 +1,24 @@
+---
+import { coverage, type ProviderFacts } from '../data/providers/facts';
+
+interface Props {
+  f: ProviderFacts;
+  /** 紧凑模式：只显示分数和色块；完整模式再列出每一项 */
+  compact?: boolean;
+}
+const { f, compact = false } = Astro.props;
+const c = coverage(f);
+const stateText = { full: '有', part: '部分', none: '无' } as const;
+---
+
+<div class={`cover${compact ? ' cover--compact' : ''}`}>
+  <span class="cover-label" title="只表示本站有没有这类资料，不代表服务好坏，也不是评分">资料完整度 <b>{c.score}</b>/6</span>
+  <span class="cover-bar" role="img" aria-label={`资料完整度 ${c.score} / 6`}>{c.items.map((i) => <i class={`cover-seg cover-seg--${i.state}`} title={`${i.label}：${i.note}`}></i>)}</span>
+  {
+    !compact && (
+      <ul class="cover-list">
+        {c.items.map((i) => <li class={`cover-it cover-it--${i.state}`}><b>{i.label}</b><span>{stateText[i.state]}</span><small>{i.note}</small></li>)}
+      </ul>
+    )
+  }
+</div>

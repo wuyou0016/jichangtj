@@ -1,37 +1,51 @@
 ---
+import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
+import { NAV, FOOTER_COLUMNS, FRIEND_LINKS } from '../config/nav';
+import { safeJson } from '../data/helpers';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description: string;
   canonical?: string;
-  // 页面类型，绝大多数页面是 website；未来如果做成文章型页面可以传 article。
   ogType?: 'website' | 'article';
-  // 分享图的站内路径（比如 /images/og/default.png），不传就用全站默认图。
   ogImage?: string;
+  noindex?: boolean;
+  /** 页面自己的结构化数据（面包屑、FAQ、文章等），已是对象。 */
+  ld?: object[];
 }
 
-const { title, description, canonical, ogType = 'website', ogImage } = Astro.props;
-const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteConfig.url).toString();
+const { title, description, canonical, ogType = 'website', ogImage, noindex = false, ld = [] } = Astro.props;
+const pathname = Astro.url.pathname;
+const canonicalUrl = canonical ?? new URL(pathname, siteConfig.url).toString();
 const ogImageUrl = new URL(ogImage ?? siteConfig.defaultOgImage, siteConfig.url).toString();
 
-const websiteJsonLd = {
+const providerCount = (await getCollection('providers')).length;
+const scenarioCount = (await getCollection('scenarios')).length;
+const guideCount = (await getCollection('guides')).length;
+
+const websiteLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: siteConfig.brandName,
   url: siteConfig.url,
   description: siteConfig.description,
   inLanguage: siteConfig.language,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${siteConfig.url}/search/?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
 };
-
-const organizationJsonLd = {
+const orgLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: siteConfig.brandName,
   url: siteConfig.url,
-  logo: new URL('/favicon.svg', siteConfig.url).toString(),
+  logo: new URL('/icon-512.png', siteConfig.url).toString(),
 };
+const isCurrent = (href: string) => pathname === href || pathname.startsWith(href);
 ---
 
 <!doctype html>
@@ -42,8 +56,12 @@ const organizationJsonLd = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow'} />
+    <meta name="theme-color" content="#0a1a33" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -58,82 +76,193 @@ const organizationJsonLd = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
 
-    <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
-    <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd)} />
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('tj-theme');
+          if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+    <script type="application/ld+json" set:html={safeJson(websiteLd)} />
+    <script type="application/ld+json" set:html={safeJson(orgLd)} />
+    {ld.map((o) => <script type="application/ld+json" set:html={safeJson(o)} />)}
   </head>
   <body>
-    <header class="site-header">
-      <div class="container site-header__inner">
-        <a href="/" class="site-header__brand">
-          <span class="site-header__logo">✈️</span>
-          <span>
-            <strong>{siteConfig.brandName}</strong>
-            <small>按场景选机场代理</small>
-          </span>
+    <a class="skip" href="#main">跳到正文</a>
+    <div class="topbar" role="note">
+      <div class="wrap">
+        <span class="dot" aria-hidden="true"></span>
+        <span>数据更新 <b>{siteConfig.updatedAt}</b></span>
+        <span>收录 <b>{providerCount}</b> 家服务商</span>
+        <span><b>{scenarioCount}</b> 个选择场景</span>
+        <span><b>{guideCount}</b> 篇专题知识</span>
+        <span>站长自测数据均标注环境与日期</span>
+        <a href="/updates/">更新日志 →</a>
+      </div>
+    </div>
+    <header class="header">
+      <div class="wrap">
+        <a href="/" class="brand" aria-label="机场TJ 首页">
+          <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0a1a33" /><path d="M11 33 53 12 42 53 31 40Z" fill="#ffb81f" /><path d="M31 40 53 12 26 36Z" fill="#e39a00" /><path d="M11 33 31 40 26 36Z" fill="#ffd36b" /><circle cx="51" cy="52" r="3.5" fill="#6ea2ff" /></svg>
+          <span><strong>{siteConfig.brandName}</strong><small>按场景选机场代理</small></span>
         </a>
-        <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-nav">
-          <span>菜单</span>
-        </button>
-        <nav class="site-header__nav" id="site-nav">
-          <a href="/">首页</a>
-          <a href="/scenarios/">按场景选</a>
-          <a href="/rankings/">综合推荐</a>
-          <a href="/airports/">机场导航</a>
-          <a href="/tutorials/">使用教程</a>
-          <a href="/methodology/">评测方法</a>
+        <nav class="nav" id="site-nav" aria-label="主导航">
+          {NAV.map((n) => <a href={n.href} aria-current={isCurrent(n.href) ? 'page' : undefined}>{n.label}</a>)}
         </nav>
+        <div class="tools">
+          <a class="iconbtn" href="/search/" aria-label="站内搜索" title="站内搜索">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>
+          </a>
+          <button class="iconbtn" id="theme-btn" type="button" aria-label="切换深色 / 浅色" title="切换深色 / 浅色" aria-pressed="false">◐</button>
+          <button class="iconbtn navbtn" id="nav-btn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="site-nav">☰</button>
+        </div>
       </div>
     </header>
-    <script>
-      const toggle = document.querySelector('.site-header__toggle');
-      const nav = document.getElementById('site-nav');
-      toggle?.addEventListener('click', () => {
-        const isOpen = nav?.classList.toggle('is-open');
-        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      });
-    </script>
-    <main class="container">
+
+    <main id="main" class="wrap page">
       <slot />
     </main>
-    <footer class="site-footer">
-      <div class="container site-footer__inner">
-        <div>
-          <h2>{siteConfig.brandName}</h2>
-          <p>{siteConfig.tagline}</p>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-brand">
+            <h2>{siteConfig.brandName} · {siteConfig.brandNameEn}</h2>
+            <p>{siteConfig.tagline}</p>
+            <p>本站不是任何机场服务商的官方渠道，也不代表任何服务商的官方立场。</p>
+          </div>
+          {
+            FOOTER_COLUMNS.map((c) => (
+              <div>
+                <h2>{c.title}</h2>
+                <ul>{c.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+              </div>
+            ))
+          }
         </div>
-        <div>
-          <h2>主要导航</h2>
-          <ul>
-            <li><a href="/">首页</a></li>
-            <li><a href="/scenarios/">按场景选</a></li>
-            <li><a href="/rankings/">综合推荐</a></li>
-            <li><a href="/airports/">机场导航</a></li>
-            <li><a href="/tutorials/">使用教程</a></li>
-          </ul>
+        <div class="foot-bar">
+          <p>{siteConfig.disclosure}　<a href="/terms/">披露说明</a>　·　<a href="https://t.me/xxxxtony" target="_blank" rel="nofollow noopener">入驻申请</a></p>
+          <p>友情链接：{FRIEND_LINKS.map((f, i) => <><a href={f.href} target="_blank" rel="noopener">{f.label}</a>{i < FRIEND_LINKS.length - 1 ? '　' : ''}</>)}</p>
+          <p>&copy; {new Date().getFullYear()} {siteConfig.brandName}（{siteConfig.brandNameEn}）· 内容最近更新 {siteConfig.updatedAt}</p>
         </div>
-        <div>
-          <h2>网站说明</h2>
-          <ul>
-            <li><a href="/methodology/">评测方法与数据说明</a></li>
-            <li><a href="/about/">关于机场TJ</a></li>
-            <li><a href="/contact/">联系方式</a></li>
-            <li><a href="/privacy/">隐私政策</a></li>
-            <li><a href="/terms/">服务条款与免责声明</a></li>
-            <li><a href="https://t.me/xxxxtony" target="_blank" rel="nofollow noopener">入驻申请</a></li>
-          </ul>
-        </div>
-        <div class="site-footer__friendlinks">
-          <h2>友情链接</h2>
-          <ul>
-            <li><a href="https://rocketjichang.com" target="_blank" rel="noopener">火箭机场</a></li>
-            <li><a href="https://jichangbao.com" target="_blank" rel="noopener">机场宝</a></li>
-            <li><a href="https://ejichang.com" target="_blank" rel="noopener">机场E家</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="container site-footer__bottom">
-        <p>&copy; {new Date().getFullYear()} {siteConfig.brandName}（{siteConfig.brandNameEn}）</p>
       </div>
     </footer>
+    <button class="totop" id="totop" type="button" aria-label="回到顶部">↑</button>
+    <div id="rp" aria-hidden="true"></div>
+    <nav class="tabbar" aria-label="快捷导航">
+      <a href="/" aria-current={pathname === '/' ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8" /><path d="M5 10v10h14V10" /></svg>首页
+      </a>
+      <a href="/scenarios/" aria-current={pathname.startsWith('/scenarios/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg>场景
+      </a>
+      <a href="/rankings/" aria-current={pathname.startsWith('/rankings/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>榜单
+      </a>
+      <a href="/compare/" aria-current={pathname.startsWith('/compare/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13M7 7l3-3M7 7l3 3M17 17H4M17 17l-3-3M17 17l-3 3" /></svg>对比
+      </a>
+      <a href="/knowledge/" aria-current={pathname.startsWith('/knowledge/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z" /><path d="M4 19V5" /></svg>知识
+      </a>
+    </nav>
+
+    <script>
+      const root = document.documentElement;
+      const themeBtn = document.getElementById('theme-btn');
+      const sync = () => {
+        const explicit = root.getAttribute('data-theme');
+        const dark = explicit ? explicit === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        themeBtn?.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      };
+      themeBtn?.addEventListener('click', () => {
+        const explicit = root.getAttribute('data-theme');
+        const dark = explicit ? explicit === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        const next = dark ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('tj-theme', next); } catch (e) {}
+        sync();
+      });
+      sync();
+
+      const navBtn = document.getElementById('nav-btn');
+      const nav = document.getElementById('site-nav');
+      navBtn?.addEventListener('click', () => {
+        const open = nav?.classList.toggle('open');
+        navBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+
+      const totop = document.getElementById('totop');
+      const rp = document.getElementById('rp');
+      const article = document.querySelector('.article-body');
+      const onScroll = () => {
+        totop?.classList.toggle('show', scrollY > 900);
+        if (rp && article) {
+          const r = article.getBoundingClientRect();
+          const total = r.height - innerHeight * 0.6;
+          const done = Math.min(Math.max(-r.top / Math.max(total, 1), 0), 1);
+          rp.style.width = done * 100 + '%';
+        }
+      };
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      totop?.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // 术语悬浮解释：正文里的术语链接带 data-def，悬停或聚焦时显示，点击仍跳转术语表。
+      const glLinks = document.querySelectorAll<HTMLAnchorElement>('a.gl');
+      if (glLinks.length) {
+        const tip = document.createElement('div');
+        tip.id = 'gl-tip';
+        tip.setAttribute('role', 'tooltip');
+        tip.hidden = true;
+        document.body.appendChild(tip);
+        const show = (a: HTMLAnchorElement) => {
+          tip.innerHTML = '';
+          const h = document.createElement('b');
+          h.textContent = '术语 · ' + (a.dataset.term ?? a.textContent ?? '');
+          const p = document.createElement('span');
+          p.textContent = a.dataset.def ?? '';
+          tip.append(h, p);
+          tip.hidden = false;
+          const r = a.getBoundingClientRect();
+          const w = tip.offsetWidth;
+          const left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+          const below = r.bottom + 10 + tip.offsetHeight < innerHeight;
+          tip.style.left = left + 'px';
+          tip.style.top = (below ? r.bottom + 8 : r.top - tip.offsetHeight - 8) + 'px';
+        };
+        glLinks.forEach((a) => {
+          a.addEventListener('mouseenter', () => show(a));
+          a.addEventListener('focus', () => show(a));
+          a.addEventListener('mouseleave', () => (tip.hidden = true));
+          a.addEventListener('blur', () => (tip.hidden = true));
+        });
+      }
+
+      // 文章目录：滚动时高亮当前小节。
+      const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc a[href^="#"], .tabs a[href^="#"]');
+      if (tocLinks.length && 'IntersectionObserver' in window) {
+        const map = new Map<string, HTMLAnchorElement[]>();
+        tocLinks.forEach((a) => {
+          const id = a.getAttribute('href')!.slice(1);
+          map.set(id, [...(map.get(id) ?? []), a]);
+        });
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              tocLinks.forEach((a) => a.classList.remove('on'));
+              map.get(e.target.id)?.forEach((a) => a.classList.add('on'));
+            });
+          },
+          { rootMargin: '-80px 0px -65% 0px' },
+        );
+        map.forEach((_, id) => {
+          const el = document.getElementById(id);
+          if (el) io.observe(el);
+        });
+      }
+    </script>
   </body>
 </html>

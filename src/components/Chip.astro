@@ -1,0 +1,11 @@
+---
+import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../config/data-confidence';
+
+interface Props {
+  c: DataConfidence;
+}
+const { c } = Astro.props;
+const cls: Record<DataConfidence, string> = { 'own-test': 'own', 'cross-verified': 'cross', 'third-party-only': 'third', incomplete: 'inc' };
+---
+
+<span class={`chip chip--${cls[c]}`}>{DATA_CONFIDENCE_LABEL[c]}</span>

@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import { UPDATES, KIND_LABEL } from '../../data/updates';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const title = '更新日志：机场TJ 的内容、数据与技术变更记录｜机场TJ';
+const description = '机场TJ 更新日志：按时间记录站点的内容改版、价格口径更新、数据录入与搜索引擎收录相关的技术变更，每一条都是真实发生过的修改。';
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/updates/')}>
+  <Crumbs items={[{ name: '更新日志', href: '/updates/' }]} />
+  <div class="banner">
+    <p class="eyebrow">更新日志 · Changelog</p>
+    <h1>更新日志</h1>
+    <p class="lead">只记录真实发生过的内容和技术变更，按时间倒序。数据口径、措辞或排序有调整时，也会写在这里。</p>
+  </div>
+  <section class="sec" style="margin-top:28px">
+    <ul class="timeline">
+      {UPDATES.map((u) => <li><time datetime={u.date}>{u.date} · <span class="tag">{KIND_LABEL[u.kind]}</span></time><b style="font-size:1.05rem">{u.title}</b><span class="muted">{u.body}</span></li>)}
+    </ul>
+    <p class="muted" style="font-size:.88rem">发现资料有误或过时？<a href="/contact/">告诉我们</a>，核实后会更新并记录在此。</p>
+  </section>
+</BaseLayout>

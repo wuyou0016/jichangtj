@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { satteri } from '@astrojs/markdown-satteri';
+import { glossaryPlugin } from './plugins/glossary-links.mjs';
 
 // lastmod 只取内容自己声明的更新日期（服务商 / 榜单 / 场景 updatedAt、教程 frontmatter），不用构建时间。
 /** @type {Record<string, string>} */
@@ -16,6 +18,15 @@ lastmod['/airports/'] = latest(providers.map((/** @type {any} */ p) => p.updated
 const scenarios = readJson('src/data/scenarios/scenarios.json');
 for (const sc of scenarios) lastmod[`/scenarios/${sc.slug}/`] = String(sc.updatedAt).slice(0, 10);
 lastmod['/scenarios/'] = latest(scenarios.map((/** @type {any} */ sc) => sc.updatedAt)) ?? '';
+const guideDates = [];
+for (const f of fs.readdirSync('src/content/guides')) {
+  const m = fs.readFileSync(`src/content/guides/${f}`, 'utf8').match(/^updatedAt:\s*([0-9-]{10})/m);
+  if (m) {
+    lastmod[`/knowledge/${f.replace(/[.]md$/, '')}/`] = m[1];
+    guideDates.push(m[1]);
+  }
+}
+lastmod['/knowledge/'] = latest(guideDates) ?? '';
 lastmod['/rankings/'] = latest(readJson('src/data/rankings/rankings.json').map((/** @type {any} */ r) => r.updatedAt)) ?? '';
 const tutDir = 'src/content/tutorials';
 const tutDates = [];
@@ -37,6 +48,9 @@ function isSitemapExcluded(pageUrl) {
   if (url.pathname === '/404' || url.pathname === '/404/' || url.pathname === '/404.html') {
     return true;
   }
+  if (url.pathname === '/search/') {
+    return true;
+  }
   if (url.search) {
     return true;
   }
@@ -49,6 +63,9 @@ function isSitemapExcluded(pageUrl) {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://jichangtj.net',
+  markdown: {
+    processor: satteri({ hastPlugins: [glossaryPlugin] }),
+  },
   integrations: [
     sitemap({
       filter: (page) => !isSitemapExcluded(page),

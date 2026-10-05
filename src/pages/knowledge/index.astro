@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import { loadSite, GUIDE_TOPIC_LABEL } from '../../data/helpers';
+import { resolveCanonicalUrl, formatDate } from '../../config/seo';
+import { TERMS } from '../../data/glossary';
+import { PATHS } from '../../data/paths';
+
+const { guides, tutorials } = await loadSite();
+const topics = (Object.keys(GUIDE_TOPIC_LABEL) as (keyof typeof GUIDE_TOPIC_LABEL)[]).map((k) => ({ k, label: GUIDE_TOPIC_LABEL[k], items: guides.filter((g) => g.data.topic === k) })).filter((t) => t.items.length);
+const readMin = (body: string | undefined) => Math.max(2, Math.round(((body ?? '').match(/[一-鿿]/g) ?? []).length / 420));
+const blurb: Record<string, string> = {
+  buy: '价格口径、月付年付、怎么算成本——买之前先看清。',
+  test: '怎么自己验证，而不是只信别人的数据。',
+  tech: '节点、线路、丢包、专线……技术词的大白话版本。',
+  safety: '订阅链接保管、跑路迹象、买前红旗清单。',
+};
+const title = '机场知识库：价格怎么看、怎么自测、丢包延迟、红旗清单等专题｜机场TJ';
+const description = `机场TJ 知识库收录 ${guides.length} 篇专题长文：机场价格怎么看、月付还是年付、一周自测计划、丢包延迟抖动、IPLC 等线路类型、订阅链接安全、买前红旗清单和解锁验证，另有术语表与使用教程。`;
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/knowledge/')}>
+  <Crumbs items={[{ name: '知识库', href: '/knowledge/' }]} />
+  <div class="banner">
+    <p class="eyebrow">知识库 · Knowledge</p>
+    <h1>机场知识库：{guides.length} 篇专题，按主题找</h1>
+    <p class="lead">不是教你“买哪家”，而是教你自己判断：价格怎么看、数据怎么读、怎么验证、怎么避坑。每篇都以一句话结论开头，并给出可以照做的清单。</p>
+    <div class="metarow"><span>{guides.length} 篇专题</span><span class="sep">·</span><span>{TERMS.length} 个术语</span><span class="sep">·</span><span>{tutorials.length} 篇使用教程</span></div>
+  </div>
+
+  <section class="sec" aria-labelledby="paths-h">
+    <div class="sec-head"><div><p class="eyebrow">阅读路线 · Reading paths</p><h2 id="paths-h">不知道从哪读起？按路线来</h2><p>把文章按学习顺序串好。勾选已读的步骤，进度只保存在你的浏览器里。</p></div></div>
+    <div class="cards cards--2" style="align-items:start">
+      {
+        PATHS.map((p) => (
+          <div class="card path" data-path={p.id} data-total={p.steps.length}>
+            <h3>{p.title}</h3>
+            <p class="muted" style="font-size:.9rem;margin:0 0 10px">{p.who}</p>
+            <div class="pbar" aria-hidden="true"><i></i></div>
+            <p class="pcount mono" aria-live="polite" style="margin:6px 0 12px;font-size:.8rem">已完成 <b data-done>0</b> / {p.steps.length}</p>
+            <ol class="pathsteps">
+              {p.steps.map((st, i) => (
+                <li>
+                  <label><input type="checkbox" data-step={i} aria-label={`标记已读：${st.title}`} /><span class="plab">{st.label}</span></label>
+                  <a href={st.href}>{st.title}</a>
+                  <small class="muted">{st.note}</small>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    topics.map((t) => (
+      <section class="sec">
+        <div class="sec-head"><div><h2>{t.label}</h2><p>{blurb[t.k]}</p></div></div>
+        <div class="cards cards--2">
+          {t.items.map((g) => (
+            <a class="card" href={`/knowledge/${g.id}/`}>
+              <p style="margin:0 0 8px;display:flex;gap:8px;align-items:center"><span class="tag">{t.label}</span><span class="muted" style="font-size:.8rem">约 {readMin(g.body)} 分钟 · 更新 {formatDate(g.data.updatedAt)}</span></p>
+              <h3>{g.data.title}</h3>
+              <p class="muted" style="margin:0">{g.data.takeaway}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="sec">
+    <div class="sec-head"><div><h2>术语表与使用教程</h2></div></div>
+    <div class="cards cards--2">
+      <a class="card" href="/glossary/"><h3>术语表（{TERMS.length} 个词）</h3><p class="muted">节点、线路、协议、IPLC、倍率、丢包率、送中、跑路……每个词都说明“对选购有什么影响”。</p></a>
+      <a class="card" href="/tutorials/"><h3>使用教程（{tutorials.length} 篇）</h3><p class="muted">新手入门、客户端设置、连不上怎么排查、节点与协议术语。</p></a>
+    </div>
+  </section>
+  <script>
+    document.querySelectorAll<HTMLElement>('.path').forEach((box) => {
+      const id = box.dataset.path!;
+      const total = Number(box.dataset.total);
+      const key = 'tj-path-' + id;
+      const boxes = [...box.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
+      let saved: number[] = [];
+      try { saved = JSON.parse(localStorage.getItem(key) ?? '[]'); } catch (e) {}
+      const paint = () => {
+        const done = boxes.filter((b) => b.checked).length;
+        box.querySelector('[data-done]')!.textContent = String(done);
+        (box.querySelector('.pbar i') as HTMLElement).style.width = (done / total) * 100 + '%';
+        boxes.forEach((b) => b.closest('li')!.classList.toggle('done', b.checked));
+      };
+      boxes.forEach((b) => {
+        b.checked = saved.includes(Number(b.dataset.step));
+        b.addEventListener('change', () => {
+          const now = boxes.filter((x) => x.checked).map((x) => Number(x.dataset.step));
+          try { localStorage.setItem(key, JSON.stringify(now)); } catch (e) {}
+          paint();
+        });
+      });
+      paint();
+    });
+  </script>
+</BaseLayout>

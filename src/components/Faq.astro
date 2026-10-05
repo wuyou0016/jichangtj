@@ -1,0 +1,31 @@
+---
+import { faqLd } from '../config/seo';
+import { safeJson } from '../data/helpers';
+
+interface Props {
+  items: { q: string; a: string; more?: { href: string; label: string } }[];
+  /** 是否输出 FAQPage 结构化数据（问答必须是页面上可见的内容）。 */
+  schema?: boolean;
+  open?: boolean;
+}
+const { items, schema = true, open = false } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <>
+    <div class="acc">
+      {items.map((i, n) => (
+        <details open={open && n === 0}>
+          <summary>{i.q}</summary>
+          <div class="ans">
+            <p>{i.a}</p>
+            {i.more && <p><a href={i.more.href}>延伸阅读：{i.more.label} →</a></p>}
+          </div>
+        </details>
+      ))}
+    </div>
+    {schema && <script type="application/ld+json" set:html={safeJson(faqLd(items))} />}
+    </>
+  )
+}

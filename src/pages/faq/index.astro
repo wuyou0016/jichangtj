@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Faq from '../../components/Faq.astro';
+import { FAQ_GROUPS } from '../../data/faq';
+import { resolveCanonicalUrl } from '../../config/seo';
+
+const total = FAQ_GROUPS.reduce((n, g) => n + g.items.length, 0);
+const title = `机场常见问题 FAQ：购买、价格、数据、使用与安全 ${total} 问｜机场TJ`;
+const description = '机场TJ 常见问题：机场是什么、月付还是年付、价格为什么不一致、站长自测怎么测、导入订阅失败怎么办、订阅链接能不能分享、会不会跑路等，按购买、价格、数据、使用、安全分类回答。';
+---
+
+<BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/faq/')}>
+  <Crumbs items={[{ name: '常见问题', href: '/faq/' }]} />
+  <div class="banner">
+    <p class="eyebrow">FAQ</p>
+    <h1>常见问题：{total} 个问题，五类场景</h1>
+    <p class="lead">这里是新手最常问的问题。每个回答都保持保守：只说通用判断方法，具体服务商的信息请去对应详情页看。</p>
+  </div>
+  <div class="split split--left" style="margin-top:26px">
+    <aside class="aside"><div class="toc"><h2>分类</h2><ol>{FAQ_GROUPS.map((g) => <li><a href={`#${g.id}`}>{g.title}（{g.items.length}）</a></li>)}</ol></div></aside>
+    <div class="article" style="max-width:none">
+      {FAQ_GROUPS.map((g) => <><h2 id={g.id}>{g.title}</h2><Faq items={g.items} schema={false} /></>)}
+      <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ_GROUPS.flatMap((g) => g.items).map((i) => ({ '@type': 'Question', name: i.q, acceptedAnswer: { '@type': 'Answer', text: i.a } })) })} />
+      <div class="callout callout--info"><b>没找到？</b><div><p>试试<a href="/search/">站内搜索</a>，或看<a href="/glossary/">术语表</a>与<a href="/knowledge/">知识库</a>。资料有误请通过<a href="/contact/">联系方式</a>告诉我们。</p></div></div>
+    </div>
+  </div>
+</BaseLayout>
