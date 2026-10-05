@@ -10,6 +10,7 @@ relatedScenarios:
 relatedGuides:
   - self-test-seven-days
   - route-types-explained
+  - why-experience-differs
 relatedGlossary:
   - unlock
   - sent-to-cn

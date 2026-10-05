@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - self-test-seven-days
   - route-types-explained
+  - why-experience-differs
 relatedGlossary:
   - packet-loss
   - latency

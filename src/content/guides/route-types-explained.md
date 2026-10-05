@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - loss-latency-jitter-explained
   - airport-red-flags
+  - protocol-quick-guide
 relatedGlossary:
   - route
   - iplc

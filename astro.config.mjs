@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { satteri } from '@astrojs/markdown-satteri';
+import { glossaryPlugin } from './plugins/glossary-links.mjs';
 
 // lastmod 只取内容自己声明的更新日期（服务商 / 榜单 / 场景 updatedAt、教程 frontmatter），不用构建时间。
 /** @type {Record<string, string>} */
@@ -61,6 +63,9 @@ function isSitemapExcluded(pageUrl) {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://jichangtj.net',
+  markdown: {
+    processor: satteri({ hastPlugins: [glossaryPlugin] }),
+  },
   integrations: [
     sitemap({
       filter: (page) => !isSitemapExcluded(page),

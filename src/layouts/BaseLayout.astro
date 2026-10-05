@@ -149,6 +149,24 @@ const isCurrent = (href: string) => pathname === href || pathname.startsWith(hre
       </div>
     </footer>
     <button class="totop" id="totop" type="button" aria-label="回到顶部">↑</button>
+    <div id="rp" aria-hidden="true"></div>
+    <nav class="tabbar" aria-label="快捷导航">
+      <a href="/" aria-current={pathname === '/' ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8" /><path d="M5 10v10h14V10" /></svg>首页
+      </a>
+      <a href="/scenarios/" aria-current={pathname.startsWith('/scenarios/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg>场景
+      </a>
+      <a href="/rankings/" aria-current={pathname.startsWith('/rankings/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>榜单
+      </a>
+      <a href="/compare/" aria-current={pathname.startsWith('/compare/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13M7 7l3-3M7 7l3 3M17 17H4M17 17l-3-3M17 17l-3 3" /></svg>对比
+      </a>
+      <a href="/knowledge/" aria-current={pathname.startsWith('/knowledge/') ? 'page' : undefined}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z" /><path d="M4 19V5" /></svg>知识
+      </a>
+    </nav>
 
     <script>
       const root = document.documentElement;
@@ -176,8 +194,51 @@ const isCurrent = (href: string) => pathname === href || pathname.startsWith(hre
       });
 
       const totop = document.getElementById('totop');
-      addEventListener('scroll', () => totop?.classList.toggle('show', scrollY > 900), { passive: true });
+      const rp = document.getElementById('rp');
+      const article = document.querySelector('.article-body');
+      const onScroll = () => {
+        totop?.classList.toggle('show', scrollY > 900);
+        if (rp && article) {
+          const r = article.getBoundingClientRect();
+          const total = r.height - innerHeight * 0.6;
+          const done = Math.min(Math.max(-r.top / Math.max(total, 1), 0), 1);
+          rp.style.width = done * 100 + '%';
+        }
+      };
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
       totop?.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // 术语悬浮解释：正文里的术语链接带 data-def，悬停或聚焦时显示，点击仍跳转术语表。
+      const glLinks = document.querySelectorAll<HTMLAnchorElement>('a.gl');
+      if (glLinks.length) {
+        const tip = document.createElement('div');
+        tip.id = 'gl-tip';
+        tip.setAttribute('role', 'tooltip');
+        tip.hidden = true;
+        document.body.appendChild(tip);
+        const show = (a: HTMLAnchorElement) => {
+          tip.innerHTML = '';
+          const h = document.createElement('b');
+          h.textContent = '术语 · ' + (a.dataset.term ?? a.textContent ?? '');
+          const p = document.createElement('span');
+          p.textContent = a.dataset.def ?? '';
+          tip.append(h, p);
+          tip.hidden = false;
+          const r = a.getBoundingClientRect();
+          const w = tip.offsetWidth;
+          const left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+          const below = r.bottom + 10 + tip.offsetHeight < innerHeight;
+          tip.style.left = left + 'px';
+          tip.style.top = (below ? r.bottom + 8 : r.top - tip.offsetHeight - 8) + 'px';
+        };
+        glLinks.forEach((a) => {
+          a.addEventListener('mouseenter', () => show(a));
+          a.addEventListener('focus', () => show(a));
+          a.addEventListener('mouseleave', () => (tip.hidden = true));
+          a.addEventListener('blur', () => (tip.hidden = true));
+        });
+      }
 
       // 文章目录：滚动时高亮当前小节。
       const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc a[href^="#"], .tabs a[href^="#"]');

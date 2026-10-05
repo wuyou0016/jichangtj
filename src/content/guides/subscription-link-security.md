@@ -11,6 +11,8 @@ relatedScenarios:
 relatedGuides:
   - airport-red-flags
   - monthly-vs-yearly
+  - universal-subscription-vs-official-client
+  - multi-device-and-router
 relatedGlossary:
   - subscription
   - conversion

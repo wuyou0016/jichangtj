@@ -5,7 +5,7 @@ import Crumbs from '../../components/Crumbs.astro';
 import Faq from '../../components/Faq.astro';
 import Chip from '../../components/Chip.astro';
 import { loadSite, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
-import { FACTS, CLIENT_LABEL } from '../../data/providers/facts';
+import { FACTS, CLIENT_LABEL, coverage } from '../../data/providers/facts';
 import { resolveCanonicalUrl, formatDate } from '../../config/seo';
 import { siteConfig } from '../../config/site';
 import type { DataConfidence } from '../../config/data-confidence';
@@ -27,6 +27,21 @@ const prev = scenarios[(idx - 1 + scenarios.length) % scenarios.length]!;
 const next = scenarios[(idx + 1) % scenarios.length]!;
 const path = `/scenarios/${d.slug}/`;
 const wuyou = byId.get('wuyou-lianjie');
+const pickedIds = new Set(picks.map((p) => p.provider.id));
+// 未列入推荐的服务商：只写“资料缺口”，不下好坏判断。
+const notPicked = [...byId.values()]
+  .filter((p) => !pickedIds.has(p.id))
+  .map((p) => {
+    const f = FACTS[p.id]!;
+    const gaps: string[] = [];
+    if (!f.loss) gaps.push('本站没有测试数据');
+    if (f.monthly === null) gaps.push('价格资料不足');
+    if (f.client.type === 'unknown') gaps.push('客户端资料未提及');
+    if (f.client.type === 'conflict') gaps.push('客户端说法不一');
+    if (f.loss && f.loss.max > 2.8) gaps.push(`已测丢包率区间偏高（${f.loss.min}%–${f.loss.max}%）`);
+    if (gaps.length === 0) gaps.push('本站对这个场景没有足够的专门依据');
+    return { p, gaps };
+  });
 
 const sections = [
   ['why', '该看哪些指标'],
@@ -124,6 +139,33 @@ const description = `${d.summary ?? d.description} 含判断指标、${picks.len
           })
         }
       </div>
+      {picks.length > 1 && (
+        <>
+          <h3>并排看</h3>
+          <div class="tbl-wrap">
+            <table class="tbl" style="min-width:620px">
+              <thead><tr><th>推荐</th><th>起步价</th><th>丢包率（自测）</th><th>客户端</th><th>资料完整度</th></tr></thead>
+              <tbody>
+                {picks.map((p) => {
+                  const f = FACTS[p.provider.id]!;
+                  return <tr><th scope="row"><a href={`/airports/${p.provider.data.slug}/`}>{p.provider.data.name}</a></th><td>{f.price.headline}</td><td class="num">{f.loss ? `${f.loss.min}%–${f.loss.max}%` : '暂无'}</td><td>{CLIENT_LABEL[f.client.type]}</td><td class="num"><b>{coverage(f).score}</b>/6</td></tr>;
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {notPicked.length > 0 && (
+        <div class="acc" style="margin:0 0 1.4em">
+          <details>
+            <summary>未列入这个场景推荐的 {notPicked.length} 家，原因是什么</summary>
+            <div class="ans">
+              <p>下面写的是“资料缺口”，不是对服务好坏的判断：缺少可核对的依据，本站就不为凑数而推荐。</p>
+              <ul>{notPicked.map((n) => <li><a href={`/airports/${n.p.data.slug}/`}>{n.p.data.name}</a>：{n.gaps.join('；')}</li>)}</ul>
+            </div>
+          </details>
+        </div>
+      )}
       {picks.length < 3 && <div class="callout callout--warn"><b>说明</b><div><p>这个场景目前只有 {picks.length} 条有依据的推荐：没有独立验证的信息，本站不会为了凑数而列出。其余服务商请去<a href="/airports/">机场导航</a>查看各自的资料。</p></div></div>}
 
       {d.commonMistakes && d.commonMistakes.length > 0 && (

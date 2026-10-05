@@ -5,6 +5,7 @@ import Crumbs from '../../components/Crumbs.astro';
 import Chip from '../../components/Chip.astro';
 import Faq from '../../components/Faq.astro';
 import LossRange from '../../components/LossRange.astro';
+import Coverage from '../../components/Coverage.astro';
 import { loadSite, scenariosFor, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
 import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
 import { resolveCanonicalUrl, formatDate } from '../../config/seo';
@@ -23,8 +24,9 @@ const { providers, scenarios, guides, ranking, rankOf } = await loadSite();
 const rank = rankOf.get(provider.id)!;
 const rankEntry = ranking.find((r) => r.provider.id === provider.id)!;
 const sc = scenariosFor(provider, scenarios);
-const ownNotes = d.thirdPartyNotes?.filter((n) => n.source === '站长本人测试') ?? [];
-const thirdNotes = d.thirdPartyNotes?.filter((n) => n.source !== '站长本人测试') ?? [];
+const isOwn = (src: string) => src.startsWith('站长');
+const ownNotes = d.thirdPartyNotes?.filter((n) => isOwn(n.source)) ?? [];
+const thirdNotes = d.thirdPartyNotes?.filter((n) => !isOwn(n.source)) ?? [];
 const path = `/airports/${d.slug}/`;
 const statusLabel: Record<string, string> = { active: '正常运营', inactive: '暂停服务', discontinued: '已停止服务', watch: '观察中' };
 
@@ -63,6 +65,7 @@ const sections = [
   ['test', '站长自测'],
   ['sources', '第三方资料'],
   ['fit', '适合场景'],
+  ['client', '客户端与订阅'],
   ['check', '买前检查'],
   ['compare', '同类对照'],
   ['faq', 'FAQ'],
@@ -116,12 +119,17 @@ const isWuyou = d.slug === 'wuyou-lianjie';
         <dt>起步价</dt><dd><b>{f.price.headline}</b><br /><span class="muted">口径：{f.price.basis}</span></dd>
         <dt>丢包率</dt><dd>{f.loss ? <><b>{f.loss.min}%–{f.loss.max}%</b>（站长自测{f.loss.note ? `，${f.loss.note}` : ''}）</> : '暂无测试数据'}</dd>
         <dt>协议</dt><dd>{f.protocols}</dd>
+        <dt>线路说法</dt><dd>{f.line}<br /><span class="muted">线路类型是服务商或第三方的说法，本站未验证，见<a href="/knowledge/route-types-explained/">线路类型怎么看</a></span></dd>
+        <dt>节点地区</dt><dd>{f.nodes}</dd>
         <dt>客户端</dt><dd><b>{CLIENT_LABEL[f.client.type]}</b><br /><span class="muted">{f.client.text}</span></dd>
         <dt>官方入口</dt><dd><b>{ENTRY_LABEL[f.entry.kind]}</b><br /><span class="muted">{f.entry.text}</span></dd>
         <dt>解锁检测</dt><dd>{f.unlock ?? '本站未做检测'}</dd>
         <dt>需要留意</dt><dd><ul style="margin:0;padding-left:1.1em">{f.flags.map((x) => <li>{x}</li>)}</ul></dd>
       </dl>
       <div class="callout"><b>说明</b><div><p>{d.vendor.description}</p></div></div>
+      <h3>本站对这家有多少资料</h3>
+      <p class="muted" style="font-size:.9rem">下面六项只表示“本站有没有这类资料”，不代表服务好坏，也不是评分。</p>
+      <div style="margin-bottom:1.4em"><Coverage f={f} /></div>
 
       <h2 id="verify">本站核对了什么、没核对什么</h2>
       <p>下表把“本站能确认的”和“只是别人说的”分开。没核对的项目不等于有问题，只是需要你购买前自己确认。</p>
@@ -145,7 +153,7 @@ const isWuyou = d.slug === 'wuyou-lianjie';
           <div class="callout callout--warn"><b>无数据</b><div><p>本站目前没有对 {d.name} 做过持续测试，所以这里没有丢包率图表。我们不会用宣传语或别的站点的数字来凑。建议你用月付套餐，按<a href="/knowledge/self-test-seven-days/">一周自测计划</a>自己验证。</p></div></div>
         )
       }
-      {ownNotes.length > 0 && <ul class="notes">{ownNotes.map((n) => <li class="own"><div class="src"><span class="chip chip--own">站长自测</span><span>{formatDate(n.date)}</span></div><p>{n.claim}</p></li>)}</ul>}
+      {ownNotes.length > 0 && <ul class="notes">{ownNotes.map((n) => <li class="own"><div class="src"><span class="chip chip--own">{n.source === '站长本人测试' ? '站长自测' : n.source}</span><span>{formatDate(n.date)}</span></div><p>{n.claim}</p></li>)}</ul>}
       <p class="muted" style="font-size:.88rem">测试方法与局限见<a href="/methodology/">评测方法与数据说明</a>；全部数据汇总见<a href="/data/">数据中心</a>。</p>
 
       <h2 id="sources">第三方资料</h2>
@@ -173,10 +181,16 @@ const isWuyou = d.slug === 'wuyou-lianjie';
         )
       }
 
+      <h2 id="client">客户端与订阅方式</h2>
+      <p>{f.client.text}。</p>
+      {f.client.type === 'supported' && <div class="callout callout--ok"><b>支持</b><div><p>支持通用订阅意味着你可以按自己的设备和习惯选客户端，不会被某一款软件绑定。具体怎么选，见<a href="/knowledge/client-choice-by-device/">按设备选客户端</a>；想弄清“通用订阅”和官方客户端的区别，见<a href="/knowledge/universal-subscription-vs-official-client/">通用订阅与官方客户端</a>。</p></div></div>}
+      {f.client.type === 'official-only' && <div class="callout callout--warn"><b>留意</b><div><p>资料显示只能使用官方客户端，无法把订阅导入 Clash 等第三方软件。如果你需要自定义规则或多设备统一配置，请先和客服确认。区别见<a href="/knowledge/universal-subscription-vs-official-client/">通用订阅与官方客户端</a>。</p></div></div>}
+      {(f.client.type === 'conflict' || f.client.type === 'unknown') && <div class="callout callout--warn"><b>待确认</b><div><p>本站没有可核实的客户端兼容信息。买之前先向客服确认你要用的客户端是否可用，再决定是否下单。判断方法见<a href="/knowledge/universal-subscription-vs-official-client/">通用订阅与官方客户端</a>。</p></div></div>}
+
       <h2 id="check">买前检查清单</h2>
       <ul class="checklist">
         <li>打开官网，核对最新套餐、价格和退款规则（官方入口：{ENTRY_LABEL[f.entry.kind]}）</li>
-        <li>确认客户端：{f.client.type === 'official-only' ? '只能用官方客户端，确认你接受这一点' : f.client.type === 'conflict' ? '不同来源说法不一，先向客服确认第三方客户端是否可用' : '资料没有提到第三方客户端兼容性，购买前先问客服'}</li>
+        <li>确认客户端：{f.client.type === 'supported' ? '支持通用订阅，按你的设备选一款熟悉的客户端，导入后先测试一次连接' : f.client.type === 'official-only' ? '只能用官方客户端，确认你接受这一点' : f.client.type === 'conflict' ? '不同来源说法不一，先向客服确认第三方客户端是否可用' : '资料没有提到第三方客户端兼容性，购买前先问客服'}</li>
         <li>只买最低档月付，用满第一个周期再决定是否续费</li>
         <li>在你常用的晚高峰时段连测几天，记录断线与变慢</li>
         {f.flags.slice(0, 2).map((x) => <li>留意：{x}</li>)}

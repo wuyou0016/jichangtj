@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Crumbs from '../../components/Crumbs.astro';
 import Chip from '../../components/Chip.astro';
+import ScenarioMatrix from '../../components/ScenarioMatrix.astro';
 import { loadSite, shortName } from '../../data/helpers';
 import { resolveCanonicalUrl } from '../../config/seo';
 import type { DataConfidence } from '../../config/data-confidence';
@@ -58,6 +59,11 @@ const description = '机场代理该怎么选，取决于你用来做什么。�
         })
       }
     </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><div><p class="eyebrow">矩阵 · Matrix</p><h2>场景 × 服务商：谁出现在哪些场景里</h2><p>一张表看清每家服务商被列入了哪些场景推荐，以及在该场景里排第几。</p></div></div>
+    <ScenarioMatrix />
   </section>
 
   <section class="sec">

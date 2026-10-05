@@ -65,7 +65,7 @@ const minutes = Math.max(2, Math.round(((tutorial.body ?? '').match(/[一-鿿]/g
     </div>
     <aside class="aside">
       {toc.length > 0 && <div class="toc"><h2>本文目录</h2><ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></div>}
-      <div class="asidecard asidecard--gold"><h2>首推 · 无忧链接</h2><p style="font-size:.9rem;margin:0 0 10px">官方自研客户端，装上就用；MINI 包月约 ¥6.6/月起。</p><a class="btn btn--amber btn--sm" href={wuyou?.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a></div>
+      <div class="asidecard asidecard--gold"><h2>首推 · 无忧链接</h2><p style="font-size:.9rem;margin:0 0 10px">支持通用订阅，可按习惯选客户端；MINI 包月约 ¥6.6/月起。</p><a class="btn btn--amber btn--sm" href={wuyou?.data.vendor.officialWebsite} target="_blank" rel="nofollow sponsored noopener">前往官网 ↗</a></div>
       <div class="asidecard"><h2>其他教程</h2><ul>{otherTutorials.map((t) => <li><a href={`/tutorials/${t.id}/`}>{t.data.title.split(/[？：——]/)[0]}</a></li>)}</ul></div>
     </aside>
   </div>

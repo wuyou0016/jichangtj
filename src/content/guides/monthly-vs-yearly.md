@@ -12,6 +12,7 @@ relatedScenarios:
 relatedGuides:
   - airport-pricing-explained
   - airport-red-flags
+  - payment-and-refund
 relatedGlossary:
   - annual-equiv
   - rug-pull

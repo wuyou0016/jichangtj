@@ -15,7 +15,7 @@ const rows = [
   ['A2', '游戏加速', '无忧链接'],
   ['A3', '远程办公', '无忧链接'],
   ['A4', '流媒体解锁', '无忧链接'],
-  ['B4', '怕跑路稳妥买', '飞猫云'],
+  ['B4', '怕跑路稳妥买', '无忧链接'],
 ];
 const html = `<!doctype html><meta charset="utf-8"><style>
 *{box-sizing:border-box;margin:0}

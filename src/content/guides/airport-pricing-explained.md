@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - monthly-vs-yearly
   - airport-red-flags
+  - payment-and-refund
 relatedGlossary:
   - annual-equiv
   - multiplier

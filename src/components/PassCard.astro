@@ -1,6 +1,7 @@
 ---
 import type { Provider } from '../data/helpers';
 import Chip from './Chip.astro';
+import Coverage from './Coverage.astro';
 import { FACTS, CLIENT_LABEL, lossTier } from '../data/providers/facts';
 import type { DataConfidence } from '../config/data-confidence';
 
@@ -34,6 +35,7 @@ const href = `/airports/${d.slug}/`;
         </ul>
       )
     }
+    {f && <div style="margin-top:14px"><Coverage f={f} compact /></div>}
   </div>
   <div class="pass-stub">
     {rank !== undefined && <div class="stub-rank"><small>综合排名</small>{String(rank).padStart(2, '0')}</div>}

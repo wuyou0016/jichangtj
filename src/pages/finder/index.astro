@@ -135,7 +135,9 @@ const description = '机场TJ 选购向导：回答用途、优先级和客户�
             let fit = '';
             if (cl === 'third') {
               fit =
-                p.client === 'official-only'
+                p.client === 'supported'
+                  ? `<span class="chip chip--own">满足：支持通用订阅</span>`
+                  : p.client === 'official-only'
                   ? `<span class="chip chip--inc">不满足：资料显示仅官方客户端</span>`
                   : p.client === 'conflict'
                     ? `<span class="chip chip--inc">需先确认：来源对第三方客户端说法不一</span>`

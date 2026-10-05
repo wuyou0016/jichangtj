@@ -57,6 +57,14 @@ export const TERMS: Term[] = [
   { id: 'device-limit', term: '设备数限制', group: 'buy', def: '同一订阅允许同时在线的设备数量。订阅链接被分享或泄露时，很容易触发上限，导致正常设备也被踢下线。', see: ['subscription'] },
   { id: 'annual-equiv', term: '年付折算价', group: 'buy', def: '把年付总价除以 12 得到的月均价。看起来很低，但需要一次性预付，并承担服务商跑路或体验不佳的风险；和月付价不能直接比较。', guides: ['monthly-vs-yearly', 'airport-pricing-explained'], see: ['rug-pull'] },
   { id: 'rug-pull', term: '跑路', group: 'buy', def: '服务商突然停止服务、关站或失联，已付费用无法使用也难以追回的情况。无法完全避免，能做的是小额月付、不囤长期套餐，并留意站点与价格是否出现异常。', guides: ['airport-red-flags'], see: ['annual-equiv'] },
+  { id: 'dns-leak', term: 'DNS 泄露', group: 'usage', def: '客户端配置不当时，域名解析请求没有经过代理，而是直接发给本地运营商，导致你访问了哪些域名对本地网络仍然可见。可以通过防泄露设置、加密 DNS 或 TUN 模式降低风险。', guides: ['privacy-and-logs'], see: ['tun', 'sni'] },
+  { id: 'sni', term: 'SNI', alt: '服务器名称指示', group: 'protocol', def: 'HTTPS 握手阶段客户端告诉服务器“要访问哪个域名”的字段，在多数情况下以明文传输，所以即使页面内容加密，访问了哪个域名仍可能被中间环节看到。部分新技术可缓解，但并不普遍。', guides: ['privacy-and-logs'], see: ['dns-leak'] },
+  { id: 'log-policy', term: '日志政策', group: 'buy', def: '服务商关于“是否记录你的连接信息、记录多久”的说法。“不记录日志”是服务商自称，用户难以直接验证，应当作参考信息，而不是安全承诺。', guides: ['privacy-and-logs'], see: ['dns-leak'] },
+  { id: 'openclash', term: '路由器代理插件', alt: 'OpenClash 等', group: 'usage', def: '运行在 OpenWrt 等路由器固件上的代理程序，让连接该路由器的所有设备统一走代理。设备多时便于集中管理，但配置复杂、排错困难，出问题时全家设备都受影响。', guides: ['multi-device-and-router'], see: ['device-limit'] },
+  { id: 'udp', term: 'UDP', group: 'protocol', def: '一种不保证送达、延迟较低的传输方式，实时游戏、语音通话和基于 QUIC 的服务常用。代理是否支持 UDP 转发，会影响这些应用的表现。', guides: ['protocol-quick-guide'], see: ['hysteria2', 'packet-loss'] },
+  { id: 'auto-select', term: '自动选择 / 故障转移', group: 'usage', def: '客户端按延迟测试结果自动挑选节点，或在当前节点故障时切换到备用节点。方便，但可能让你连到非预期的地区；对账号所在地区敏感的服务，建议手动固定节点。', see: ['node', 'latency'] },
+  { id: 'ruleset', term: '规则集', group: 'usage', def: '一组预先整理好的域名 / IP 规则，用来决定哪些流量走代理、哪些直连。规则集的来源和更新频率，会影响分流是否准确。', see: ['rule-mode', 'global-mode'] },
+  { id: 'mihomo', term: 'mihomo', alt: '原 Clash.Meta', group: 'usage', def: 'Clash 内核仍在活跃维护的分支，支持更多协议。现在常见的 Clash 系客户端大多基于它，选客户端时要确认内核是否支持你节点用的协议。', guides: ['client-choice-by-device'], see: ['clash', 'protocol'] },
 ];
 
 export const TERM_MAP = Object.fromEntries(TERMS.map((t) => [t.id, t]));

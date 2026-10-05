@@ -11,6 +11,8 @@ relatedScenarios:
 relatedGuides:
   - monthly-vs-yearly
   - subscription-link-security
+  - payment-and-refund
+  - privacy-and-logs
 relatedGlossary:
   - rug-pull
   - annual-equiv

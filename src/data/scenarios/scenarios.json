@@ -21,7 +21,7 @@
     "picks": [
       {
         "providerId": "wuyou-lianjie",
-        "reason": "MINI 包月起步约 6.6 元/月（站长确认口径），在本站有价格资料的服务商里起步价最低，且经过人工核实，另有本站持续跟踪的丢包率数据支撑。缺点是通用订阅入口暂时关闭，只能用官方自研客户端。"
+        "reason": "MINI 包月起步约 6.6 元/月（站长确认口径），在本站有价格资料的服务商里起步价最低，且经过人工核实，另有本站持续跟踪的丢包率数据支撑；支持通用订阅，可按习惯选客户端。"
       },
       {
         "providerId": "lingmao-network",
@@ -64,7 +64,8 @@
     ],
     "relatedGuides": [
       "airport-pricing-explained",
-      "monthly-vs-yearly"
+      "monthly-vs-yearly",
+      "payment-and-refund"
     ]
   },
   {
@@ -123,7 +124,9 @@
     ],
     "relatedGuides": [
       "loss-latency-jitter-explained",
-      "self-test-seven-days"
+      "self-test-seven-days",
+      "why-experience-differs",
+      "multi-device-and-router"
     ]
   },
   {
@@ -179,7 +182,8 @@
     ],
     "relatedGuides": [
       "streaming-unlock-verify",
-      "self-test-seven-days"
+      "self-test-seven-days",
+      "why-experience-differs"
     ]
   },
   {
@@ -230,7 +234,9 @@
     ],
     "relatedGuides": [
       "loss-latency-jitter-explained",
-      "self-test-seven-days"
+      "self-test-seven-days",
+      "protocol-quick-guide",
+      "why-experience-differs"
     ]
   },
   {
@@ -257,7 +263,7 @@
     "picks": [
       {
         "providerId": "wuyou-lianjie",
-        "reason": "官方自研客户端意味着不必自己导入配置，对只想装上就用的新手可能更省事；起步价经站长核实，另有本站持续跟踪的丢包率数据。代价是不能用 Clash 等第三方客户端，购买前确认这符合你的习惯。"
+        "reason": "支持通用订阅，新手可以选自己熟悉的客户端导入，不被某一款软件绑定；起步价经站长核实，另有本站持续跟踪的丢包率数据。购买前仍以官网当前的订阅说明为准。"
       },
       {
         "providerId": "firefly",
@@ -292,7 +298,9 @@
     "relatedGuides": [
       "monthly-vs-yearly",
       "subscription-link-security",
-      "airport-red-flags"
+      "airport-red-flags",
+      "universal-subscription-vs-official-client",
+      "client-choice-by-device"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -321,7 +329,7 @@
     "picks": [
       {
         "providerId": "wuyou-lianjie",
-        "reason": "起步价低，且在本站已测的 7 家里丢包率数值最低（约 0.7%-0.8%，站长自测），适合把“稳定”和“预算”同时放在前面的学生用户。注意只能使用官方客户端。"
+        "reason": "起步价低，且在本站已测的 7 家里丢包率数值最低（约 0.7%-0.8%，站长自测），适合把“稳定”和“预算”同时放在前面的学生用户；支持通用订阅，电脑和手机都能用熟悉的客户端。"
       },
       {
         "providerId": "firefly",
@@ -355,7 +363,8 @@
     ],
     "relatedGuides": [
       "airport-pricing-explained",
-      "monthly-vs-yearly"
+      "monthly-vs-yearly",
+      "client-choice-by-device"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -384,7 +393,7 @@
     "picks": [
       {
         "providerId": "wuyou-lianjie",
-        "reason": "官方自研客户端意味着出发前装好即可，不需要在途中再导入订阅；国内网络下的丢包率数据较低（约 0.7%-0.8%，站长自测）。但本站没有境外网络下的测试，出发前请自行验证。"
+        "reason": "国内网络下的丢包率数据较低（约 0.7%-0.8%，站长自测）；支持通用订阅，出发前在手机和电脑上各配置好熟悉的客户端即可。但本站没有境外网络下的测试，出发前请自行验证。"
       },
       {
         "providerId": "firefly",
@@ -415,7 +424,9 @@
     ],
     "relatedGuides": [
       "subscription-link-security",
-      "airport-red-flags"
+      "airport-red-flags",
+      "multi-device-and-router",
+      "client-choice-by-device"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -443,16 +454,16 @@
     ],
     "picks": [
       {
+        "providerId": "wuyou-lianjie",
+        "reason": "起步价经过站长本人核实，且本站对它做过丢包率持续跟踪与流媒体解锁检测，是已收录服务商里可核对依据最多的一家；官方入口是验证码校验页面，需要手动完成校验才能继续。仍建议先月付再决定，并保存价格页面与退款规则。"
+      },
+      {
         "providerId": "feimao-cloud",
         "reason": "入门套餐（约 7 元/月起、50GB、年付 84 元）有两个独立第三方来源互相印证，是少见能核对价格的一个。本站没有它的独立测速数据，建议月付小额验证。"
       },
       {
         "providerId": "firefly",
         "reason": "年付起步价（约 8 元/月、60GB）有两个独立第三方来源基本一致，价格资料可信度较高；官方入口需要注册后才能看到套餐，购买前先确认退款规则。"
-      },
-      {
-        "providerId": "wuyou-lianjie",
-        "reason": "起步价经过站长本人核实，且本站对它做过持续测试；官方入口是验证码校验页面，需要手动完成校验才能继续。仍建议先月付再决定。"
       }
     ],
     "commonMistakes": [
@@ -479,7 +490,9 @@
     ],
     "relatedGuides": [
       "airport-red-flags",
-      "monthly-vs-yearly"
+      "monthly-vs-yearly",
+      "payment-and-refund",
+      "privacy-and-logs"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"

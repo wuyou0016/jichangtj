@@ -1,0 +1,36 @@
+---
+import { loadSite, scenariosFor, shortName } from '../data/helpers';
+
+const { providers, scenarios, rankOf } = await loadSite();
+const rows = [...providers].sort((a, b) => (rankOf.get(a.id) ?? 99) - (rankOf.get(b.id) ?? 99)).map((p) => {
+  const hits = scenariosFor(p, scenarios);
+  return { p, hits, pos: new Map(hits.map((h) => [h.scenario.data.slug, h.pos + 1])) };
+});
+---
+
+<div class="tbl-wrap">
+  <table class="tbl matrix" aria-label="服务商与场景推荐矩阵">
+    <thead>
+      <tr>
+        <th>服务商</th>
+        {scenarios.map((s) => <th title={shortName(s)}><a href={`/scenarios/${s.data.slug}/`}><span class="gate" style="min-width:34px;height:22px;font-size:.72rem">{s.data.gate}</span><br /><small>{shortName(s)}</small></a></th>)}
+        <th>入选</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(({ p, hits, pos }) => (
+          <tr>
+            <th scope="row"><a href={`/airports/${p.data.slug}/`}>{p.data.name}</a></th>
+            {scenarios.map((s) => {
+              const n = pos.get(s.data.slug);
+              return <td class="mx">{n ? <span class={`dot dot--${n}`} title={`${shortName(s)}：第 ${n} 位`}>{n}</span> : <span class="muted" aria-label="未列入">·</span>}</td>;
+            })}
+            <td class="num"><b>{hits.length}</b>/{scenarios.length}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+<p class="muted" style="font-size:.86rem;margin-top:-6px">数字 = 该服务商在该场景推荐列表里的位置；“·”只表示本站没有把它列入这个场景的推荐（通常因为缺少可核对的依据），<b>不代表它不好</b>。</p>

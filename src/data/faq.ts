@@ -66,6 +66,26 @@ export const FAQ_GROUPS: FaqGroup[] = [
   },
 ];
 
+// 2026-10 第二轮补充
+FAQ_GROUPS[0]!.items.push(
+  { q: '“通用订阅”是什么？', a: '指服务商给你的订阅链接是标准格式，可以导入 Clash 系、Shadowrocket、v2rayN 等多种客户端；和“只能用自家客户端”相对。买之前要确认你想用的客户端是否被支持。', more: { href: '/knowledge/universal-subscription-vs-official-client/', label: '通用订阅与官方客户端' } },
+  { q: '协议需要自己选吗？', a: '通常不需要。订阅里已经配置好了，客户端按节点自动连接。协议只影响客户端能不能连、弱网下的表现倾向，不要只凭协议名选机场。', more: { href: '/knowledge/protocol-quick-guide/', label: '协议速读' } },
+);
+FAQ_GROUPS[1]!.items.push(
+  { q: '怎么付款、怎么留凭证更稳妥？', a: '付款前截图保存价格、退款规则和订单信息；优先选有交易记录、有争议流程的方式；先买月付。具体见付款与退款指南。', more: { href: '/knowledge/payment-and-refund/', label: '付款与退款指南' } },
+);
+FAQ_GROUPS[2]!.items.push(
+  { q: '为什么我的体验和你们的数据不一样？', a: '本站数据来自固定网络环境（珠海联通）。运营商、地区、时段、本地网络、客户端和协议都会影响体验，请把本站数据当作参考起点，再用一周自测验证。', more: { href: '/knowledge/why-experience-differs/', label: '为什么你的体验和别人不一样' } },
+);
+FAQ_GROUPS[3]!.items.push(
+  { q: '客户端该怎么选？', a: '看四件事：能不能连节点用的协议、是否仍在维护、从哪里下载、用得顺不顺手。只从官方发布页或官方应用商店下载。', more: { href: '/knowledge/client-choice-by-device/', label: '按设备选客户端' } },
+  { q: '一个订阅最多几台设备同时用？', a: '取决于服务商的设备数限制，购买前要问清，也要了解超限时的处理方式。', more: { href: '/knowledge/multi-device-and-router/', label: '多设备与路由器' } },
+);
+FAQ_GROUPS[4]!.items.push(
+  { q: '用机场，服务商能看到我的访问记录吗？', a: '服务商的节点处在你和目标网站之间，对方通常看不到 HTTPS 加密的页面内容，但有能力看到连接的目标、时间和流量大小等信息。不要把机场当成“完全匿名”的工具。', more: { href: '/knowledge/privacy-and-logs/', label: '服务商能看到什么' } },
+  { q: '什么是 DNS 泄露？', a: '指域名解析请求没有走代理，直接发给了本地运营商，导致访问了哪些域名对本地网络可见。可以用防泄露设置、加密 DNS 或 TUN 模式降低风险。', more: { href: '/glossary/#dns-leak', label: 'DNS 泄露（术语表）' } },
+);
+
 export const HOME_FAQ: QA[] = [
   FAQ_GROUPS[0]!.items[0]!,
   FAQ_GROUPS[1]!.items[0]!,

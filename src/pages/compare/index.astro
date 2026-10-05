@@ -3,8 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Crumbs from '../../components/Crumbs.astro';
 import Chip from '../../components/Chip.astro';
 import Faq from '../../components/Faq.astro';
+import ScenarioMatrix from '../../components/ScenarioMatrix.astro';
 import { loadSite, safeJson } from '../../data/helpers';
-import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
+import { FACTS, CLIENT_LABEL, ENTRY_LABEL, coverage } from '../../data/providers/facts';
 import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
 import { resolveCanonicalUrl } from '../../config/seo';
 
@@ -28,6 +29,9 @@ const rows = [...providers].sort((a, b) => (rankOf.get(a.id) ?? 99) - (rankOf.ge
     clientText: f.client.text,
     entry: ENTRY_LABEL[f.entry.kind],
     protocols: f.protocols,
+    line: f.line,
+    nodes: f.nodes,
+    cover: coverage(f).score,
     unlock: f.unlock ?? '本站未做检测',
     flags: f.flags.join('；'),
   };
@@ -36,10 +40,10 @@ const labels = Object.entries(DATA_CONFIDENCE_LABEL) as [DataConfidence, string]
 const faq = [
   { q: '为什么不给每 GB 单价排名？', a: '倍率、设备数、节点范围和周期都不同，直接换算很容易误导。本站只并排列出各家公开的价格口径，你可以用“流量成本换算”工具按自己的情况算。' },
   { q: '丢包率能直接比较吗？', a: '同一测试环境下的区间可以参考相对高低，但它是站长在固定网络（珠海联通）下的多批次数据，不代表你的网络。没有数据的服务商并不意味着更差，只是本站没测。' },
-  { q: '表格里的“客户端”是什么意思？', a: '“仅官方客户端”表示资料显示不能导入 Clash 等第三方客户端；“说法不一”表示不同来源互相矛盾；“资料未提及”表示没有可核实的信息，需要你购买前问清楚。' },
+  { q: '表格里的“客户端”是什么意思？', a: '“支持通用订阅”表示可以导入 Clash 等第三方客户端；“仅官方客户端”表示资料显示不能导入；“说法不一”表示不同来源互相矛盾；“资料未提及”表示没有可核实的信息，需要你购买前问清楚。' },
 ];
-const title = '机场对比 2026：9 家服务商价格口径、丢包率与客户端并排看｜机场TJ';
-const description = '机场TJ 服务商对比中心：9 家机场代理的起步价口径、站长自测丢包率区间、客户端支持、官方入口情况与资料标签并排列出，可筛选、可排序，并支持两家服务商逐项对比。';
+const title = '机场对比 2026：9 家服务商价格、丢包率、线路节点与客户端并排看｜机场TJ';
+const description = '机场TJ 服务商对比中心：9 家机场代理的起步价口径、站长自测丢包率、线路与节点地区、协议、客户端支持、资料完整度并排列出，可筛选、可排序，并支持两家服务商逐项对比与分享链接。';
 ---
 
 <BaseLayout title={title} description={description} canonical={resolveCanonicalUrl('/compare/')}>
@@ -59,35 +63,45 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
     <div class="filters" role="group" aria-label="客户端筛选">
       <span class="lab">客户端</span>
       <button class="pill" type="button" data-client="all" aria-pressed="true">全部</button>
+      <button class="pill" type="button" data-client="supported" aria-pressed="false">支持通用订阅</button>
       <button class="pill" type="button" data-client="official-only" aria-pressed="false">仅官方客户端</button>
       <button class="pill" type="button" data-client="conflict" aria-pressed="false">说法不一</button>
       <button class="pill" type="button" data-client="unknown" aria-pressed="false">资料未提及</button>
       <button class="pill" type="button" id="only-loss" aria-pressed="false">只看有丢包数据</button>
+      <button class="pill" type="button" id="more-cols" aria-pressed="false" style="margin-left:auto">显示线路 / 节点 / 协议列</button>
     </div>
 
     <div class="tbl-wrap">
-      <table class="tbl" id="cmp" style="min-width:880px">
+      <table class="tbl" id="cmp" style="min-width:900px">
         <thead>
           <tr>
             <th aria-sort="ascending"><button type="button" data-sort="rank">名次</button></th>
             <th>服务商</th>
             <th>起步价口径</th>
+            <th class="col-extra">线路说法</th>
+            <th class="col-extra">节点地区</th>
+            <th class="col-extra">协议</th>
             <th><button type="button" data-sort="loss">丢包率（自测）</button></th>
             <th>客户端</th>
             <th>官方入口</th>
+            <th><button type="button" data-sort="cover">资料完整度</button></th>
             <th>资料标签</th>
           </tr>
         </thead>
         <tbody>
           {
             rows.map((r) => (
-              <tr data-rank={r.rank} data-conf={r.conf} data-client={r.client} data-loss={r.lossMin ?? ''} data-has-loss={r.lossMin === null ? '0' : '1'}>
+              <tr data-rank={r.rank} data-conf={r.conf} data-client={r.client} data-loss={r.lossMin ?? ''} data-cover={r.cover} data-has-loss={r.lossMin === null ? '0' : '1'}>
                 <td class="num"><b>{String(r.rank).padStart(2, '0')}</b></td>
                 <th scope="row"><a href={`/airports/${r.slug}/`}>{r.name}</a>{r.rank === 1 && <span class="tag tag--amber" style="margin-left:6px">首推</span>}</th>
                 <td>{r.price}<br /><span class="muted" style="font-size:.8rem">{r.basis}</span></td>
+                <td class="col-extra">{r.line}</td>
+                <td class="col-extra">{r.nodes}</td>
+                <td class="col-extra">{r.protocols}</td>
                 <td class="num">{r.loss}</td>
                 <td>{r.clientLabel}</td>
                 <td>{r.entry}</td>
+                <td class="num"><b>{r.cover}</b>/6</td>
                 <td><Chip c={r.conf} /></td>
               </tr>
             ))
@@ -105,7 +119,12 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
       <div class="field"><label for="b">服务商 B</label><select class="select" id="b">{rows.map((r, i) => <option value={r.id} selected={i === 1}>{r.name}</option>)}</select></div>
     </div>
     <div class="tbl-wrap"><table class="tbl" id="h2h" style="min-width:560px"><thead><tr><th>项目</th><th id="h-a"></th><th id="h-b"></th></tr></thead><tbody id="h2h-body"></tbody></table></div>
-    <p class="muted" style="font-size:.88rem">差异行会高亮。对比只基于本站已收录的资料，没有资料的项目显示“暂无”。</p>
+    <p class="muted" style="font-size:.88rem">差异行会高亮。对比只基于本站已收录的资料，没有资料的项目显示“暂无”。<button class="btn btn--ghost btn--sm" type="button" id="share" style="margin-left:10px">复制对比链接</button></p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><div><p class="eyebrow">矩阵 · Matrix</p><h2>谁适合哪个场景</h2><p>每家服务商被列入哪些场景推荐，以及在该场景里排第几。</p></div></div>
+    <ScenarioMatrix />
   </section>
 
   <section class="sec">
@@ -138,6 +157,7 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
     const render = () => {
       let shown = 0;
       const list = trs.slice().sort((a, b) => {
+        if (sortKey === 'cover') return (Number(b.dataset.cover) - Number(a.dataset.cover)) * dir;
         if (sortKey === 'loss') {
           const av = a.dataset.loss === '' ? 99 : Number(a.dataset.loss);
           const bv = b.dataset.loss === '' ? 99 : Number(b.dataset.loss);
@@ -173,6 +193,14 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
       ol.setAttribute('aria-pressed', onlyLoss ? 'true' : 'false');
       render();
     });
+    const tbl = document.getElementById('cmp')!;
+    tbl.classList.add('hide-extra');
+    const mc = document.getElementById('more-cols')!;
+    mc.addEventListener('click', () => {
+      const open = tbl.classList.toggle('hide-extra') === false;
+      mc.setAttribute('aria-pressed', open ? 'true' : 'false');
+      mc.textContent = open ? '收起线路 / 节点 / 协议列' : '显示线路 / 节点 / 协议列';
+    });
     document.querySelectorAll<HTMLButtonElement>('th button[data-sort]').forEach((b) =>
       b.addEventListener('click', () => {
         const k = b.dataset.sort!;
@@ -191,8 +219,9 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
     const selB = document.getElementById('b') as HTMLSelectElement;
     const body = document.getElementById('h2h-body')!;
     const fields: [string, string][] = [
-      ['综合名次', 'rank'], ['资料标签', 'confLabel'], ['起步价', 'price'], ['价格口径', 'basis'], ['丢包率（自测）', 'loss'],
-      ['客户端', 'clientLabel'], ['客户端说明', 'clientText'], ['官方入口', 'entry'], ['协议', 'protocols'], ['解锁检测', 'unlock'], ['需要留意', 'flags'],
+      ['综合名次', 'rank'], ['资料标签', 'confLabel'], ['资料完整度（满分 6）', 'cover'], ['起步价', 'price'], ['价格口径', 'basis'], ['丢包率（自测）', 'loss'],
+      ['线路说法', 'line'], ['节点地区', 'nodes'], ['协议', 'protocols'],
+      ['客户端', 'clientLabel'], ['客户端说明', 'clientText'], ['官方入口', 'entry'], ['解锁检测', 'unlock'], ['需要留意', 'flags'],
     ];
     const esc = (s: unknown) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
     const h2h = () => {
@@ -207,8 +236,23 @@ const description = '机场TJ 服务商对比中心：9 家机场代理的起步
         })
         .join('');
     };
-    selA.addEventListener('change', h2h);
-    selB.addEventListener('change', h2h);
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('a') && data.some((r) => r.id === qs.get('a'))) selA.value = qs.get('a')!;
+    if (qs.get('b') && data.some((r) => r.id === qs.get('b'))) selB.value = qs.get('b')!;
+    const sync = () => {
+      h2h();
+      const u = new URL(location.href);
+      u.searchParams.set('a', selA.value);
+      u.searchParams.set('b', selB.value);
+      history.replaceState(null, '', u);
+    };
+    selA.addEventListener('change', sync);
+    selB.addEventListener('change', sync);
+    document.getElementById('share')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      try { await navigator.clipboard.writeText(location.href); btn.textContent = '已复制链接 ✓'; } catch { btn.textContent = '请手动复制地址栏链接'; }
+      setTimeout(() => (btn.textContent = '复制对比链接'), 2000);
+    });
     h2h();
     render();
   </script>

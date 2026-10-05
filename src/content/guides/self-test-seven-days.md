@@ -13,6 +13,7 @@ relatedScenarios:
 relatedGuides:
   - loss-latency-jitter-explained
   - monthly-vs-yearly
+  - why-experience-differs
 relatedGlossary:
   - peak-hour
   - packet-loss

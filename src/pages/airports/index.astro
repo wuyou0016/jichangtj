@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Crumbs from '../../components/Crumbs.astro';
 import Chip from '../../components/Chip.astro';
 import Faq from '../../components/Faq.astro';
+import Coverage from '../../components/Coverage.astro';
 import { loadSite, scenariosFor, shortName } from '../../data/helpers';
 import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
 import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
@@ -58,6 +59,7 @@ const description = '机场TJ 机场导航收录 9 家机场代理：官方入�
                   <div><dt class="muted mono" style="font-size:.68rem;letter-spacing:.1em">官方入口</dt><dd style="margin:0">{f && ENTRY_LABEL[f.entry.kind]}</dd></div>
                 </div>
               </dl>
+              {f && <div style="margin-top:12px"><Coverage f={f} compact /></div>}
               {sc.length > 0 && <p style="margin:12px 0 0;display:flex;gap:6px;flex-wrap:wrap">{sc.slice(0, 3).map((x) => <span class="tag">{shortName(x.scenario)}</span>)}{sc.length > 3 && <span class="tag">+{sc.length - 3}</span>}</p>}
             </a>
           );
