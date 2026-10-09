@@ -145,7 +145,7 @@ const showFriends = pathname === '/' || pathname === '/about/';
         </div>
         <div class="foot-bar">
           <p>{siteConfig.disclosure}　<a href="/terms/">披露说明</a>　·　<a href="https://t.me/xxxxtony" target="_blank" rel="nofollow noopener">入驻申请</a></p>
-          {showFriends && <p>友情链接：{FRIEND_LINKS.map((f, i) => <><a href={f.href} target="_blank" rel="noopener">{f.label}</a>{i < FRIEND_LINKS.length - 1 ? '　' : ''}</>)}</p>}
+          {showFriends && <p>友情链接：{FRIEND_LINKS.map((f, i) => <><a href={f.href} target="_blank" rel="noopener nofollow">{f.label}</a>{i < FRIEND_LINKS.length - 1 ? '　' : ''}</>)}</p>}
           <p>&copy; {new Date().getFullYear()} {siteConfig.brandName}（{siteConfig.brandNameEn}）· 内容最近更新 {siteConfig.updatedAt}</p>
         </div>
       </div>

@@ -38,6 +38,10 @@ for (const f of fs.readdirSync(tutDir)) {
   }
 }
 lastmod['/tutorials/'] = latest(tutDates) ?? '';
+// 没有逐页日期的静态页（关于、数据中心、FAQ 等）：使用 2026-10-05 综合改版日期，不使用构建时间。
+for (const p of ['/about/', '/compare/', '/contact/', '/data/', '/faq/', '/finder/', '/glossary/', '/methodology/', '/privacy/', '/terms/', '/tools/', '/updates/']) {
+  lastmod[p] ??= '2026-10-05';
+}
 lastmod['/'] = latest(Object.values(lastmod)) ?? '';
 
 // Sitemap 排除策略：跟站群里其他站保持一致的处理原则。
