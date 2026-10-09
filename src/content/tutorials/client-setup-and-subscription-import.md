@@ -1,6 +1,6 @@
 ---
 title: Windows / iOS / Android / macOS 客户端与订阅导入教程
-description: 拿到订阅链接之后，Windows、macOS、iOS、Android 四个系统分别用什么客户端、怎么导入订阅链接、导入之后要检查什么。
+description: "拿到订阅链接之后，Windows、macOS、iOS、Android 四个系统分别用什么客户端、怎么导入订阅链接、导入之后要检查什么，附常见导入失败的处理思路，新手跟着做即可完成第一次连接。"
 group: clients
 publishedAt: 2026-09-04
 updatedAt: 2026-09-04

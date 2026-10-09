@@ -52,8 +52,9 @@ const sections = [
   ['more', '继续阅读'],
 ] as const;
 
-const title = `${d.title}｜判断指标与推荐｜机场TJ`;
-const description = `${d.summary ?? d.description} 含判断指标、${picks.length} 个有依据的推荐、常见误区与检查清单。`;
+const baseTitle = `${d.title}｜判断指标与推荐｜机场TJ`;
+const title = baseTitle.length < 24 ? `${d.title}｜判断指标、推荐与避坑清单｜机场TJ` : baseTitle;
+const description = `${d.title}：${d.summary ?? d.description} 含判断指标、${picks.length} 个有依据的推荐、常见误区与检查清单，每个推荐都标明资料来源与适用条件。`;
 ---
 
 <BaseLayout

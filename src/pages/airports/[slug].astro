@@ -48,7 +48,8 @@ const statusText = { ok: '已核对', part: '部分核对', no: '未核对' } as
 const hasLoss = Boolean(f.loss);
 const titleCore = hasLoss ? '价格口径、站长自测与适合场景' : '价格口径、资料来源与适合场景';
 const title = `${d.name}怎么样？${titleCore}｜机场TJ`;
-const description = `${d.name}资料速查：${f.price.headline}；${hasLoss ? `站长自测丢包率 ${f.loss!.min}%–${f.loss!.max}%；` : ''}资料标签「${DATA_CONFIDENCE_LABEL[d.dataConfidence as DataConfidence]}」，附适合与不适合的场景、买前检查和同类对照。`;
+let description = `${d.name}资料速查：${f.price.headline}；${hasLoss ? `站长自测丢包率 ${f.loss!.min}%–${f.loss!.max}%；` : ''}资料标签「${DATA_CONFIDENCE_LABEL[d.dataConfidence as DataConfidence]}」，附适合与不适合的场景、买前检查和同类对照，来源逐条标注，价格以官网结算页为准。`;
+if (description.length > 125) description = description.replace('，来源逐条标注，价格以官网结算页为准。', '，价格以官网为准。');
 
 const faq = [
   { q: `${d.name}适合哪些场景？`, a: `${d.scenarioFit.goodFor.join('；')}。` },

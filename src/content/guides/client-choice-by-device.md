@@ -1,6 +1,6 @@
 ---
 title: 按设备选客户端：Windows、macOS、iOS、Android 与路由器怎么选
-description: 选客户端不是选“最好的”，而是选和你的设备、协议、使用习惯匹配的。这篇按设备列出常见的客户端类型，说明选择标准、下载安全和导入前后的注意事项。
+description: "选客户端不是选“最好的”，而是选和你的设备、协议、使用习惯匹配的。这篇按设备列出常见的客户端类型，说明选择标准、下载安全和导入前后的注意事项，覆盖 Windows、macOS、iOS、Android 与路由器。"
 topic: tech
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
