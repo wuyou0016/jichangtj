@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img" aria-labelledby="t d">
+  <title id="t">按使用场景选机场的思路示意图</title>
+  <desc id="d">先确定用途，再看这个用途最敏感的指标：办公看抖动和丢包，游戏看延迟和 UDP，流媒体看解锁与带宽，旅行看可用性和备用方案，最后用小范围试用验证。</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#475569"/></marker>
+  </defs>
+  <rect width="720" height="300" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <g font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" text-anchor="middle">
+    <text x="360" y="32" font-size="17" font-weight="700" fill="#0f172a">先说用途，再看指标，最后小范围试用（示意）</text>
+
+    <rect x="16" y="112" width="120" height="76" rx="10" fill="#fffbeb" stroke="#d97706"/>
+    <text x="76" y="144" font-size="15" font-weight="700" fill="#b45309">你的用途</text>
+    <text x="76" y="166" font-size="12" fill="#475569">先写下最常做的事</text>
+
+    <g>
+      <rect x="196" y="52" width="270" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="216" y="79" text-anchor="start" font-size="13" font-weight="700" fill="#1d4ed8">远程办公</text><text x="290" y="79" text-anchor="start" font-size="12" fill="#475569">抖动、丢包、稳定性</text>
+      <rect x="196" y="104" width="270" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="216" y="131" text-anchor="start" font-size="13" font-weight="700" fill="#1d4ed8">联机游戏</text><text x="290" y="131" text-anchor="start" font-size="12" fill="#475569">延迟、UDP 转发、接入方式</text>
+      <rect x="196" y="156" width="270" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="216" y="183" text-anchor="start" font-size="13" font-weight="700" fill="#1d4ed8">流媒体</text><text x="290" y="183" text-anchor="start" font-size="12" fill="#475569">解锁情况、带宽是否够用</text>
+      <rect x="196" y="208" width="270" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="216" y="235" text-anchor="start" font-size="13" font-weight="700" fill="#1d4ed8">出差旅行</text><text x="290" y="235" text-anchor="start" font-size="12" fill="#475569">可用性、备用方案、多设备</text>
+    </g>
+
+    <rect x="526" y="112" width="178" height="76" rx="10" fill="#ffffff" stroke="#15803d"/>
+    <text x="615" y="142" font-size="14" font-weight="700" fill="#15803d">小范围试用</text>
+    <text x="615" y="162" font-size="12" fill="#475569">月付 + 你的常用时段</text>
+    <text x="615" y="178" font-size="12" fill="#475569">+ 你的真实场景</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none" marker-end="url(#ar)">
+    <path d="M138 150 L194 74"/><path d="M138 150 L194 126"/><path d="M138 150 L194 178"/><path d="M138 150 L194 230"/>
+    <path d="M468 74 L524 140"/><path d="M468 126 L524 148"/><path d="M468 178 L524 158"/><path d="M468 230 L524 168"/>
+  </g>
+  <text x="360" y="280" text-anchor="middle" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" font-size="11" fill="#64748b">示意图，不含任何测试数据；“最敏感的指标”是一般规律，不是对某家服务商的评价</text>
+</svg>

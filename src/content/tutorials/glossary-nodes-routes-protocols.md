@@ -9,6 +9,8 @@ relatedScenarios:
   - remote-work
 ---
 
+<figure class="diagram-fig"><img class="diagram" src="/images/diagrams/subscription-client-node.svg" alt="订阅链接、客户端、节点、线路的关系示意图" width="720" height="230" loading="lazy" decoding="async" /></figure>
+
 ## 节点
 
 节点就是一台你可以连接的服务器，通常按地区命名（比如"香港01""日本02"）。一份订阅里可能包含几十到上百个节点，分布在不同地区、不同线路上，你可以在客户端里自由切换。

@@ -13,6 +13,8 @@ relatedGuides:
   - monthly-vs-yearly
   - universal-subscription-vs-official-client
   - multi-device-and-router
+  - switching-airports-checklist
+  - public-wifi-and-airport
 relatedGlossary:
   - subscription
   - conversion

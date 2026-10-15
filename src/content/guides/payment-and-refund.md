@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - monthly-vs-yearly
   - airport-red-flags
+  - contact-support-checklist
 relatedGlossary:
   - rug-pull
   - annual-equiv

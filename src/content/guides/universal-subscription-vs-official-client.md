@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - client-choice-by-device
   - subscription-link-security
+  - switching-airports-checklist
 relatedGlossary:
   - subscription
   - official-client

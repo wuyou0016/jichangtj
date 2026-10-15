@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - self-test-seven-days
   - loss-latency-jitter-explained
+  - test-across-networks
 relatedGlossary:
   - peak-hour
   - packet-loss

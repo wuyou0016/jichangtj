@@ -13,6 +13,8 @@ relatedGuides:
   - subscription-link-security
   - payment-and-refund
   - privacy-and-logs
+  - contact-support-checklist
+  - when-not-to-use-airport
 relatedGlossary:
   - rug-pull
   - annual-equiv

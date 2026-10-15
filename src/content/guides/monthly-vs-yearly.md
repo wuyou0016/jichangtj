@@ -13,6 +13,8 @@ relatedGuides:
   - airport-pricing-explained
   - airport-red-flags
   - payment-and-refund
+  - renewal-decision-with-records
+  - student-budget-plan
 relatedGlossary:
   - annual-equiv
   - rug-pull

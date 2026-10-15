@@ -14,6 +14,10 @@ relatedGuides:
   - loss-latency-jitter-explained
   - monthly-vs-yearly
   - why-experience-differs
+  - test-latency-methods
+  - test-peak-hours
+  - test-record-template
+  - test-across-networks
 relatedGlossary:
   - peak-hour
   - packet-loss
@@ -39,6 +43,8 @@ faq:
 3. **一个固定的测试时段**：选你平时最常上网的时间，晚高峰（大约 19:00–23:00）必须包含在内。
 
 ## 七天安排
+
+<figure class="diagram-fig"><img class="diagram" src="/images/diagrams/self-test-flow.svg" alt="一周自测流程示意图：买最低档月付、固定测试时段、每天记录、第七天汇总、决定续费或换一家" width="720" height="250" loading="lazy" decoding="async" /></figure>
 
 <ol class="route">
 <li><h3>第 1 天：确认能连、能用</h3><p>装好客户端，导入订阅或登录，连几个不同地区的节点，确认基础网页、常用软件能正常访问。记下你用的客户端版本和协议。</p></li>

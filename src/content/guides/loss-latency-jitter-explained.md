@@ -12,6 +12,9 @@ relatedGuides:
   - self-test-seven-days
   - route-types-explained
   - why-experience-differs
+  - test-latency-methods
+  - remote-work-video-meetings
+  - streaming-bandwidth-and-bitrate
 relatedGlossary:
   - packet-loss
   - latency
@@ -35,6 +38,8 @@ faq:
 | 延迟 | 数据往返一次要多久 | 游戏、远程桌面 |
 | 抖动 | 延迟忽快忽慢的程度 | 语音通话、实时游戏 |
 | 带宽 | 单位时间能传多少数据 | 下载大文件、高清视频 |
+
+<figure class="diagram-fig"><img class="diagram" src="/images/diagrams/latency-jitter-loss.svg" alt="延迟、抖动、丢包三个指标的示意图：延迟是往返时间，抖动是间隔不均匀，丢包是数据包没有到达" width="720" height="320" loading="lazy" decoding="async" /></figure>
 
 ## 丢包率：最容易被忽视，也最致命
 

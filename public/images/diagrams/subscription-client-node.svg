@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" width="720" height="230" role="img" aria-labelledby="t d">
+  <title id="t">订阅链接、客户端、节点、线路的关系示意图</title>
+  <desc id="d">订阅链接是一串网址；客户端用它拉取节点清单；节点是机场的服务器入口；线路是从节点到目标网站的路径。</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#475569"/></marker>
+  </defs>
+  <rect width="720" height="230" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <g font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" text-anchor="middle">
+    <text x="360" y="32" font-size="17" font-weight="700" fill="#0f172a">从订阅到上网：四个常见名词的关系（示意）</text>
+
+    <rect x="14" y="62" width="150" height="96" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="89" y="92" font-size="15" font-weight="700" fill="#1d4ed8">订阅链接</text>
+    <text x="89" y="116" font-size="12" fill="#475569">服务商给你的一串网址</text>
+    <text x="89" y="134" font-size="12" fill="#475569">相当于账号凭证</text>
+
+    <rect x="192" y="62" width="150" height="96" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="267" y="92" font-size="15" font-weight="700" fill="#1d4ed8">客户端</text>
+    <text x="267" y="116" font-size="12" fill="#475569">用链接拉取节点清单</text>
+    <text x="267" y="134" font-size="12" fill="#475569">在这里选节点、连接</text>
+
+    <rect x="370" y="62" width="150" height="96" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="445" y="92" font-size="15" font-weight="700" fill="#1d4ed8">节点</text>
+    <text x="445" y="116" font-size="12" fill="#475569">机场的服务器入口</text>
+    <text x="445" y="134" font-size="12" fill="#475569">通常按地区命名</text>
+
+    <rect x="548" y="62" width="158" height="96" rx="10" fill="#fffbeb" stroke="#d97706"/>
+    <text x="627" y="92" font-size="15" font-weight="700" fill="#b45309">线路 → 目标网站</text>
+    <text x="627" y="116" font-size="12" fill="#475569">节点到目标网站的路径</text>
+    <text x="627" y="134" font-size="12" fill="#475569">体验差别主要出在这里</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none" marker-end="url(#ar)">
+    <line x1="166" y1="110" x2="190" y2="110"/><line x1="344" y1="110" x2="368" y2="110"/><line x1="522" y1="110" x2="546" y2="110"/>
+  </g>
+  <g font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" font-size="12" fill="#475569" text-anchor="middle">
+    <text x="178" y="96">导入</text><text x="356" y="96">连接</text><text x="534" y="96">转发</text>
+    <text x="360" y="196">协议决定客户端与节点之间“怎么说话”，客户端要认识节点用的协议才连得上。</text>
+    <text x="360" y="216" font-size="11" fill="#64748b">示意图，不含任何测试数据</text>
+  </g>
+</svg>

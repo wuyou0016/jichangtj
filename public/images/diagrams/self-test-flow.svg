@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" width="720" height="250" role="img" aria-labelledby="t d">
+  <title id="t">一周自测流程示意图</title>
+  <desc id="d">五步流程：买最低档月付套餐，固定一个测试时段，每天记录断线和变慢，第七天汇总，最后决定续费、换一家还是再观察一周。</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#475569"/></marker>
+  </defs>
+  <rect width="720" height="250" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="360" y="32" text-anchor="middle" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" font-size="17" font-weight="700" fill="#0f172a">一周自测流程（示意）</text>
+  <g font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" text-anchor="middle">
+    <rect x="16" y="64" width="124" height="104" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="78" cy="84" r="11" fill="#1d4ed8"/><text x="78" y="89" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="78" y="116" font-size="14" font-weight="700" fill="#0f172a">买最低档月付</text>
+    <text x="78" y="138" font-size="12" fill="#475569">别为测试买年付</text>
+    <text x="78" y="156" font-size="12" fill="#475569">先看退款规则</text>
+
+    <rect x="158" y="64" width="124" height="104" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="220" cy="84" r="11" fill="#1d4ed8"/><text x="220" y="89" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="220" y="116" font-size="14" font-weight="700" fill="#0f172a">固定测试时段</text>
+    <text x="220" y="138" font-size="12" fill="#475569">必须包含晚高峰</text>
+    <text x="220" y="156" font-size="12" fill="#475569">工作日与周末各测</text>
+
+    <rect x="300" y="64" width="124" height="104" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="362" cy="84" r="11" fill="#1d4ed8"/><text x="362" y="89" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="362" y="116" font-size="14" font-weight="700" fill="#0f172a">每天做记录</text>
+    <text x="362" y="138" font-size="12" fill="#475569">断线、变慢、节点</text>
+    <text x="362" y="156" font-size="12" fill="#475569">用你的真实场景</text>
+
+    <rect x="442" y="64" width="124" height="104" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="504" cy="84" r="11" fill="#1d4ed8"/><text x="504" y="89" font-size="13" font-weight="700" fill="#ffffff">4</text>
+    <text x="504" y="116" font-size="14" font-weight="700" fill="#0f172a">第 7 天汇总</text>
+    <text x="504" y="138" font-size="12" fill="#475569">问题是否总在</text>
+    <text x="504" y="156" font-size="12" fill="#475569">同一时段出现</text>
+
+    <rect x="584" y="64" width="124" height="104" rx="10" fill="#fffbeb" stroke="#d97706"/>
+    <circle cx="646" cy="84" r="11" fill="#d97706"/><text x="646" y="89" font-size="13" font-weight="700" fill="#ffffff">5</text>
+    <text x="646" y="116" font-size="14" font-weight="700" fill="#0f172a">做决定</text>
+    <text x="646" y="138" font-size="12" fill="#475569">续费 / 换一家</text>
+    <text x="646" y="156" font-size="12" fill="#475569">/ 再观察一周</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none" marker-end="url(#ar)">
+    <line x1="142" y1="116" x2="156" y2="116"/><line x1="284" y1="116" x2="298" y2="116"/><line x1="426" y1="116" x2="440" y2="116"/><line x1="568" y1="116" x2="582" y2="116"/>
+  </g>
+  <text x="360" y="212" text-anchor="middle" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" font-size="13" fill="#475569">目标不是得到漂亮的数字，而是回答：在我常用的时段、常用的软件里，它够不够稳。</text>
+  <text x="360" y="234" text-anchor="middle" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif" font-size="11" fill="#64748b">示意图，不含任何测试数据</text>
+</svg>

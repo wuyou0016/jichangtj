@@ -65,7 +65,9 @@
     "relatedGuides": [
       "airport-pricing-explained",
       "monthly-vs-yearly",
-      "payment-and-refund"
+      "payment-and-refund",
+      "student-budget-plan",
+      "renewal-decision-with-records"
     ]
   },
   {
@@ -126,7 +128,9 @@
       "loss-latency-jitter-explained",
       "self-test-seven-days",
       "why-experience-differs",
-      "multi-device-and-router"
+      "multi-device-and-router",
+      "remote-work-video-meetings",
+      "test-across-networks"
     ]
   },
   {
@@ -183,7 +187,8 @@
     "relatedGuides": [
       "streaming-unlock-verify",
       "self-test-seven-days",
-      "why-experience-differs"
+      "why-experience-differs",
+      "streaming-bandwidth-and-bitrate"
     ]
   },
   {
@@ -236,7 +241,8 @@
       "loss-latency-jitter-explained",
       "self-test-seven-days",
       "protocol-quick-guide",
-      "why-experience-differs"
+      "why-experience-differs",
+      "test-latency-methods"
     ]
   },
   {
@@ -300,7 +306,10 @@
       "subscription-link-security",
       "airport-red-flags",
       "universal-subscription-vs-official-client",
-      "client-choice-by-device"
+      "client-choice-by-device",
+      "test-peak-hours",
+      "contact-support-checklist",
+      "when-not-to-use-airport"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -364,7 +373,9 @@
     "relatedGuides": [
       "airport-pricing-explained",
       "monthly-vs-yearly",
-      "client-choice-by-device"
+      "client-choice-by-device",
+      "student-budget-plan",
+      "test-peak-hours"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -426,7 +437,11 @@
       "subscription-link-security",
       "airport-red-flags",
       "multi-device-and-router",
-      "client-choice-by-device"
+      "client-choice-by-device",
+      "travel-abroad-network-prep",
+      "public-wifi-and-airport",
+      "mobile-data-vs-wifi",
+      "cross-border-shopping-scenario"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"
@@ -492,7 +507,10 @@
       "airport-red-flags",
       "monthly-vs-yearly",
       "payment-and-refund",
-      "privacy-and-logs"
+      "privacy-and-logs",
+      "contact-support-checklist",
+      "switching-airports-checklist",
+      "public-wifi-and-airport"
     ],
     "publishedAt": "2026-10-05",
     "updatedAt": "2026-10-05"

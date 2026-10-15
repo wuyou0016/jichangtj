@@ -23,7 +23,10 @@ const board = scenarios.map((s) => {
 });
 const top5 = ranking.slice(0, 5);
 const rangeRows = providers.map((p) => ({ id: p.id, name: p.data.name, href: `/airports/${p.data.slug}/` }));
-const featuredGuides = guides.slice(0, 4);
+const FEATURED_GUIDE_IDS = ['test-peak-hours', 'renewal-decision-with-records', 'public-wifi-and-airport', 'streaming-bandwidth-and-bitrate'];
+const featuredGuides = FEATURED_GUIDE_IDS.map((id) => guides.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => Boolean(g));
+const QA_GUIDE_IDS = ['remote-work-video-meetings', 'travel-abroad-network-prep', 'student-budget-plan', 'switching-airports-checklist', 'contact-support-checklist', 'when-not-to-use-airport'];
+const qaGuides = QA_GUIDE_IDS.map((id) => guides.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => Boolean(g));
 const quickTerms = ['node', 'iplc', 'packet-loss', 'multiplier', 'subscription', 'relay', 'annual-equiv', 'unlock'].map((id) => TERMS.find((t) => t.id === id)!);
 const latest = UPDATES.slice(0, 3);
 
@@ -235,6 +238,8 @@ const description =
         ))
       }
     </div>
+    <p style="margin:18px 0 8px"><b>场景问答：</b></p>
+    <div class="az">{qaGuides.map((g) => <a href={`/knowledge/${g.id}/`}>{g.data.title.split('：')[0]}</a>)}</div>
     <p style="margin:18px 0 8px"><b>阅读路线：</b></p>
     <div class="az"><a href="/knowledge/#paths-h">新手 7 天路线</a><a href="/knowledge/#paths-h">稳妥购买路线</a><a href="/knowledge/#paths-h">看懂技术词路线</a></div>
     <p style="margin:18px 0 8px"><b>术语速查：</b></p>

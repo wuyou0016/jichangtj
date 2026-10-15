@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" role="img" aria-labelledby="t d">
+  <title id="t">延迟、抖动、丢包三个指标的示意图</title>
+  <desc id="d">延迟是数据从你的设备到目标再回来所用的时间；抖动是延迟的忽大忽小；丢包是一部分数据包没有到达。</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#475569"/></marker>
+  </defs>
+  <rect width="720" height="320" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <g font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+    <text x="360" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">三个指标分别在量什么（示意）</text>
+
+    <!-- 延迟 -->
+    <text x="20" y="66" font-size="14" font-weight="700" fill="#1d4ed8">延迟</text>
+    <text x="64" y="66" font-size="12" fill="#475569">数据从你的设备出发，到达目标再返回所用的时间（毫秒）</text>
+    <rect x="20" y="78" width="96" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="68" y="103" text-anchor="middle" font-size="13" fill="#0f172a">你的设备</text>
+    <rect x="312" y="78" width="96" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="360" y="103" text-anchor="middle" font-size="13" fill="#0f172a">节点</text>
+    <rect x="604" y="78" width="96" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="652" y="103" text-anchor="middle" font-size="13" fill="#0f172a">目标网站</text>
+    <g stroke="#1d4ed8" stroke-width="2" fill="none" marker-end="url(#ar)"><line x1="118" y1="92" x2="310" y2="92"/><line x1="410" y1="92" x2="602" y2="92"/></g>
+    <g stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4" fill="none" marker-end="url(#ar)"><line x1="602" y1="106" x2="410" y2="106"/><line x1="310" y1="106" x2="118" y2="106"/></g>
+
+    <!-- 抖动 -->
+    <text x="20" y="160" font-size="14" font-weight="700" fill="#d97706">抖动</text>
+    <text x="64" y="160" font-size="12" fill="#475569">延迟忽大忽小：数据包到达的间隔不均匀，语音和游戏最敏感</text>
+    <line x1="20" y1="206" x2="700" y2="206" stroke="#cbd5e1" stroke-width="2"/>
+    <g fill="#d97706">
+      <rect x="40" y="190" width="18" height="16" rx="3"/><rect x="84" y="190" width="18" height="16" rx="3"/><rect x="128" y="190" width="18" height="16" rx="3"/><rect x="172" y="190" width="18" height="16" rx="3"/>
+      <rect x="300" y="190" width="18" height="16" rx="3"/><rect x="332" y="190" width="18" height="16" rx="3"/><rect x="480" y="190" width="18" height="16" rx="3"/><rect x="590" y="190" width="18" height="16" rx="3"/>
+    </g>
+    <text x="110" y="232" text-anchor="middle" font-size="11" fill="#475569">间隔均匀</text>
+    <text x="440" y="232" text-anchor="middle" font-size="11" fill="#475569">间隔忽长忽短（抖动大）</text>
+
+    <!-- 丢包 -->
+    <text x="20" y="268" font-size="14" font-weight="700" fill="#b91c1c">丢包</text>
+    <text x="64" y="268" font-size="12" fill="#475569">一部分数据包没有到达：越多越卡顿，网页能重传，实时通话不能</text>
+    <g>
+      <rect x="40" y="280" width="26" height="18" rx="3" fill="#15803d"/><rect x="80" y="280" width="26" height="18" rx="3" fill="#15803d"/>
+      <rect x="120" y="280" width="26" height="18" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-dasharray="3 3"/><line x1="124" y1="284" x2="142" y2="294" stroke="#b91c1c" stroke-width="2"/><line x1="142" y1="284" x2="124" y2="294" stroke="#b91c1c" stroke-width="2"/>
+      <rect x="160" y="280" width="26" height="18" rx="3" fill="#15803d"/><rect x="200" y="280" width="26" height="18" rx="3" fill="#15803d"/>
+      <rect x="240" y="280" width="26" height="18" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-dasharray="3 3"/><line x1="244" y1="284" x2="262" y2="294" stroke="#b91c1c" stroke-width="2"/><line x1="262" y1="284" x2="244" y2="294" stroke="#b91c1c" stroke-width="2"/>
+      <rect x="280" y="280" width="26" height="18" rx="3" fill="#15803d"/>
+    </g>
+    <text x="500" y="294" font-size="11" fill="#64748b">示意图，不含任何测试数据</text>
+  </g>
+</svg>

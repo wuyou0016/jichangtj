@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - universal-subscription-vs-official-client
   - protocol-quick-guide
+  - switching-airports-checklist
 relatedGlossary:
   - client
   - clash

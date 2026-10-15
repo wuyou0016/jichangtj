@@ -11,6 +11,7 @@ relatedGuides:
   - self-test-seven-days
   - route-types-explained
   - why-experience-differs
+  - streaming-bandwidth-and-bitrate
 relatedGlossary:
   - unlock
   - sent-to-cn

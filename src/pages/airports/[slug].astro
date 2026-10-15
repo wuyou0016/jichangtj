@@ -7,7 +7,7 @@ import Faq from '../../components/Faq.astro';
 import LossRange from '../../components/LossRange.astro';
 import Coverage from '../../components/Coverage.astro';
 import { loadSite, scenariosFor, shortName, GUIDE_TOPIC_LABEL } from '../../data/helpers';
-import { FACTS, CLIENT_LABEL, ENTRY_LABEL } from '../../data/providers/facts';
+import { FACTS, CLIENT_LABEL, ENTRY_LABEL, coverage } from '../../data/providers/facts';
 import { resolveCanonicalUrl, formatDate } from '../../config/seo';
 import { siteConfig } from '../../config/site';
 import { DATA_CONFIDENCE_LABEL, type DataConfidence } from '../../config/data-confidence';
@@ -34,6 +34,20 @@ const statusLabel: Record<string, string> = { active: '正常运营', inactive: 
 const ordered = [...providers].sort((a, b) => (rankOf.get(a.id) ?? 99) - (rankOf.get(b.id) ?? 99));
 const at = ordered.findIndex((p) => p.id === provider.id);
 const neighbours = [-2, -1, 1, 2, 3].map((n) => ordered[at + n]).filter((p): p is NonNullable<typeof p> => Boolean(p)).slice(0, 3);
+
+// 资料上的差别：把本页服务商的 6 项资料完整度，和综合排名紧邻的两家逐项对照（只比较“本站有没有这类资料”，不比较服务好坏）。
+const stateRank = { full: 2, part: 1, none: 0 } as const;
+const stateWord = { full: '有', part: '部分', none: '无' } as const;
+type CovState = keyof typeof stateRank;
+const myCov = coverage(f);
+const covDiffs = neighbours.slice(0, 2).map((n) => {
+  const nc = coverage(FACTS[n.id]!);
+  const items = myCov.items
+    .map((it, i) => ({ label: it.label, mine: it.state as CovState, theirs: nc.items[i]!.state as CovState }))
+    .filter((x) => x.mine !== x.theirs)
+    .map((x) => `${x.label}（${d.name}${stateWord[x.mine]}，对方${stateWord[x.theirs]}，${stateRank[x.mine] > stateRank[x.theirs] ? '本站对这家更多' : '本站对对方更多'}）`);
+  return { name: n.data.name, slug: n.data.slug, items, mineScore: myCov.score, theirScore: nc.score };
+});
 
 // 已验证 / 未验证
 const verify: { item: string; status: 'ok' | 'part' | 'no'; text: string }[] = [
@@ -200,6 +214,18 @@ const isWuyou = d.slug === 'wuyou-lianjie';
       <p>更完整的检查项见<a href="/knowledge/airport-red-flags/">买前红旗清单</a>和<a href="/knowledge/monthly-vs-yearly/">月付还是年付</a>。</p>
 
       <h2 id="compare">同类对照</h2>
+      <h3>资料上的差别</h3>
+      <p class="muted" style="font-size:.9rem">只比较“本站有没有这类资料”，不代表服务好坏，也不是评分。</p>
+      <ul>
+        {
+          covDiffs.map((x) => (
+            <li>
+              与 <a href={`/airports/${x.slug}/`}>{x.name}</a> 相比：{d.name}资料完整度 {x.mineScore}/6，对方 {x.theirScore}/6
+              {x.items.length > 0 ? `；差异项：${x.items.join('、')}。` : '；六项资料的覆盖情况完全相同。'}
+            </li>
+          ))
+        }
+      </ul>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr><th>服务商</th><th>起步价</th><th>丢包率（自测）</th><th>客户端</th><th>资料标签</th></tr></thead>

@@ -11,6 +11,7 @@ relatedScenarios:
 relatedGuides:
   - client-choice-by-device
   - subscription-link-security
+  - mobile-data-vs-wifi
 relatedGlossary:
   - device-limit
   - subscription
@@ -42,6 +43,8 @@ faq:
 | 不同套餐上限是否不同 | 有的低价档位限制更严 |
 
 本站收录的服务商里，设备数限制的资料大多未列出，请以官网说明和客服回复为准，并保存回复内容。
+
+<figure class="diagram-fig"><img class="diagram" src="/images/diagrams/device-count-methods.svg" alt="设备数的三种常见计数口径示意图：按出口 IP、按同时打开的连接数、按设备标识" width="720" height="280" loading="lazy" decoding="async" /></figure>
 
 ## 家庭共用：几种做法的对比
 

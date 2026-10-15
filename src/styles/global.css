@@ -569,3 +569,7 @@ a.board-row:hover { background: var(--board-2); text-decoration: none; }
 .hide { display: none !important; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } .btn:hover, a.card:hover { transform: none; } }
 @media print { .topbar, .header, .footer, .totop, .tabs, .aside, .tabbar, #rp { display: none !important; } body { background: #fff; color: #000; } .card, .pass { box-shadow: none; } }
+
+/* 原创示意图（public/images/diagrams/*.svg）：概念示意，不含任何测试数据 */
+.diagram-fig { margin: 1.4em 0; }
+.diagram { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius); }

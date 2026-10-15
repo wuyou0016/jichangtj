@@ -10,6 +10,8 @@ relatedScenarios:
 relatedGuides:
   - subscription-link-security
   - airport-red-flags
+  - public-wifi-and-airport
+  - when-not-to-use-airport
 relatedGlossary:
   - dns-leak
   - log-policy

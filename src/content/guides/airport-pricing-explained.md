@@ -12,6 +12,8 @@ relatedGuides:
   - monthly-vs-yearly
   - airport-red-flags
   - payment-and-refund
+  - student-budget-plan
+  - renewal-decision-with-records
 relatedGlossary:
   - annual-equiv
   - multiplier
