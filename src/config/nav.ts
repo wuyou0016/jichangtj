@@ -51,8 +51,5 @@ export const FOOTER_COLUMNS = [
   },
 ] as const;
 
-export const FRIEND_LINKS = [
-  { href: 'https://rocketjichang.com', label: '火箭机场' },
-  { href: 'https://jichangbao.com', label: '机场宝' },
-  { href: 'https://ejichang.com', label: '机场E家' },
-] as const;
+// 2026-10-16：火箭机场、机场宝、机场E家被 Bing 从展示中拿掉，友情链接清空（不再链向它们，减少链接网络足迹）。
+export const FRIEND_LINKS: readonly { href: string; label: string }[] = [];
